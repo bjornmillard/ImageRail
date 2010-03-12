@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><!-- InstanceBegin template="/Templates/main.dwt.html" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>About ImageRail</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+<!-- InstanceEndEditable -->
+</head>
+
+<body>
+<table width="500" border="3" cellspacing="1" cellpadding="1">
+  
+
+
+     <td><div align="center">
+      <ol>
+
+        <li>
+          <div align="left"><a href="../GettingStarted.html">Getting_Started</a></div>
+        </li>
+        <li>
+          <div align="left"><a href="../imageHandling/Images.html">Images</a></div>
+        </li>
+        <li>
+          <div align="left"><a href="./ImageProcessing.html">Image_Processing</a></div>
+        </li>
+        <li>
+          <div align="left"><a href="../dataViewing/DataViewing.html">Data_Viewing</a></div>
+        </li>
+                <li>
+          <div align="left"><a href="../data/DataExport.html">Data_Export</a></div>
+        </li>
+          <li>
+          <div align="left"><a href="../metaData/MetaData.html">MetaData</a></div>
+        </li>
+          <li>
+          <div align="left"><a href="../plugins/Plugins.html">Plug-ins</a></div>
+        </li>
+       <li>
+          <div align="left"><a href="../FAQs.html">FAQs</a></div>
+        </li>
+      </ol>
+  
+    <td colspan="4"><div align="center"><img src="../images/ImageRailSplashScreen.png" width="462" height="132" alt="ImageRail"></div></td>
+</table>
+
+
+<h3><a href="./ImageProcessing.html">back...</a></h3>
+
+
+
+<h1>Single-Cell Segmentation</h1>
+  <p>The default <i>ImageRail</i> segmentation algorithm is simple yet effective for the sort of 2D tissue culture systems for which it was originally designed.<br><br>
+  To perform a single cell segmentation of the loaded images use the menu item
+  <i> Process-->Single Cells</i><br>
+  <br>
+  The following dialog should launch:<br>
+  
+    <img src="../images/ssDialog.png" alt="dialogSS" width="650" height="570"><br>
+    
+    
+    <h4>Parameter Selection:</h4>
+ 	Depending on what version of <i>ImageRail</i> you have, or what algorithm you are using, this may look different, but in the default
+ 	version there are 2 essential parameters the user must supply: </p>
+  <ol>
+  	<li>Nucleus Threshold</li>
+    <li>Cytoplasm Threshold</li>
+  </ol>
+  <br>
+For both the nucleus and cytoplasmic thresholds, the user must specify which channel should be used for each threshold.
+NOTE: they channels used to threshold the nucleus can be different than that used to threshold the cytoplasm. <br><br>
+
+To acquire the numerical values for each threshold, open a sample image of the wells you want to segment.
+Mousing over the image will display a pixel intensity value on the right margin of the image viewer.
+By mousing around you can determine the approximate values for the (1) background (2) transition from background-->cytoplasm and (3) cytoplasm-->nucleus.<br><br>
+
+ In the example below, 2 blue stains have been used.  A Hoeschst stain has been used to stain the nuclei and a blue whole
+  protein dye has been used to mark proteins in the cytoplasm.  Note that the stains have drastically different intensity values
+  such that it is possible to select 2 different thresholds for the different compartments while only using a single fluorescent channel. <br><br>
+ 
+  In this example, possible thresholding valuse could be:
+  <ol>
+  	<li> Nucleus = 500</li>
+  	<li> Cytoplasm = 200</li>
+  </ol>
+  
+  <img src="../images/SegmentationExample.png" alt="SegExample.png" width="493" height="301"><br>
+  
+   <h4>Load Cells into RAM after Segmentation:</h4>
+  Unless this box is checked, the single-cell data for each processed wells will be cleared from the RAM and only cached to an HDF5 file on the hard drive.
+  If processed for single-cells, the plate will display the number of available HDF5 files for each well.  The icons look like little
+   white documents within the wells as shown in the top row of the plate below. Note there will be a seperate HDF5 file created for each image field set.<br><br>
+     <img src="../images/plateHDF5icons.png" alt="plateHDF5icons.png" width="456" height="305"><br><br>
+  
+  In this example, the single-cell data has not been loaded.  By using the menu option, <i>Options-->Load Cells</i>, or by clicking the <i>Load Cells into RAM after Segmentation</i>
+  checkbox before processing the wells, the cells will be loaded into RAM and display a mini-histogram of all cells for the selected feature.<br><br>
+       <img src="../images/plateHistograms.png" alt="plateHistograms.png" width="456" height="305"><br>
+  
+  
+   <h4>Coordinate for HDF5 Storage:</h4>
+   Once a full segmentation has been performed, all features are computed for each cell using the complete coordinate list.  See this <a href="./SegmentationDetails.html">page</a> for a
+   more detailed description of the segmentation and feature computation process.<br><br>
+   Though for long term storage and data sharing, a complete coordinate list for all cells may not be neccessary.  In fact, in most situations a single centroid
+    or bounding box is sufficient and drastically reduces the amount of data to be stored on the hard drive.<br><br>
+     <img src="../images/outlines.png" alt="outlines.png" width="391" height="384">
+     <img src="../images/boundingbox.png" alt="boundingbox.png" width="372" height="389">
+     <img src="../images/centroids.png" alt="centroids.png" width="387" height="384">
+   
+   
+   <h4>Annulus Only:</h4>
+  Occasionally you may not want to segment do a fully cytoplasmic segmentation and would prefer to only segment an annulus around the nucleus.  By checking this box,
+  you can specify the thickness of the annulus.<br><br>
+  
+  
+  
+  
+  <br>
+  <br>
+  <br>
+  <br>
+  
+<center>
+  <i>ImageRail</i> is ©Copyright 2010 - Bjorn Millard
+</center>
+<!-- InstanceEndEditable -->
+</body>
+<!-- InstanceEnd --></html>

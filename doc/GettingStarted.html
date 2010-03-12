@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><!-- InstanceBegin template="/Templates/main.dwt.html" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>About ImageRail</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+<!-- InstanceEndEditable -->
+</head>
+
+<body>
+<table width="500" border="3" cellspacing="1" cellpadding="1">
+  
+
+
+
+    <td><div align="center">
+      <ol>
+
+        <li>
+          <div align="left"><a href="./GettingStarted.html">Getting_Started</a></div>
+        </li>
+        <li>
+          <div align="left"><a href="./imageHandling/Images.html">Images</a></div>
+        </li>
+        <li>
+          <div align="left"><a href="./imageProcessing/ImageProcessing.html">Image_Processing</a></div>
+        </li>
+        <li>
+          <div align="left"><a href="./dataViewing/DataViewing.html">Data_Viewing</a></div>
+        </li>
+                <li>
+          <div align="left"><a href="./data/DataExport.html">Data_Export</a></div>
+        </li>
+          <li>
+          <div align="left"><a href="./metaData/MetaData.html">MetaData</a></div>
+        </li>
+          <li>
+          <div align="left"><a href="./plugins/Plugins.html">Plug-ins</a></div>
+        </li>
+       <li>
+          <div align="left"><a href="./FAQs.html">FAQs</a></div>
+        </li>
+      </ol>
+  
+    <td colspan="4"><div align="center"><img src="./images/ImageRailSplashScreen.png" width="462" height="132" alt="ImageRail"></div></td>
+</table>
+
+
+<h1>Getting Started...</h1>
+
+<h2>(1) Launch ImageRail</h2>
+<h2>(2) Create or Open an ImageRail Project</h2>
+After the ImageRail splash screen goes away, the below dialog should appear.<br>
+This will let you create a new ImageRail Project or let you re-open an existing project. <br>
+<img src="images/introScreen.png" alt="introScreen.png" width="386" height="217"><br>
+
+<br><br>
+<h3><u>Create a new project:</u></h3>
+To create a new project, you must specify how many plates and how many wells per plate you want to initialize using the following dialog:<br>
+<img src="images/projectCreation.png" alt="projectCreation.png" width="277" height="255">
+<br><br>
+
+ <h3><u>Open existing project</u></h3>
+If you want to re-open an existing project, a file chooser will appear so you can select the project directory of interest.
+<br><br>
+
+<h3><u>Basic GUI Startup</u></h3>
+Once a project has been chosen or intialized, the following interface should appear.<br>  This is an example of a new project created with 4-96 well plates.<br>
+<img src="images/imageRail_4plates.png" alt="imageRail_4plates.png" width="670" height="370">
+<br><br>
+
+<h2>(3) Loading Images </h2>
+To begin your analysis, the first thing you will want to do is load images into each plate.
+Please refer to the <a href="./imageHandling/Images.html">images</a> page to learn about current image format requirements.
+We are actively working to make image formats more universal.<br><br>
+
+Once your images are of the right type and of the required naming convention, place each plate's images in its own file directory.
+Then drag-and-drop each plate's image directory into the GUI-plate you want to load them into.<br><br>
+
+If loaded successfuly, the wells of the plate that contain images will now display a NxM
+indicator where N represents the number of fields acquired and M represents the number of channels per field.
+In this example, the outer wells were not used during this experiment.<br>
+<img src="images/imageLoadExample.png" alt="imageLoadExample.png" width="456" height="306"><br>
+The first number represents the number of different spatial fields loaded within the well and the second number represents the number of channels acquired.
+Thus the total number of image files within each well is equal to: NumFields x NumChannels.  In the above example we have 4 fields and 3 channels. <br>
+
+  <br>
+  <br>
+  <br>
+  <br>
+
+  	<center>
+	<i>ImageRail</i> is ©Copyright 2010 - Bjorn Millard
+    </center>
+ 
+  
+<!-- InstanceEndEditable -->
+</body>
+<!-- InstanceEnd --></html>

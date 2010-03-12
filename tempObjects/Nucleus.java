@@ -1,0 +1,177 @@
+/**
+ * Cell.java
+ *
+ * @author Created by Omnicore CodeGuide
+ */
+
+package tempObjects;
+
+
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import segmentedObj.Point;
+import segmentors.Temp_Pixel;
+
+/** Each segmented nucleus will hold its own pixels and properties
+ * @author BLM*/
+public class Nucleus
+{
+	private int ID;
+	private int numPixels;
+	private Point[] pixelCoordinates;
+	private Point[] boundaryPoints;
+	private float[] channelValues_integrated;
+	private Point2D.Double Centroid;
+	
+	public Nucleus(int id)
+	{
+		ID = id;
+	}
+	
+	public Nucleus(ArrayList pixels_, int id)
+	{
+		ID = id;
+		numPixels = pixels_.size();
+		pixelCoordinates = new Point[numPixels];
+		for (int i = 0; i < numPixels; i++)
+			pixelCoordinates[i] = new Point(((Temp_Pixel)pixels_.get(i)).getColumn(), ((Temp_Pixel)pixels_.get(i)).getRow());
+		Centroid = getCentroid();
+	}
+	
+	/** Returns the ID of the cell
+	 * @author BLM*/
+	public int getID()
+	{
+		return ID;
+	}
+	
+	/** Sets the number of pixels that compse this nucleus
+	 * @author BLM*/
+	public void setNumPixels(int numPix)
+	{
+		numPixels = numPix;
+	}
+	
+	/** Returns the array of coordinates that denote the outline of the nucleus
+	 * @author BLM*/
+	public Point[] getBoundaryPoints()
+	{
+		return boundaryPoints;
+	}
+
+	public void clearPixelData()
+	{
+		boundaryPoints = null;
+		pixelCoordinates = null;
+	}
+	
+	public Point[] getAllPixelCoordinates()
+	{
+		return pixelCoordinates;
+	}
+	
+	/** returns the requested indexed pixel */
+	public Point getPixelCoordinate(int i)
+	{
+		return pixelCoordinates[i];
+	}
+	
+	/** Returns the number of pixels that compose the nucleus (ex: nuclear area in pixel units)
+	 * @author BLM*/
+	public int getNumPixels()
+	{
+		return numPixels;
+	}
+	
+	/**Computes the pixel_XY location of the centroid of the cell
+	 * @author BLM*/
+	public Point2D.Double getCentroid()
+	{
+		if (Centroid==null && pixelCoordinates!=null)
+		{
+			Centroid = new Point2D.Double();
+			int col = 0;
+			int row = 0;
+			for (int i =0; i < numPixels; i++)
+			{
+				row += pixelCoordinates[i].y;
+				col += pixelCoordinates[i].x;
+			}
+			Centroid.y=row/numPixels;
+			Centroid.x=col/numPixels;
+		}
+		return Centroid;
+	}
+	
+	public void initNumChannels(int numChannels)
+	{
+		channelValues_integrated = new float[numChannels];
+	}
+
+	public void setChannelValue(float val, int index, int TYPE)
+	{
+		if (TYPE == Cell_RAM.INTEGRATED)
+			channelValues_integrated[index] = val;
+//		else if (TYPE == Cell.MEDIAN)
+//			channelValues_median[index] = val;
+	}
+	
+	public double getChannelValue(int index, int TYPE)
+	{
+		if (TYPE == Cell_RAM.MEAN)
+		{
+			if (index>=channelValues_integrated.length)
+				return 0;
+			return channelValues_integrated[index]/(float)numPixels;
+		}
+		else if (TYPE == Cell_RAM.INTEGRATED)
+		{
+			if (index>=channelValues_integrated.length)
+				return 0;
+			return channelValues_integrated[index];
+		}
+
+		return 0;
+	}
+	
+	
+	public void initBoundaryPoints(Temp_Pixel[][] pixels)
+	{
+		if (pixelCoordinates==null || pixelCoordinates.length==0)
+			return;
+		//For each pixel in the nucleus, See if any of the neighbors do not belong to this group; if so, then its a boundary pixel
+		ArrayList arr = new ArrayList();
+		int len = pixelCoordinates.length;
+		for (int i = 0; i < len; i++)
+		{
+			Point po = pixelCoordinates[i];
+			Temp_Pixel p = pixels[po.y][po.x];
+			Temp_Pixel[] ne = Temp_Pixel.getNeighbors(p, pixels);
+			int num = ne.length;
+			for (int j = 0; j < num; j++)
+			{
+				if (p.getID()!=ne[j].getID())
+				{
+					arr.add(po);
+					break;
+				}
+			}
+		}
+		len = arr.size();
+		boundaryPoints = new Point[len];
+		for (int i = 0; i < len; i++)
+			boundaryPoints[i] = (Point)arr.get(i);
+	}
+	
+	public void kill()
+	{
+		if (pixelCoordinates!=null)
+		{
+			for (int i = 0; i < pixelCoordinates.length; i++)
+				pixelCoordinates[i]= null;
+			pixelCoordinates = null;
+		}
+		channelValues_integrated = null;
+	}
+}
+

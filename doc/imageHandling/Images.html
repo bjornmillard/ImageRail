@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><!-- InstanceBegin template="/Templates/main.dwt.html" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>Images in ImageRail</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+<!-- InstanceEndEditable -->
+</head>
+
+<body>
+<table width="500" border="3" cellspacing="1" cellpadding="1">
+  
+
+
+
+     <td><div align="center">
+      <ol>
+
+        <li>
+          <div align="left"><a href="../GettingStarted.html">Getting_Started</a></div>
+        </li>
+        <li>
+          <div align="left"><a href="./Images.html">Images</a></div>
+        </li>
+        <li>
+          <div align="left"><a href="../imageProcessing/ImageProcessing.html">Image_Processing</a></div>
+        </li>
+        <li>
+          <div align="left"><a href="../dataViewing/DataViewing.html">Data_Viewing</a></div>
+        </li>
+                <li>
+          <div align="left"><a href="../data/DataExport.html">Data_Export</a></div>
+        </li>
+          <li>
+          <div align="left"><a href="../metaData/MetaData.html">MetaData</a></div>
+        </li>
+          <li>
+          <div align="left"><a href="../plugins/Plugins.html">Plug-ins</a></div>
+        </li>
+       <li>
+          <div align="left"><a href="../FAQs.html">FAQs</a></div>
+        </li>
+      </ol>
+  
+    <td colspan="4"><div align="center"><img src="../images/ImageRailSplashScreen.png" width="462" height="132" alt="ImageRail"></div></td>
+</table>
+
+
+<!-- InstanceBeginEditable name="EditRegion3" -->
+
+  
+
+<a></a>
+<p >
+
+<h1>Images</h1>
+<h2><u>Image formats</u></h2>
+Currently ImageRail only works with grayscale-TIFF images.  Before getting started you must
+make sure that all TIFF images for a given plate are put into its own directory folder.<br>
+
+
+<h2><u>Image file name conventions</u></h2>
+All the well, field, and various channel images for each plate will be mixed together in this directory.
+ImageRail will parse through and organize the images based on a simple file naming convention.  <br>
+Each image file name will have 4 key properties: <br>
+<ol>
+         <li>
+       		 Prefix string
+         </li>
+         <li>
+       		 Well location identifier
+        </li>
+         <li>
+       	 	Field number identifier
+        </li>
+         <li>
+       		 Wavelengh identifier
+        </li>
+</ol>
+
+So an example file name would look like:<br>
+<i>experiment1_A01_1_w488.tif</i>  <br>
+<br>
+In this example, the prefix is--> "experiment1", well location -->"A01", field number-->"1" , and wavelength--> "w488"<br>
+Note that all these identifiers are separated by an underscore ("_").  <br><br>
+Also note that an image belonging in well B01, must contain the 0 in the name, and not B1.<br><br>
+In the end, your image directory may look like the following:<br><br>
+<img src="../images/example_imageDir.png" alt="examlpe_ImageDir" width="209" height="345"><br><br>
+
+
+<h2><u>Viewing Images</u></h2>
+To display the loaded images, click or drag on the plate to select the wells of interest and then either select menu item <i>Display-->Display Images</i> or press <i>ctrl+d</i>.<br><br>
+An image browswer will open with an Image, 4 slider bars, and a mini-plate map.  <br>
+NOTE: Mousing over the image will display the pixel intensity on the right margin below the mini-plate.<br>
+<ol>
+	<li><i>Bottom-most Slider</i> - Changing fields and wells:<br>
+The default start image is the well most upper-left in the plate, with its first field and lowest wavelength.  The bottom most slider will first scroll through any other fields of the first well, then move on to the first field of the second well and so forth. The sliding order of the wells is always left to right, top to bottom.  The plate map will  indicate the current well being viewed and clicking on a valid well that has been opened will skip directly to the first field of that well. <br>
+	</li>
+	<li><i>Bottom-top Slider</i> - Changing Wavelengths:<br>
+Scrolls through the various channels acquired for this field.<br>
+	</li>
+	<li><i>Right (1st-left) Slider</i> - Min Value Scaling:<br>
+Changes the min value of the image that sets pixels lower than this value to be 0 (black).<br>
+	</li>
+	<li><i>Right (2nd-right) Slider</i> - Max Value Scaling:<br>
+Changes the max value of the image to make it brighter or dimmer.<br>
+	</li>
+</ol>
+
+<img src="../images/imageViewing.png" alt="imageViewing.png" width="731" height="626"><br><br>
+
+
+
+
+</p>
+  
+  <br>
+  <br>
+  <br>
+  <br>
+
+   	<center>
+	<i>ImageRail</i> - ©Copyright 2010 - Bjorn Millard
+    </center>
+
+<!-- InstanceEndEditable -->
+</body>
+<!-- InstanceEnd --></html>
