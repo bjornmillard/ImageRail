@@ -69,10 +69,10 @@ import main.MainGUI;
 import main.Plate;
 import main.PlateHoldingPanel;
 import main.Well;
-import segmentedObj.Cell;
-import segmentedObj.CellCoordinates;
 import tools.ColorRama;
 import tools.SVG_writer;
+import us.hms.systemsbiology.segmentedobject.Cell;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 import dialogs.AxisBoundsInputDialog;
 import dialogs.CaptureImage_Dialog;
 

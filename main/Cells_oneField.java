@@ -11,15 +11,15 @@ package main;
  *
  @author BLM*/
 import features.Feature;
-import hdf.Data2D;
-import hdf.HDFConnector;
-import hdf.SegmentationHDFConnector;
-import hdf.HDFConnector.HDFConnectorException;
 
 import java.util.ArrayList;
 
-import segmentedObj.Cell;
-import segmentedObj.CellCoordinates;
+import us.hms.systemsbiology.data.Data2D;
+import us.hms.systemsbiology.data.HDFConnector;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
+import us.hms.systemsbiology.data.HDFConnectorException;
+import us.hms.systemsbiology.segmentedobject.Cell;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 
 public class Cells_oneField
 {
@@ -270,7 +270,7 @@ public class Cells_oneField
 
 			}
 		}
-		catch (HDFConnector.HDFConnectorException e) {e.printStackTrace();}
+		catch (HDFConnectorException e) {e.printStackTrace();}
 	}
 
 	/** */

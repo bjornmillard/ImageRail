@@ -5,18 +5,17 @@
  */
 
 package processors;
-import features.Feature;
-import hdf.HDFConnector;
-import hdf.ProjectHDFConnector;
-import hdf.SegmentationHDFConnector;
-
 import java.io.File;
 
 import main.MainGUI;
 import main.Plate;
 import main.Well;
 import segmentors.DefaultSegmentor;
+import us.hms.systemsbiology.data.HDFConnectorException;
+import us.hms.systemsbiology.data.ProjectHDFConnector;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import dataSavers.DataSaver_CSV;
+import features.Feature;
 
 public class Processor_WellAverage extends Thread implements Processor
 {
@@ -60,7 +59,7 @@ public class Processor_WellAverage extends Thread implements Processor
 				con.writePlateSize(idsAndWells[0][i]-1, idsAndWells[1][i]);
 			}
 		}
-		catch (HDFConnector.HDFConnectorException e) {e.printStackTrace();}
+		catch (HDFConnectorException e) {e.printStackTrace();}
 		
 		
 		

@@ -10,8 +10,8 @@ package segmentors;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import segmentedObj.Point;
 import tempObjects.Cell_RAM;
+import us.hms.systemsbiology.segmentedobject.Point;
 
 public class Temp_Cytoplasm
 {

@@ -6,9 +6,6 @@
 
 package processors;
 
-import hdf.Data2D;
-import hdf.ProjectHDFConnector;
-import hdf.SegmentationHDFConnector;
 
 import java.awt.Color;
 import java.io.File;
@@ -18,9 +15,12 @@ import main.Field;
 import main.MainGUI;
 import main.Plate;
 import main.Well;
-import segmentedObj.CellCoordinates;
-import segmentedObj.Point;
 import segmentors.CellSegmentor;
+import us.hms.systemsbiology.data.Data2D;
+import us.hms.systemsbiology.data.ProjectHDFConnector;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import us.hms.systemsbiology.segmentedobject.Point;
 import features.Feature;
 
 public class Processor_SingleCells extends Thread implements Processor
@@ -335,7 +335,7 @@ public class Processor_SingleCells extends Thread implements Processor
 							if (whatToSave.equalsIgnoreCase("BoundingBox"))
 							{
 								//Only save the cell BoundingBoxes to file
-								ArrayList<CellCoordinates> bbox = segmentedObj.CellCoordinates.getBoundingBoxOfCoordinates(cellCoords);
+								ArrayList<CellCoordinates> bbox = us.hms.systemsbiology.segmentedobject.CellCoordinates.getBoundingBoxOfCoordinates(cellCoords);
 								sCon.writeCellBoundingBoxes( plateIndex, wellIndex, f, bbox);
 								
 								killCellCoordinates(bbox);
@@ -344,7 +344,7 @@ public class Processor_SingleCells extends Thread implements Processor
 							else if (whatToSave.equalsIgnoreCase("Centroid"))
 							{
 								//Only save the cell Centroids to file
-								ArrayList<CellCoordinates> centroids = segmentedObj.CellCoordinates.getCentroidOfCoordinates(cellCoords);
+								ArrayList<CellCoordinates> centroids = us.hms.systemsbiology.segmentedobject.CellCoordinates.getCentroidOfCoordinates(cellCoords);
 								sCon.writeCellCentroids(plateIndex, wellIndex, f, centroids);
 								
 								killCellCoordinates(centroids);
@@ -353,7 +353,7 @@ public class Processor_SingleCells extends Thread implements Processor
 							else if (whatToSave.equalsIgnoreCase("Outlines"))
 							{
 								//Only save the cell outlines to file
-								ArrayList<CellCoordinates> outlines = segmentedObj.CellCoordinates.getSingleCompartmentCoords(cellCoords, "Outline");
+								ArrayList<CellCoordinates> outlines = us.hms.systemsbiology.segmentedobject.CellCoordinates.getSingleCompartmentCoords(cellCoords, "Outline");
 								sCon.writeWholeCells( plateIndex, wellIndex, f, outlines);
 								
 								killCellCoordinates(outlines);

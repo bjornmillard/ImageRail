@@ -6,8 +6,8 @@
 
 package features;
 
-import segmentedObj.CellCoordinates;
-import segmentedObj.Point;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import us.hms.systemsbiology.segmentedobject.Point;
 
 public class Mean_Cytoplasm extends Feature
 {

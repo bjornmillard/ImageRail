@@ -10,9 +10,9 @@ import features.Feature;
 import java.util.ArrayList;
 import java.util.Iterator;
 import main.MainGUI;
-import segmentedObj.Point;
 import segmentors.Temp_Pixel;
 import tempObjects.Cell_RAM;
+import us.hms.systemsbiology.segmentedobject.Point;
 
 public class Temp_Cell
 {

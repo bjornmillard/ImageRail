@@ -27,8 +27,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import main.Plate;
 import main.Well;
-import xml_metaData.Description;
-import xml_metaData.MetaDataConnector;
+import us.hms.systemsbiology.metadata.Description;
+import us.hms.systemsbiology.metadata.MetaDataConnector;
 
 
 

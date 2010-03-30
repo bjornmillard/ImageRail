@@ -9,7 +9,8 @@ package tempObjects;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import segmentedObj.Point;
+
+import us.hms.systemsbiology.segmentedobject.Point;
 
 public class Cytoplasm
 {

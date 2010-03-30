@@ -1,7 +1,5 @@
 package filters;
 
-import hdf.SegmentationHDFConnector;
-import hdf.HDFConnector.HDFConnectorException;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -30,8 +28,10 @@ import main.MainGUI;
 import main.Plate;
 import main.PlateHoldingPanel;
 import main.Well;
-import segmentedObj.Cell;
-import segmentedObj.CellCoordinates;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
+import us.hms.systemsbiology.data.HDFConnectorException;
+import us.hms.systemsbiology.segmentedobject.Cell;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 
 public class DotFilterQueue extends JFrame implements Runnable {
 

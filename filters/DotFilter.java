@@ -1,9 +1,5 @@
 package filters;
 
-import hdf.Data2D;
-import hdf.HDFConnector;
-import hdf.SegmentationHDFConnector;
-import hdf.HDFConnector.HDFConnectorException;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -20,8 +16,12 @@ import main.Plate;
 import main.PlateHoldingPanel;
 import main.Well;
 import plots.DotPlot;
-import segmentedObj.Cell;
-import segmentedObj.CellCoordinates;
+import us.hms.systemsbiology.data.Data2D;
+import us.hms.systemsbiology.data.HDFConnector;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
+import us.hms.systemsbiology.data.HDFConnectorException;
+import us.hms.systemsbiology.segmentedobject.Cell;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 import features.Feature;
 
 public class DotFilter {
@@ -458,7 +458,7 @@ public class DotFilter {
 				fNames[i] = new StringBuffer(features[i].toString());
 			sCon.writeFeatureNames(plateIndex, wellIndex, fieldIndex, fNames);
 
-		} catch (HDFConnector.HDFConnectorException e) {
+		} catch (HDFConnectorException e) {
 			e.printStackTrace();
 		}
 	}

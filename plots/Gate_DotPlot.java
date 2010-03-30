@@ -11,8 +11,8 @@ import java.awt.Color;
 import java.awt.Polygon;
 import java.util.ArrayList;
 
-import segmentedObj.Cell;
 import tempObjects.Cell_RAM;
+import us.hms.systemsbiology.segmentedobject.Cell;
 
 public class Gate_DotPlot
 {

@@ -7,9 +7,6 @@
 
 package main;
 
-import hdf.HDFConnector;
-import hdf.ProjectHDFConnector;
-import hdf.SegmentationHDFConnector;
 import imageViewers.FieldViewer;
 import imageViewers.FieldViewer_Frame;
 
@@ -66,8 +63,11 @@ import plots.HistogramPlot;
 import plots.LinePlot;
 import processors.Processor_SingleCells;
 import processors.Processor_WellAverage;
-import segmentedObj.Cell;
 import segmentors.DefaultSegmentor;
+import us.hms.systemsbiology.data.HDFConnectorException;
+import us.hms.systemsbiology.data.ProjectHDFConnector;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
+import us.hms.systemsbiology.segmentedobject.Cell;
 import analysisModules.AnalysisModuleFrame;
 import analysisModules.Grid_LinePlot;
 import analysisModules.Line_DoseResponseCalculator;
@@ -2839,7 +2839,7 @@ public class MainGUI extends JFrame {
 								sCon.writeWellStdDevValues(plates[i]
 										.getPlateIndex(), well.getWellIndex(),
 										well.Feature_Stdev);
-						} catch (HDFConnector.HDFConnectorException e) {
+						} catch (HDFConnectorException e) {
 							System.out
 									.println("Error Writing Well Means/STDEV for new HDF5 files **** ");
 						}

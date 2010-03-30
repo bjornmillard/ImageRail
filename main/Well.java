@@ -7,7 +7,6 @@
 package main;
 
 import features.Feature;
-import hdf.SegmentationHDFConnector;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -23,10 +22,11 @@ import midasGUI.Measurement;
 import midasGUI.Treatment;
 import plots.DotSelectionListener;
 import plots.Gate_DotPlot;
-import segmentedObj.Cell;
-import segmentedObj.CellCoordinates;
-import xml_metaData.Description;
-import xml_metaData.MetaDataConnector;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
+import us.hms.systemsbiology.metadata.Description;
+import us.hms.systemsbiology.metadata.MetaDataConnector;
+import us.hms.systemsbiology.segmentedobject.Cell;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 
 
 public class Well

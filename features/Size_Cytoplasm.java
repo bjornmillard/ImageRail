@@ -6,7 +6,7 @@
 
 package features;
 
-import segmentedObj.CellCoordinates;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 
 public class Size_Cytoplasm extends Feature
 {

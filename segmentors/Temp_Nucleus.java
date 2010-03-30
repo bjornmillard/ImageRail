@@ -14,8 +14,8 @@ package segmentors;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import segmentedObj.Point;
 import segmentors.Temp_Pixel;
+import us.hms.systemsbiology.segmentedobject.Point;
 
 public class Temp_Nucleus
 {

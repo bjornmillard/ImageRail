@@ -8,14 +8,14 @@ package main;
 
 /** Holder for images and objects pertinent to a single field aquired in a well
  * @author BLM*/
-import hdf.SegmentationHDFConnector;
-import idx2coordinates.IdxConverter;
 
 import java.awt.Shape;
 import java.io.File;
 import java.util.ArrayList;
 
-import segmentedObj.Cell;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
+import us.hms.systemsbiology.idx2coordinates.IdxConverter;
+import us.hms.systemsbiology.segmentedobject.Cell;
 
 public class Field {
 	private Well parentWell;
@@ -228,7 +228,7 @@ public class Field {
 		int numC = cells.size();
 		for (int i = 0; i < numC; i++)
 		{
-			segmentedObj.Point p = cells.get(i).getCoordinates()
+			us.hms.systemsbiology.segmentedobject.Point p = cells.get(i).getCoordinates()
 					.getComCoordinates(0)[0];
 			if(roi.contains(p.x,p.y))
 				counter++;

@@ -43,8 +43,8 @@ import main.MainGUI;
 import main.Plate;
 import main.Well;
 import plots.DotSelectionListener;
-import segmentedObj.Cell;
-import segmentedObj.CellCoordinates;
+import us.hms.systemsbiology.segmentedobject.Cell;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 
 import com.sun.media.jai.widget.DisplayJAI;
 
@@ -282,7 +282,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					// (1 point) or a Bounding box (2 points)
 					String comName = one.getComNames()[0];
 					// System.out.println("comName: "+comName);
-					segmentedObj.Point[] pts = one.getComCoordinates(0);
+					us.hms.systemsbiology.segmentedobject.Point[] pts = one.getComCoordinates(0);
 					int ptsLen = pts.length;
 
 					if (comName.trim().equalsIgnoreCase("Centroid")) // Draw a
@@ -320,7 +320,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 						// System.out.println("pts: "+pts.length);
 						for (int z = 0; z < ptsLen; z++) {
 							if (z % factor == 0) {
-								segmentedObj.Point p = pts[z];
+								us.hms.systemsbiology.segmentedobject.Point p = pts[z];
 								g2.drawLine((int) (scalingFactor * p.x),
 										(int) (scalingFactor * p.y),
 										(int) (scalingFactor * p.x),
@@ -331,13 +331,13 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				}
 				// else //Draw all points - used for outlines and the such
 				// {
-				// segmentedObj.Point[] pts = one.getComCoordinates_AllUnique();
+				// us.hms.systemsbiology.segmentedobject.Point[] pts = one.getComCoordinates_AllUnique();
 				// int ptsLen = pts.length;
 				// for (int z = 0; z < ptsLen; z++)
 				// {
 				// if (z%factor==0)
 				// {
-				// segmentedObj.Point p = pts[z];
+				// us.hms.systemsbiology.segmentedobject.Point p = pts[z];
 				// g2.drawLine((int)(scalingFactor*p.x),
 				// (int)(scalingFactor*p.y),
 				// (int)(scalingFactor*p.x),(int)(scalingFactor*p.y));
@@ -408,7 +408,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		// {
 		// if (j%factor==0)
 		// {
-		// segmentedObj.Point p =
+		// us.hms.systemsbiology.segmentedobject.Point p =
 		// TheCells[i].getNucleus().getBoundaryPoints()[j];
 		// g2.drawLine((int)(scalingFactor*p.x), (int)(scalingFactor*p.y),
 		// (int)(scalingFactor*p.x),(int)(scalingFactor*p.y));
@@ -1005,7 +1005,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 							CellCoordinates coords = cell.getCoordinates();
 							if (coords != null)
 								if (coords.getComSize() > 0) {
-									segmentedObj.Point[] pts = coords
+									us.hms.systemsbiology.segmentedobject.Point[] pts = coords
 											.getComCoordinates(0);
 									Rectangle bounds = getScaledSelectionBounds(scalingFactor);
 									if (bounds != null && pts != null
@@ -1069,7 +1069,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 						Cell cell = cells.get(c);
 						CellCoordinates coords = cell.getCoordinates();
 						if (coords.getComSize() > 0) {
-							segmentedObj.Point[] pts = coords
+							us.hms.systemsbiology.segmentedobject.Point[] pts = coords
 									.getComCoordinates(0);
 							if (tempOval != null
 									&& tempOval.contains(
@@ -1124,7 +1124,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 							Cell cell = cells.get(c);
 							CellCoordinates coords = cell.getCoordinates();
 							if (coords.getComSize() > 0) {
-								segmentedObj.Point[] pts = coords
+								us.hms.systemsbiology.segmentedobject.Point[] pts = coords
 										.getComCoordinates(0);
 								if (tempOval != null
 										&& tempOval
@@ -1181,7 +1181,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 							Cell cell = cells.get(c);
 							CellCoordinates coords = cell.getCoordinates();
 							if (coords.getComSize() > 0) {
-								segmentedObj.Point[] pts = coords
+								us.hms.systemsbiology.segmentedobject.Point[] pts = coords
 										.getComCoordinates(0);
 								bounds = getScaledSelectionBounds(scalingFactor);
 								if (bounds != null && pts != null

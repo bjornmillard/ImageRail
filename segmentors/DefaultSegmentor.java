@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import main.ParameterSet;
-import segmentedObj.CellCompartment;
-import segmentedObj.CellCoordinates;
-import segmentedObj.Point;
 import tools.LinearKernals;
 import tools.SpatialFilter;
+import us.hms.systemsbiology.segmentedobject.CellCompartment;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import us.hms.systemsbiology.segmentedobject.Point;
 
 public class DefaultSegmentor implements CellSegmentor {
 	private Temp_Pixel[][] pixels;

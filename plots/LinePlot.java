@@ -29,8 +29,8 @@ import main.MainGUI;
 import main.Well;
 import plots3D.ImageRail3D_Frame;
 import tools.SVG_writer;
-import xml_metaData.Description;
-import xml_metaData.MetaDataConnector;
+import us.hms.systemsbiology.metadata.Description;
+import us.hms.systemsbiology.metadata.MetaDataConnector;
 
 /**
  * The main Line Plot used to plot the mean values of the wells of the plate

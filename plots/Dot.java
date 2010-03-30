@@ -10,7 +10,7 @@ package plots;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-import segmentedObj.Cell;
+import us.hms.systemsbiology.segmentedobject.Cell;
 
 public class Dot
 {

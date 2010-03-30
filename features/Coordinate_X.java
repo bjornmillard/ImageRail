@@ -8,7 +8,7 @@
 package features;
 
 import features.Feature;
-import segmentedObj.CellCoordinates;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 
 public class Coordinate_X extends Feature
 {

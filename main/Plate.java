@@ -6,8 +6,6 @@
 
 package main;
 
-import hdf.HDFConnector;
-import hdf.SegmentationHDFConnector;
 import imPanels.ImageCapturePanel;
 import imPanels.JPanel_highlightBox;
 import imageViewers.FieldViewer_Frame;
@@ -55,8 +53,10 @@ import plots.Legend;
 import plots.LinePlot;
 import tools.PanelDropTargetListener;
 import tools.SVG_writer;
-import xml_metaData.Description;
-import xml_metaData.MetaDataConnector;
+import us.hms.systemsbiology.data.HDFConnectorException;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
+import us.hms.systemsbiology.metadata.Description;
+import us.hms.systemsbiology.metadata.MetaDataConnector;
 import dialogs.CaptureImage_Dialog;
 import features.Feature;
 
@@ -1305,7 +1305,7 @@ public class Plate extends JPanel_highlightBox implements ImageCapturePanel
 				}
 			}
 		}
-		catch (HDFConnector.HDFConnectorException e) {System.out.println("ERROR: reading HDF well mean/stdev file");}
+		catch (HDFConnectorException e) {System.out.println("ERROR: reading HDF well mean/stdev file");}
 		repaint();
 	}
 	

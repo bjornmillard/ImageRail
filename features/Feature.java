@@ -8,7 +8,7 @@ package features;
 
 import java.util.ArrayList;
 import main.MainGUI;
-import segmentedObj.CellCoordinates;
+import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 
 public abstract class Feature
 {

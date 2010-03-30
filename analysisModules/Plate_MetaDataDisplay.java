@@ -20,8 +20,8 @@ import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 import main.MainGUI;
 import main.Plate;
-import xml_metaData.Description;
-import xml_metaData.MetaDataConnector;
+import us.hms.systemsbiology.metadata.Description;
+import us.hms.systemsbiology.metadata.MetaDataConnector;
 
 public class Plate_MetaDataDisplay extends JPanel
 {
