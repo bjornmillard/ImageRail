@@ -2105,64 +2105,71 @@ public class MainGUI extends JFrame {
 			
 			//
 			//Checking if loaded project features match up 
-			String algoName = "Data";
-			SegmentationHDFConnector sCon = new SegmentationHDFConnector(main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath(), algoName);
+			SegmentationHDFConnector sCon = new SegmentationHDFConnector(
+					main.MainGUI.getGUI().getProjectDirectory()
+							.getAbsolutePath());
 			StringBuffer[] fNames = new StringBuffer[TheFeatures.size()];
 			for (int j = 0; j < TheFeatures.size(); j++) {
 				fNames[j] = new StringBuffer(((Feature)TheFeatures.get(j)).toString());
 			}
 			
-			Plate[] ps= TheMainGUI.getPlateHoldingPanel().getThePlates();
-			boolean featureNameProblems = false;
-			for (int i = 0; i < numplates; i++)
-			{
-				Plate plate = ps[i];
-				int pInd = plate.getPlateIndex();
-				Well[][] wells = plate.getTheWells();
-				int numR = plate.getNumRows();
-				int numC = plate.getNumColumns();
-				for (int j = 0; j < numR; j++) {
-					for (int j2 = 0; j2 < numC; j2++) {
-						Well well = wells[j][j2];
-						int numHDF = well.getHDFcount();
-						if (numHDF>0)
-						{
-							Field[] fields = well.getFields();
-							for (int k = 0; k < fields.length; k++) {
-								Field field = fields[k];
-								StringBuffer[] featureNames = sCon.readFeatureNames(pInd, well.getWellIndex(), field.getIndexInWell());
-								if (featureNames!=null)
-								{
-									if(featureNames.length!=fNames.length)
-										featureNameProblems = true;
-									else
-										for (int l = 0; l < featureNames.length; l++) {
-											StringBuffer stringBuffer = featureNames[l];
-											if(!fNames[l].toString().trim().equalsIgnoreCase(stringBuffer.toString().trim()))
-											{
-												System.out.println("Feature Mismatch: "+fNames[l] +" != "+featureNames[l]);
-												featureNameProblems = true;
-											}
-										}
-								}
-							}
-						}
 
-					}
-				}
-
-			}
+			// Plate[] ps= TheMainGUI.getPlateHoldingPanel().getThePlates();
+			// boolean featureNameProblems = false;
+			// for (int i = 0; i < numplates; i++)
+			// {
+			// Plate plate = ps[i];
+			// int pInd = plate.getPlateIndex();
+			// Well[][] wells = plate.getTheWells();
+			// int numR = plate.getNumRows();
+			// int numC = plate.getNumColumns();
+			// for (int j = 0; j < numR; j++) {
+			// for (int j2 = 0; j2 < numC; j2++) {
+			// Well well = wells[j][j2];
+			// int numHDF = well.getHDFcount();
+			// if (numHDF>0)
+			// {
+			// Field[] fields = well.getFields();
+			// for (int k = 0; k < fields.length; k++) {
+			// Field field = fields[k];
+			// StringBuffer[] featureNames = sCon.readFeatureNames(pInd,
+			// well.getWellIndex(), field.getIndexInWell());
+			// if (featureNames!=null)
+			// {
+			// if(featureNames.length!=fNames.length)
+			// featureNameProblems = true;
+			// else
+			// for (int l = 0; l < featureNames.length; l++) {
+			// StringBuffer stringBuffer = featureNames[l];
+			// if(!fNames[l].toString().trim().equalsIgnoreCase(stringBuffer.toString().trim()))
+			// {
+			// System.out.println("Feature Mismatch: "+fNames[l]
+			// +" != "+featureNames[l]);
+			// featureNameProblems = true;
+			// }
+			// }
+			// }
+			// }
+			// }
 			//
+			// }
+			// }
 			//
-			if(featureNameProblems)
-			{
-				System.out.println("******SEVERE PROBLEM:  Feature names loaded dont match those loaded in this version of ImageRail********");
-				JOptionPane.showMessageDialog(null,"Feature Missmatch Error! \n\n The features used to create this project are not \n" +
-						"loaded up exactly in your current version of ImageRail. \n\n" +
-						"Please make sure you are using the same Feature Plug-ins and try again \n" +
-						"...or reprocess the images with your current set of Feature Plug-ins\n" +
-						"to create new, self-consistant HDF5 data files.","Project Loading Error",JOptionPane.ERROR_MESSAGE);
-			}
+			// }
+			// //
+			// //
+			// if(featureNameProblems)
+			// {
+			// System.out.println("******SEVERE PROBLEM:  Feature names loaded dont match those loaded in this version of ImageRail********");
+			// JOptionPane.showMessageDialog(null,"Feature Missmatch Error! \n\n The features used to create this project are not \n"
+			// +
+			// "loaded up exactly in your current version of ImageRail. \n\n" +
+			// "Please make sure you are using the same Feature Plug-ins and try again \n"
+			// +
+			// "...or reprocess the images with your current set of Feature Plug-ins\n"
+			// +
+			// "to create new, self-consistant HDF5 data files.","Project Loading Error",JOptionPane.ERROR_MESSAGE);
+			// }
 			
 
 			TheMainPanel.setLeftComponent(TheInputPanel_Container);
@@ -2798,8 +2805,7 @@ public class MainGUI extends JFrame {
 	 */
 	private void resaveCells() {
 		SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-				main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath(),
-				"Data");
+				main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
 
 		Plate[] plates = getPlateHoldingPanel().getThePlates();
 		int numP = plates.length;

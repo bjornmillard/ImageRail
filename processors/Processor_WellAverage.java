@@ -47,10 +47,9 @@ public class Processor_WellAverage extends Thread implements Processor
 		try
 		{
 			String projPath = main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
-			String algoName = "Data";
 			ProjectHDFConnector con = new ProjectHDFConnector(projPath);
 			con.createProject();
-			sCon = new SegmentationHDFConnector(projPath, algoName);
+			sCon = new SegmentationHDFConnector(projPath);
 			//creating a HDF plate for each plate needed, since the wells could come from different plates
 			int[][] idsAndWells = Processor_SingleCells.getAllUniquePlateIDsAndNumWells(WellsToProcess);
 			for (int i = 0; i < idsAndWells[0].length; i++)

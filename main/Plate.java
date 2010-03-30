@@ -1288,7 +1288,7 @@ public class Plate extends JPanel_highlightBox implements ImageCapturePanel
 			return;
 		
 		int plateIndex = getID()-1;
-		SegmentationHDFConnector sCon = new SegmentationHDFConnector(projPath, "Data");
+		SegmentationHDFConnector sCon = new SegmentationHDFConnector(projPath);
 		try
 		{
 			for (int i = 0; i < NumRows; i++)
@@ -1795,8 +1795,8 @@ public class Plate extends JPanel_highlightBox implements ImageCapturePanel
 		{
 			// Project name
 			String projectPath =  main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
-			String algorithmNameUsed = "Data";
-			SegmentationHDFConnector sCon = new SegmentationHDFConnector(projectPath, algorithmNameUsed);
+			SegmentationHDFConnector sCon = new SegmentationHDFConnector(
+					projectPath);
 			if(wells!=null && wells.size()>0)
 				for (int i = 0; i < wells.size(); i++)
 					wells.get(i).loadCells(sCon, loadCoords, loadDataVals);

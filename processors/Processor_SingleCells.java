@@ -307,8 +307,9 @@ public class Processor_SingleCells extends Thread implements Processor
 						// -------------- Store cells in HDF5 -------------------------------------------------------
 						try
 						{
-							String algoName = "Data";
-							sCon = new SegmentationHDFConnector( main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath(), algoName);
+							sCon = new SegmentationHDFConnector(main.MainGUI
+									.getGUI().getProjectDirectory()
+									.getAbsolutePath());
 							// Parameters to write: plateIdx, wellIdx, fieldIdx, cellList
 							con.writeFieldHeight( plateIndex, wellIndex, f, Raster.length);
 							sCon.createField(plateIndex, wellIndex, f);

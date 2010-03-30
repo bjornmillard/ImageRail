@@ -28,8 +28,8 @@ import main.MainGUI;
 import main.Plate;
 import main.PlateHoldingPanel;
 import main.Well;
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.data.HDFConnectorException;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.segmentedobject.Cell;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 
@@ -307,8 +307,7 @@ public class DotFilterQueue extends JFrame implements Runnable {
 
 		// for each well:
 		SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-				main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath(),
-				"Data");
+				main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
 		for (int i = 0; i < numPlates; i++) {
 			Plate plate = plates[i];
 			int numC = plate.getNumColumns();

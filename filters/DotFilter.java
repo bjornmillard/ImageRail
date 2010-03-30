@@ -17,9 +17,8 @@ import main.PlateHoldingPanel;
 import main.Well;
 import plots.DotPlot;
 import us.hms.systemsbiology.data.Data2D;
-import us.hms.systemsbiology.data.HDFConnector;
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.data.HDFConnectorException;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.segmentedobject.Cell;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 import features.Feature;
@@ -334,8 +333,7 @@ public class DotFilter {
 		Plate[] plates = platePanel.getThePlates();
 		// for each well:
 		SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-				main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath(),
-				"Data");
+				main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
 		for (int i = 0; i < numPlates; i++) {
 			Plate plate = plates[i];
 			int numC = plate.getNumColumns();
