@@ -7,8 +7,6 @@
 package midasGUI;
 
 
-import javax.swing.*;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -22,9 +20,21 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
 import main.Plate;
 import main.Well;
 import us.hms.systemsbiology.metadata.Description;
@@ -38,7 +48,6 @@ public class MidasInputPanel extends JPanel
     private JTextField[] textField;
 	private JLabel wellTitleLabel;
     private JOptionPane optionPane;
-	//    private String btnString1 = "Enter";
 	
 	private Plate thePlate;
 	private ArrayList TreatmentsToAdd;
@@ -115,6 +124,7 @@ public class MidasInputPanel extends JPanel
 					{
 						//getting the text
 						String string = textField[1].getText();
+
 						for (int i =0; i < theWells.length; i++)
 						{
 							//date
@@ -190,7 +200,16 @@ public class MidasInputPanel extends JPanel
 					public void changedUpdate(DocumentEvent e)
 					{
 						//getting the text
-						String string = textField[3].getText();
+				String string = textField[3].getText().trim();
+
+				String time = string;
+				String time_units = "";
+
+				int ind = string.indexOf(" ");
+				if (ind > 0) {
+					time = string.substring(0, ind);
+					time_units = string.substring(ind + 1, string.length());
+				}
 						
 						for (int i =0; i < theWells.length; i++)
 						{
@@ -199,7 +218,8 @@ public class MidasInputPanel extends JPanel
 							{
 								theWells[i].measurementTime = string;
 								
-								TheMetaDataWriter.writeTimePoint(theWells[i].getWellIndex(), string);
+						TheMetaDataWriter.writeMeasurementTime(theWells[i]
+								.getWellIndex(), time, time_units);
 								TheMetaDataWriter.writeMetaDataXML();
 								thePlate.updateMetaDataLegend();
 							}
@@ -210,7 +230,15 @@ public class MidasInputPanel extends JPanel
 					public void removeUpdate(DocumentEvent e)
 					{
 						//getting the text
-						String string = textField[3].getText();
+				String string = textField[3].getText().trim();
+				String time = string;
+				String time_units = "";
+
+				int ind = string.indexOf(" ");
+				if (ind > 0) {
+					time = string.substring(0, ind);
+					time_units = string.substring(ind + 1, string.length());
+				}
 						
 						for (int i =0; i < theWells.length; i++)
 						{
@@ -219,7 +247,8 @@ public class MidasInputPanel extends JPanel
 							{
 								theWells[i].measurementTime = string;
 								
-								TheMetaDataWriter.writeTimePoint(theWells[i].getWellIndex(), string);
+						TheMetaDataWriter.writeMeasurementTime(theWells[i]
+								.getWellIndex(), time, time_units);
 								TheMetaDataWriter.writeMetaDataXML();
 								thePlate.updateMetaDataLegend();
 							}
@@ -229,7 +258,15 @@ public class MidasInputPanel extends JPanel
 					public void insertUpdate(DocumentEvent e)
 					{
 						//getting the text
-						String string = textField[3].getText();
+				String string = textField[3].getText().trim();
+				String time = string;
+				String time_units = "";
+
+				int ind = string.indexOf(" ");
+				if (ind > 0) {
+					time = string.substring(0, ind);
+					time_units = string.substring(ind + 1, string.length());
+				}
 						
 						for (int i =0; i < theWells.length; i++)
 						{
@@ -238,7 +275,8 @@ public class MidasInputPanel extends JPanel
 							{
 								theWells[i].measurementTime = string;
 								
-								TheMetaDataWriter.writeTimePoint(theWells[i].getWellIndex(), string);
+						TheMetaDataWriter.writeMeasurementTime(theWells[i]
+								.getWellIndex(), time, time_units);
 								TheMetaDataWriter.writeMetaDataXML();
 								thePlate.updateMetaDataLegend();
 							}
@@ -547,7 +585,6 @@ public class MidasInputPanel extends JPanel
 				textField[2].setText("");
 			
 			//Treatments
-//			same = true;
 			Description[] arr0  = TheMetaDataWriter.readTreatments(theWells[0].getWellIndex());
 			int len = arr0.length;
 			treatmentComboBox.removeAllItems();
@@ -577,29 +614,9 @@ public class MidasInputPanel extends JPanel
 					treatmentComboBox.addItem(arr0[i]);
 			}
 			
-//			for (int i=1; i < numWells; i++)
-//			{
-//				Description[] arr_i  = TheMetaDataWriter.readTreatments(thePlate.getPlateIndex(), theWells[i].getWellIndex());
-//				if (arr0==null||(arr0.length!=arr_i.length)||!containSameTreatments(arr0, arr_i))
-//				{
-//					same = false;
-//					break;
-//				}
-//			}
-//			if (same)
-//			{
-//			int len = arr0.length;
-//			treatmentComboBox.removeAllItems();
-//			for (int i=0; i < len; i++)
-//			{
-//				treatmentComboBox.addItem(arr0[i]);
-//			}
-//			}
-//			else
-//				treatmentComboBox.removeAllItems();
+
 			
 			//Measurements
-//			same = true;
 			arr0  = TheMetaDataWriter.readMeasurements( theWells[0].getWellIndex());
 			
 			len = arr0.length;
@@ -629,28 +646,12 @@ public class MidasInputPanel extends JPanel
 				if(containsIt)
 					measurementComboBox.addItem(arr0[i]);
 			}
-//			for (int i=1; i < numWells; i++)
-//			{
-//				Description[] arr_i  = TheMetaDataWriter.readMeasurements(thePlate.getPlateIndex(), theWells[i].getWellIndex());
-//				if (arr0==null||(arr0.length!=arr_i.length)||!containSameMeasurements(arr0, arr_i))
-//				{
-//					same = false;
-//					break;
-//				}
-//			}
-//			if (same)
-//			{
-//				int len = arr0.length;
-//				measurementComboBox.removeAllItems();
-//				for (int i=0; i < len; i++)
-//					measurementComboBox.addItem(arr0[i]);
-//			}
-//			else
-//				measurementComboBox.removeAllItems();
+
 			
 			//Measurement Time Point:
 			same = true;
 			val0 = TheMetaDataWriter.readTimePoint(theWells[0].getWellIndex());
+			System.out.println(val0);
 			for (int i=1; i < numWells; i++)
 			{
 				Description val_i = TheMetaDataWriter.readTimePoint( theWells[i].getWellIndex());
@@ -659,17 +660,17 @@ public class MidasInputPanel extends JPanel
 					same = false;
 					break;
 				}
-				if (val0!=null&&!val0.getValue().equalsIgnoreCase(val_i.getValue()))
+				if (val0 != null && !val0.isSame(val_i))
 				{
 					same = false;
 					break;
 				}
 			}
 			if (same&&val0!=null)
-				textField[3].setText(val0.getValue());
+				textField[3].setText(val0.getTimeValue() + " "
+						+ val0.getTimeUnits());
 			else
 				textField[3].setText("");
-			
 			
 		}
 		
@@ -858,7 +859,7 @@ public class MidasInputPanel extends JPanel
 		{
 			TreatmentToEdit = null;
 			int width = 330;
-			int height = 240;
+			int height = 350;
 			setTitle("Add Treatment:");
 			setSize(width,height);
 			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -875,7 +876,7 @@ public class MidasInputPanel extends JPanel
 			CurrentTreatments.setEditable(false);
 			
 			
-			textField = new JTextField[3];
+			textField = new JTextField[5];
 			for (int i=0; i < textField.length; i ++)
 				textField[i] = new JTextField(10);
 			
@@ -884,11 +885,18 @@ public class MidasInputPanel extends JPanel
 			textField[0].setEditable(true);
 			textField[1].setEditable(true);
 			textField[2].setEditable(true);
+			textField[3].setEditable(true);
+			textField[4].setEditable(true);
 			textField[0].setEnabled(true);
 			textField[1].setEnabled(true);
 			textField[2].setEditable(true);
+			textField[3].setEditable(true);
+			textField[4].setEditable(true);
+
 			
-			Object[] array = {"Name:", textField[0], "Value",textField[1], "Units", textField[2]};
+			Object[] array = { "Name:", textField[0], "Value", textField[1],
+					"Units", textField[2], "Time", textField[3], "Time Units",
+					textField[4] };
 			//Create an array specifying the number of dialog buttons
 			//and their text.
 			Object[] options = {btnString1, btnString2};
@@ -928,7 +936,7 @@ public class MidasInputPanel extends JPanel
 		{
 			TreatmentToEdit = treatmentToEdit;
 			int width = 330;
-			int height = 240;
+			int height = 350;
 			setTitle("Edit Treatment:");
 			setSize(width,height);
 			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -945,7 +953,7 @@ public class MidasInputPanel extends JPanel
 			CurrentTreatments.setEditable(false);
 			
 			
-			textField = new JTextField[3];
+			textField = new JTextField[5];
 			for (int i=0; i < textField.length; i ++)
 				textField[i] = new JTextField(10);
 			
@@ -954,15 +962,23 @@ public class MidasInputPanel extends JPanel
 			textField[0].setEditable(true);
 			textField[1].setEditable(true);
 			textField[2].setEditable(true);
+			textField[3].setEditable(true);
+			textField[4].setEditable(true);
+
 			textField[0].setEnabled(true);
 			textField[1].setEnabled(true);
-			textField[2].setEditable(true);
+			textField[2].setEnabled(true);
+			textField[3].setEnabled(true);
+			textField[4].setEnabled(true);
 			
 			textField[0].setText(treatmentToEdit.getName());
 			textField[1].setText(treatmentToEdit.getValue());
 			textField[2].setText(treatmentToEdit.getUnits());
+			textField[3].setText(treatmentToEdit.getTimeValue());
+			textField[4].setText(treatmentToEdit.getTimeUnits());
 			
-			Object[] array = {"Name:", textField[0], "Value",textField[1], "Units", textField[2]};
+			Object[] array = {"Name:", textField[0], "Value",textField[1], "Units", textField[2], "Time", textField[3], "Time Units",
+					textField[4] };
 			
 			//Create an array specifying the number of dialog buttons
 			//and their text.
@@ -1031,22 +1047,22 @@ public class MidasInputPanel extends JPanel
 				{
 					Description theTreatment = null;
 					
-					String name = textField[0].getText();
-					String val = textField[1].getText();
-					String units = textField[2].getText();
+					String name = textField[0].getText().trim();
+					String val = textField[1].getText().trim();
+					String units = textField[2].getText().trim();
+					String timeValue = textField[3].getText().trim();
+					String timeUnits = textField[4].getText().trim();
 					
-					
-					theTreatment = new Description("treatment" ,name, ""+val, units);
+					theTreatment = new Description("treatment" ,name, ""+val, units, timeValue, timeUnits);
 					
 					treatmentComboBox.addItem(theTreatment);
 					treatmentComboBox.repaint();
 					
 					
-					//setting it automatically now!
+					// setting it automatically now
 					for (int i =0; i < theWells.length; i++)
 					{
 						//treatments
-//						if (checkBoxes[2].isSelected())
 						{
 							int numItems = treatmentComboBox.getItemCount();
 							if (numItems>0)
@@ -1056,7 +1072,13 @@ public class MidasInputPanel extends JPanel
 								{
 									Description treat = (Description)treatmentComboBox.getItemAt(n);
 									//XML
-									TheMetaDataWriter.writeTreatment( theWells[i].getWellIndex(), treat.getName(), treat.getValue(), treat.getUnits());
+									TheMetaDataWriter.writeTreatment(
+											theWells[i].getWellIndex(), treat
+													.getName(), treat
+													.getValue(), treat
+													.getUnits(), treat
+													.getTimeValue(), treat
+													.getTimeUnits());
 									TheMetaDataWriter.writeMetaDataXML();
 									
 								}
@@ -1137,7 +1159,6 @@ public class MidasInputPanel extends JPanel
 			textField[0].setText(measurementToEdit.getName());
 			
 			
-//			Object[] array = {rbExist, CurrentMeasurments, rbNew, "Name:", textField[0]};
 			Object[] array = {"Name:", textField[0]};
 			
 			//Create an array specifying the number of dialog buttons
@@ -1206,7 +1227,6 @@ public class MidasInputPanel extends JPanel
 			textField[0].setEnabled(true);
 			
 			
-//			Object[] array = {rbExist, CurrentMeasurments, rbNew, "Name:", textField[0]};
 			Object[] array = {"Name:", textField[0]};
 			
 			//Create an array specifying the number of dialog buttons
@@ -1276,61 +1296,27 @@ public class MidasInputPanel extends JPanel
 				if (btnString1.equals(value))
 				{
 					Description theMeasurement = null;
-//					if (!New)
-//						theMeasurement = (Measurement)CurrentMeasurments.getSelectedItem();
-//					else
-//					{
 					String name = textField[0].getText();
-					theMeasurement = new Description("measurement", name, "");
-//					}
+					theMeasurement = new Description("measurement", name, null,
+							null, null, null);
+
 					
 					measurementComboBox.addItem(theMeasurement);
 					measurementComboBox.repaint();
 					
-//					ArrayList arr = thePlate.getAllMeasurements();
-//					int len = arr.size();
-//					boolean foundOne = false;
-//					for (int i=0; i < len; i++)
-//					{
-//						if (((Measurement)thePlate.getAllMeasurements().get(i)).ID==theMeasurement.ID)
-//						{
-//							foundOne = true;
-//							break;
-//						}
-//					}
-//					if (!foundOne)
-//					thePlate.getAllMeasurements().add(theMeasurement);
-					
-					
 					//measurements
 					for (int i =0; i < theWells.length; i++)
 					{
-//						if (checkBoxes[3].isSelected())
 						if (measurementComboBox.getSelectedItem()!=null)
 						{
-//								int len = theWells[i].measurements.size();
 							int num = measurementComboBox.getItemCount();
 							for (int n = 0; n < num; n++)
 							{
-//									boolean foundOne = false;
-//									for (int j = 0 ; j < len ; j++)
-//									{
-//
-//										if (((Measurement)theWells[i].measurements.get(j)).ID==((Measurement)measurementComboBox.getItemAt(n)).ID)
-//										{
-//											foundOne = true;
-//											break;
-//										}
-//									}
-//									if (!foundOne)
-//									{
-//										theWells[i].measurements.add((Measurement)measurementComboBox.getItemAt(n));
-								
 								Description meas = (Description)measurementComboBox.getItemAt(n);
 								//XML
 								TheMetaDataWriter.writeMeasurement(theWells[i].getWellIndex(), meas.getName());
 								TheMetaDataWriter.writeMetaDataXML();
-//									}
+								//									
 							}
 						}
 					}
