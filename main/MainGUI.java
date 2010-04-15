@@ -26,6 +26,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -131,7 +132,7 @@ public class MainGUI extends JFrame {
 	private File TheDirectory;
 	private final String URLIntro = "file:///";
 	private final String DefaultHelpURLString = URLIntro
-			+ System.getProperty("user.dir") + "/doc/Intro.html";
+	+ System.getProperty("user.dir") + "/doc/Intro.html";
 	private int TheColorMap;
 	private FilterManager TheFilterManager;
 	private ArrayList TheFilters;
@@ -231,7 +232,7 @@ public class MainGUI extends JFrame {
 		TheMenuBar.add(FileMenu);
 		TheMenuBar.add(ProcessMenu);
 		TheMenuBar.add(OptionsMenu);
-//		 TheMenuBar.add(ToolsMenu);
+		// TheMenuBar.add(ToolsMenu);
 		TheMenuBar.add(DisplayMenu);
 		// TheMenuBar.add(HelpMenu);
 		setJMenuBar(TheMenuBar);
@@ -391,15 +392,16 @@ public class MainGUI extends JFrame {
 						int numFields = w.getFields().length;
 						for (int j = 0; j < numFields; j++) {
 							if (w.getFields()[j].getNumberOfChannels() > 0) {
-								FieldViewer d = new FieldViewer(imageViewerFrame, w, w.getFields()[j]);
+								FieldViewer d = new FieldViewer(
+										imageViewerFrame, w, w.getFields()[j]);
 								temp.add(d);
 								if (d != null) {
 									if (TheDotPlot != null
 											&& TheDotPlot.TheDotSelectionListener != null) {
 										d
-												.setDotSelectionListener(TheDotPlot.TheDotSelectionListener);
+										.setDotSelectionListener(TheDotPlot.TheDotSelectionListener);
 										TheDotPlot.TheDotSelectionListener
-												.addListener(d);
+										.addListener(d);
 									}
 								}
 							}
@@ -434,8 +436,8 @@ public class MainGUI extends JFrame {
 				TheFilterManager.setVisible(true);
 			}
 		});
-		 ToolsMenu.add(item);
-//		 ToolsMenu.add(AnalysisModulesMenu);
+		ToolsMenu.add(item);
+		// ToolsMenu.add(AnalysisModulesMenu);
 
 		JMenuItem but2 = new JMenuItem("Bimodal Fitting");
 		but2.addActionListener(new ActionListener() {
@@ -463,7 +465,7 @@ public class MainGUI extends JFrame {
 		but2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				Feature[] features = FeatureSelectionDialog
-						.showFeatureSelectionDialog();
+				.showFeatureSelectionDialog();
 				if (features != null)
 					new AnalysisModuleFrame(new Grid_LinePlot(TheMainGUI
 							.getPlateHoldingPanel().getThePlates()[0],
@@ -588,7 +590,7 @@ public class MainGUI extends JFrame {
 		});
 
 		LoadCellsImmediatelyCheckBox = new JCheckBoxMenuItem(
-				"Load cells into RAM after segmentation");
+		"Load cells into RAM after segmentation");
 		LoadCellsImmediatelyCheckBox.setSelected(false);
 		// StoreNeighborsCheckBox = new JCheckBoxMenuItem("Store Neighbors");
 		// StoreNeighborsCheckBox.setSelected(false);
@@ -598,7 +600,7 @@ public class MainGUI extends JFrame {
 		// StorePixelInformationCheckBox.setSelected(false);
 
 		WellMeanOrIntegratedIntensityCheckBox = new JCheckBoxMenuItem(
-				"Mean (Checked) vs Integrated Intensity");
+		"Mean (Checked) vs Integrated Intensity");
 		WellMeanOrIntegratedIntensityCheckBox.setSelected(true);
 
 		// StoreMembranesCheckBox = new
@@ -609,14 +611,14 @@ public class MainGUI extends JFrame {
 		// FindNeighborsCheckBox.setSelected(false);
 
 		DisplayNumberLoadedImagesCheckBox = new JCheckBoxMenuItem(
-				"Show Number of Loaded Images");
+		"Show Number of Loaded Images");
 		DisplayNumberLoadedImagesCheckBox.setSelected(true);
 		DisplayNumberLoadedImagesCheckBox
-				.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent ae) {
-						ThePlatePanel.updatePanel();
-					}
-				});
+		.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				ThePlatePanel.updatePanel();
+			}
+		});
 		DisplayMenu.add(DisplayNumberLoadedImagesCheckBox);
 
 		DisplayAvailableHDFfiles = new JCheckBoxMenuItem(
@@ -906,40 +908,40 @@ public class MainGUI extends JFrame {
 		PlateSizeMenu.add(check);
 
 		// States what bit type the images are
-//		JMenu ImageBitTypeMenu = new JMenu("Image Type");
-//		OptionsMenu.add(ImageBitTypeMenu);
-//		ButtonGroup bgroup1 = new ButtonGroup();
-//
-//		check = new JRadioButtonMenuItem("8-bit");
-//		bgroup1.add(check);
-//		check.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent ae) {
-//				MAXPIXELVALUE = 256;
-//				initScalingParameters();
-//			}
-//		});
-//		ImageBitTypeMenu.add(check);
-//
-//		check = new JRadioButtonMenuItem("10-bit");
-//		bgroup1.add(check);
-//		check.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent ae) {
-//				MAXPIXELVALUE = 1024;
-//				initScalingParameters();
-//			}
-//		});
-//		ImageBitTypeMenu.add(check);
-//
-//		check = new JRadioButtonMenuItem("16-bit");
-//		check.setSelected(true);
-//		bgroup1.add(check);
-//		check.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent ae) {
-//				MAXPIXELVALUE = 65536;
-//				initScalingParameters();
-//			}
-//		});
-//		ImageBitTypeMenu.add(check);
+		// JMenu ImageBitTypeMenu = new JMenu("Image Type");
+		// OptionsMenu.add(ImageBitTypeMenu);
+		// ButtonGroup bgroup1 = new ButtonGroup();
+		//
+		// check = new JRadioButtonMenuItem("8-bit");
+		// bgroup1.add(check);
+		// check.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent ae) {
+		// MAXPIXELVALUE = 256;
+		// initScalingParameters();
+		// }
+		// });
+		// ImageBitTypeMenu.add(check);
+		//
+		// check = new JRadioButtonMenuItem("10-bit");
+		// bgroup1.add(check);
+		// check.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent ae) {
+		// MAXPIXELVALUE = 1024;
+		// initScalingParameters();
+		// }
+		// });
+		// ImageBitTypeMenu.add(check);
+		//
+		// check = new JRadioButtonMenuItem("16-bit");
+		// check.setSelected(true);
+		// bgroup1.add(check);
+		// check.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent ae) {
+		// MAXPIXELVALUE = 65536;
+		// initScalingParameters();
+		// }
+		// });
+		// ImageBitTypeMenu.add(check);
 
 		//
 		// Processing menu
@@ -1041,7 +1043,7 @@ public class MainGUI extends JFrame {
 	 */
 	public ProjectHDFConnector initHDFprojectConnector() {
 		String projPath = main.MainGUI.getGUI().getProjectDirectory()
-				.getAbsolutePath();
+		.getAbsolutePath();
 		TheHDFprojectConnector = null;
 		try {
 			TheHDFprojectConnector = new ProjectHDFConnector(projPath);
@@ -1082,7 +1084,7 @@ public class MainGUI extends JFrame {
 		TheHDFprojectConnector = null;
 		if (main.MainGUI.getGUI().getProjectDirectory() != null) {
 			String projPath = main.MainGUI.getGUI().getProjectDirectory()
-					.getAbsolutePath();
+			.getAbsolutePath();
 			try {
 				TheHDFprojectConnector = new ProjectHDFConnector(projPath);
 				TheHDFprojectConnector.createProject();
@@ -1090,7 +1092,7 @@ public class MainGUI extends JFrame {
 				for (int i = 0; i < plates.length; i++)
 					TheHDFprojectConnector.writePlateSize(
 							plates[i].getID() - 1, plates[i].getNumColumns()
-									* plates[i].getNumRows());
+							* plates[i].getNumRows());
 
 			} catch (Exception e) {
 			}
@@ -1121,7 +1123,7 @@ public class MainGUI extends JFrame {
 			File f = new File(TheProjectDirectory.getAbsolutePath()
 					+ "/Data/temp/featuresUsed");
 			if (!f.exists()) // If the loaded project doesn't come with its own
-								// features, then load the local features
+				// features, then load the local features
 				f = new File("./features");
 			File[] fs = f.listFiles();
 
@@ -1131,7 +1133,7 @@ public class MainGUI extends JFrame {
 				if (fs[i].getAbsolutePath().indexOf(".java") > 0
 						&& !fs[i].getName().equalsIgnoreCase("Feature.java")
 						&& !fs[i].getName().equalsIgnoreCase(
-								"FeatureSorter.java")) {
+						"FeatureSorter.java")) {
 					String path = fs[i].getName();
 					int ind = path.indexOf(".java");
 					path = path.substring(0, ind);
@@ -1221,6 +1223,39 @@ public class MainGUI extends JFrame {
 		}
 
 		return false;
+	}
+
+	public boolean initNewPlates_ClusterRun(File inDir, int numPlates,
+			int numRows,
+			int numCols) {
+
+		File file = new File(inDir.getPath() + "_"
+ + System.currentTimeMillis() + ".ir");
+		file.mkdir();
+		setProjectDirectory(file);
+		setTheDirectory(new File(file.getParent()));
+
+		int counter = 0;
+		Plate[] plates = new Plate[numPlates];
+		for (int p = 0; p < plates.length; p++) {
+			counter++;
+			plates[p] = new Plate(numRows, numCols, counter);
+		}
+		ThePlatePanel = new PlateHoldingPanel(plates);
+
+		TheInputPanel_Container = new JTabbedPane();
+		for (int i = 0; i < numPlates; i++)
+			TheInputPanel_Container.addTab("Plate #" + (i + 1),
+					new MidasInputPanel(plates[i]));
+
+		initHDFprojectConnectorAndPlates(plates);
+		// TheMainPanel.setLeftComponent(TheInputPanel_Container);
+		// TheMainPanel.setRightComponent(ThePlatePanel);
+		// TheMainPanel.setDividerLocation(TheMainPanel.getDividerLocation());
+		// TheMainPanel.validate();
+		// TheMainPanel.repaint();
+		// TheMainGUI.repaint();
+		return true;
 	}
 
 	/**
@@ -1365,7 +1400,7 @@ public class MainGUI extends JFrame {
 		int numplates = ThePlates.length;
 		for (int i = 0; i < numplates; i++)
 			((MidasInputPanel) TheInputPanel_Container.getComponentAt(i))
-					.updateInputPanel(ThePlates[i]);
+			.updateInputPanel(ThePlates[i]);
 
 		TheInputPanel_Container.setSelectedIndex((ThePlatePanel
 				.getSelectedPlateID() - 1));
@@ -1444,7 +1479,7 @@ public class MainGUI extends JFrame {
 							if (oneRowSeries[c].getCells() != null
 									&& oneRowSeries[c].Feature_Stdev != null) {
 								float[] minMax = oneRowSeries[c]
-										.getMinMaxValue(TheSelectedFeature);
+								                              .getMinMaxValue(TheSelectedFeature);
 								varianceBars[r][c][0] = minMax[0];
 								varianceBars[r][c][1] = minMax[1];
 
@@ -1537,7 +1572,7 @@ public class MainGUI extends JFrame {
 		int len = wells.length;
 		arr = new ArrayList<Well>();
 		for (int i = 0; i < len; i++)
- {
+		{
 			ArrayList<Cell> cells = wells[i].getCells();
 			if (wells != null && cells != null
 					&& wells[i].getCells().size() > 0)
@@ -1661,7 +1696,7 @@ public class MainGUI extends JFrame {
 		try {
 			ArrayList Wells = new ArrayList();
 			DocumentBuilderFactory factory = DocumentBuilderFactory
-					.newInstance();
+			.newInstance();
 			DocumentBuilder builder = null;
 			try {
 				builder = factory.newDocumentBuilder();
@@ -1695,84 +1730,84 @@ public class MainGUI extends JFrame {
 
 					int length = (node.getAttributes() != null) ? node
 							.getAttributes().getLength() : 0;
-					for (int loopIndex = 0; loopIndex < length; loopIndex++) {
-						Attr att = (Attr) node.getAttributes().item(loopIndex);
-						if (att.getNodeName().equalsIgnoreCase("name"))
-							wellName = att.getNodeValue().trim();
-						else if (att.getNodeName()
-								.equalsIgnoreCase("Processed"))
-							processType = att.getNodeValue().trim();
-						else if (att.getNodeName().equalsIgnoreCase(
+							for (int loopIndex = 0; loopIndex < length; loopIndex++) {
+								Attr att = (Attr) node.getAttributes().item(loopIndex);
+								if (att.getNodeName().equalsIgnoreCase("name"))
+									wellName = att.getNodeValue().trim();
+								else if (att.getNodeName()
+										.equalsIgnoreCase("Processed"))
+									processType = att.getNodeValue().trim();
+								else if (att.getNodeName().equalsIgnoreCase(
 								"ThresholdChannel_nuc"))
-							threshold_nuc_channel = att.getNodeValue().trim();
-						else if (att.getNodeName().equalsIgnoreCase(
+									threshold_nuc_channel = att.getNodeValue().trim();
+								else if (att.getNodeName().equalsIgnoreCase(
 								"ThresholdChannel_cyto"))
-							threshold_cyto_channel = att.getNodeValue().trim();
-						else if (att.getNodeName().equalsIgnoreCase(
+									threshold_cyto_channel = att.getNodeValue().trim();
+								else if (att.getNodeName().equalsIgnoreCase(
 								"Threshold_Nucleus"))
-							threshold_nucleus = Float.parseFloat(att
-									.getNodeValue().trim());
-						else if (att.getNodeName().equalsIgnoreCase(
+									threshold_nucleus = Float.parseFloat(att
+											.getNodeValue().trim());
+								else if (att.getNodeName().equalsIgnoreCase(
 								"Threshold_Cell"))
-							threshold_cell = Float.parseFloat(att
-									.getNodeValue().trim());
-						else if (att.getNodeName().equalsIgnoreCase(
+									threshold_cell = Float.parseFloat(att
+											.getNodeValue().trim());
+								else if (att.getNodeName().equalsIgnoreCase(
 								"Threshold_Background"))
-							threshold_bkgd = Float.parseFloat(att
-									.getNodeValue().trim());
-						else if (att.getNodeName().equalsIgnoreCase(
+									threshold_bkgd = Float.parseFloat(att
+											.getNodeValue().trim());
+								else if (att.getNodeName().equalsIgnoreCase(
 								"TopXBrightestPixels"))
-							topXBrightestPixels = Float.parseFloat(att
-									.getNodeValue().trim());
-						else if (att.getNodeName().equalsIgnoreCase(
+									topXBrightestPixels = Float.parseFloat(att
+											.getNodeValue().trim());
+								else if (att.getNodeName().equalsIgnoreCase(
 								"AnnulusSize"))
-							annulusSize = Integer.parseInt(att.getNodeValue()
-									.trim());
-						else if (att.getNodeName().equalsIgnoreCase(
+									annulusSize = Integer.parseInt(att.getNodeValue()
+											.trim());
+								else if (att.getNodeName().equalsIgnoreCase(
 								"MeanOrIntegrated"))
-							meanOrIntegrated = (att.getNodeValue().trim());
-						else if (att.getNodeName().equalsIgnoreCase(
+									meanOrIntegrated = (att.getNodeValue().trim());
+								else if (att.getNodeName().equalsIgnoreCase(
 								"StoreCells"))
-							LoadCellsImmediatelyCheckBox.setSelected(Boolean
-									.parseBoolean(att.getNodeValue().trim()));
-						// else if
-						// (att.getNodeName().equalsIgnoreCase("StorePixelInfo"))
-						// StorePixelInformationCheckBox.setSelected(Boolean.parseBoolean(att.getNodeValue().trim()));
-						// else if
-						// (att.getNodeName().equalsIgnoreCase("StoreMembraneRegion"))
-						// StoreMembranesCheckBox.setSelected(Boolean.parseBoolean(att.getNodeValue().trim()));
-					}
+									LoadCellsImmediatelyCheckBox.setSelected(Boolean
+											.parseBoolean(att.getNodeValue().trim()));
+								// else if
+								// (att.getNodeName().equalsIgnoreCase("StorePixelInfo"))
+								// StorePixelInformationCheckBox.setSelected(Boolean.parseBoolean(att.getNodeValue().trim()));
+								// else if
+								// (att.getNodeName().equalsIgnoreCase("StoreMembraneRegion"))
+								// StoreMembranesCheckBox.setSelected(Boolean.parseBoolean(att.getNodeValue().trim()));
+							}
 
-					System.out.println("well: " + wellName + "  "
-							+ threshold_nucleus + "  " + meanOrIntegrated);
+							System.out.println("well: " + wellName + "  "
+									+ threshold_nucleus + "  " + meanOrIntegrated);
 
-					// TODO
-					Well well = plate.getWell(wellName);
-					Wells.add(well);
-					ParameterSet p = well.TheParameterSet;
-					p.setModified(true);
-					p.setWellName(wellName);
-					p.setProcessType(processType);
-					p.setThreshold_Background(threshold_bkgd);
-					p.setThreshold_Cell(threshold_cell);
-					p.setThreshold_Nucleus(threshold_nucleus);
-					p.setAnnulusSize(annulusSize);
-					p.setMeanOrIntegrated(meanOrIntegrated);
-					// p.TopXBrightPix = topXBrightestPixels;
-					p.setThresholdChannel_nuc_Name(threshold_nuc_channel);
-					p.setThresholdChannel_cyto_Name(threshold_cyto_channel);
-					// Finding the index of this channel name
-					for (int j = 0; j < TheMainGUI.getTheChannelNames().length; j++)
-						if (TheMainGUI.getTheChannelNames()[j]
-								.equalsIgnoreCase(threshold_nuc_channel))
-							p.setThresholdChannel_nuc_Index(j);
-					// Finding the index of this channel name
-					for (int j = 0; j < TheMainGUI.getTheChannelNames().length; j++)
-						if (TheMainGUI.getTheChannelNames()[j]
-								.equalsIgnoreCase(threshold_cyto_channel))
-							p.setThresholdChannel_cyto_Index(j);
+							// TODO
+							Well well = plate.getWell(wellName);
+							Wells.add(well);
+							ParameterSet p = well.TheParameterSet;
+							p.setModified(true);
+							p.setWellName(wellName);
+							p.setProcessType(processType);
+							p.setThreshold_Background(threshold_bkgd);
+							p.setThreshold_Cell(threshold_cell);
+							p.setThreshold_Nucleus(threshold_nucleus);
+							p.setAnnulusSize(annulusSize);
+							p.setMeanOrIntegrated(meanOrIntegrated);
+							// p.TopXBrightPix = topXBrightestPixels;
+							p.setThresholdChannel_nuc_Name(threshold_nuc_channel);
+							p.setThresholdChannel_cyto_Name(threshold_cyto_channel);
+							// Finding the index of this channel name
+							for (int j = 0; j < TheMainGUI.getTheChannelNames().length; j++)
+								if (TheMainGUI.getTheChannelNames()[j]
+								                                    .equalsIgnoreCase(threshold_nuc_channel))
+									p.setThresholdChannel_nuc_Index(j);
+							// Finding the index of this channel name
+							for (int j = 0; j < TheMainGUI.getTheChannelNames().length; j++)
+								if (TheMainGUI.getTheChannelNames()[j]
+								                                    .equalsIgnoreCase(threshold_cyto_channel))
+									p.setThresholdChannel_cyto_Index(j);
 
-					System.out.println(p);
+							System.out.println(p);
 				}
 			}
 			//
@@ -1784,7 +1819,7 @@ public class MainGUI extends JFrame {
 			for (int i = 0; i < len; i++) {
 				Well w = (Well) Wells.get(i);
 				System.out
-.println("procTYPE: "
+				.println("procTYPE: "
 						+ w.TheParameterSet.getProcessType());
 
 				if (w.TheParameterSet.getProcessType()
@@ -1891,7 +1926,7 @@ public class MainGUI extends JFrame {
 				// where each element of the arrList is a File[] of each
 				// wavelength for each field
 				ArrayList allSets = tools.ImageTools
-						.getAllSetsOfCorresponsdingChanneledImageFiles(allFiles);
+				.getAllSetsOfCorresponsdingChanneledImageFiles(allFiles);
 				int numFields = allSets.size();
 
 				Well well = plate.getTheWells()[r][c];
@@ -1919,9 +1954,9 @@ public class MainGUI extends JFrame {
 				for (int i = 0; i < len; i++) {
 					if (fs[i].getAbsolutePath().indexOf(".java") > 0
 							&& !fs[i].getName()
-									.equalsIgnoreCase("Feature.java")
+							.equalsIgnoreCase("Feature.java")
 							&& !fs[i].getName().equalsIgnoreCase(
-									"FeatureSorter.java")) {
+							"FeatureSorter.java")) {
 
 						// Copying images to new ImageDirectory
 
@@ -1934,7 +1969,7 @@ public class MainGUI extends JFrame {
 							// + "    Successful ****");
 						} catch (IOException e) {
 							System.out
-									.println("----*ERROR copying Feature file to ./Data/temp/featuresUsed*----");
+							.println("----*ERROR copying Feature file to ./Data/temp/featuresUsed*----");
 							e.printStackTrace();
 						}
 
@@ -1954,9 +1989,9 @@ public class MainGUI extends JFrame {
 			updateHistogramPlot();
 		}
 
-		// creating a project directory if doesnt exist
+		// creating a project directory if doesn't exist
 		String projPath = main.MainGUI.getGUI().getProjectDirectory()
-				.getAbsolutePath();
+		.getAbsolutePath();
 		File f = new File(projPath);
 		if (!f.exists())
 			f.mkdir();
@@ -2016,10 +2051,10 @@ public class MainGUI extends JFrame {
 				int numC = pSize / numR;
 				arr.add(new Plate(numR, numC, counter));
 				counter++;
-				
+
 			}
-			
-		
+
+
 
 			// Creating the new plate holder with new plates
 			Plate[] plates = new Plate[arr.size()];
@@ -2057,13 +2092,13 @@ public class MainGUI extends JFrame {
 						for (int c = 0; c < plate.getNumColumns(); c++) {
 							// Getting all files tagged for this well
 							File[] allFiles = tools.ImageTools
-									.getFilesForGivenWell(dir, plate
-											.getTheWells()[r][c]);
+							.getFilesForGivenWell(dir, plate
+									.getTheWells()[r][c]);
 							// Organizing the images into sets of File[] in a an
 							// arraylist where each element of the arrList is a
 							// File[] of each wavelength for each field
 							ArrayList allSets = tools.ImageTools
-									.getAllSetsOfCorresponsdingChanneledImageFiles(allFiles);
+							.getAllSetsOfCorresponsdingChanneledImageFiles(allFiles);
 							int numFields = allSets.size();
 
 							Well well = plate.getTheWells()[r][c];
@@ -2098,21 +2133,21 @@ public class MainGUI extends JFrame {
 			// "to create new, self-consistant HDF5 data files.","Project Loading Error",JOptionPane.ERROR_MESSAGE);
 			// }
 			addFeatures_HTM(ChannelNames);
-			
+
 			initHDFprojectConnectorAndPlates(plates);
 			updateFeatures();
 			updateAllPlots();
-			
+
 			//
 			//Checking if loaded project features match up 
 			SegmentationHDFConnector sCon = new SegmentationHDFConnector(
 					main.MainGUI.getGUI().getProjectDirectory()
-							.getAbsolutePath());
+					.getAbsolutePath());
 			StringBuffer[] fNames = new StringBuffer[TheFeatures.size()];
 			for (int j = 0; j < TheFeatures.size(); j++) {
 				fNames[j] = new StringBuffer(((Feature)TheFeatures.get(j)).toString());
 			}
-			
+
 
 			// Plate[] ps= TheMainGUI.getPlateHoldingPanel().getThePlates();
 			// boolean featureNameProblems = false;
@@ -2170,7 +2205,7 @@ public class MainGUI extends JFrame {
 			// +
 			// "to create new, self-consistant HDF5 data files.","Project Loading Error",JOptionPane.ERROR_MESSAGE);
 			// }
-			
+
 
 			TheMainPanel.setLeftComponent(TheInputPanel_Container);
 			TheMainPanel.setRightComponent(ThePlatePanel);
@@ -2285,7 +2320,7 @@ public class MainGUI extends JFrame {
 	// specified in the 'javaFile' parameter. Return a true if
 	// the compilation worked, false otherwise.
 	static public boolean compile(String javaFile, SplashScreen splash)
-			throws IOException {
+	throws IOException {
 		// Let the user know what's going on
 		String message = "Compiling " + javaFile + "...";
 		if (splash != null)
@@ -2321,30 +2356,220 @@ public class MainGUI extends JFrame {
 	public static void main(String[] args) {
 		try {
 
-			// Throw a nice little title page up on the screen first
-			SplashScreen splash = new SplashScreen(2000);
-			// Normally, we'd call splash.showSplash() and get on with the
-			// program.
-			// But, since this is only a test...
-			splash.showSplashAndExit();
+			if (args.length == 0) {
 
-			new MainGUI();
-			MainGUI.getGUI().setVisible(false);
-			MainGUI.getGUI().initFilterManager();
+				// Throw a nice little title page up on the screen first
+				SplashScreen splash = new SplashScreen(2000);
+				// Normally, we'd call splash.showSplash() and get on with the
+				// program.
+				// But, since this is only a test...
+				splash.showSplashAndExit();
 
-			// Loading all new plugin files
-			findAndCompileNewJavaFiles("features", splash);
-			findAndCompileNewJavaFiles("segmentors", splash);
-			// Hiding the splash, now that we have loaded everything
+				new MainGUI();
+				MainGUI.getGUI().setVisible(false);
+				MainGUI.getGUI().initFilterManager();
 
-			splash.setVisible(false);
-			// init the project with the startupdialog
-			StartupDialog startup = new StartupDialog();
+				// Loading all new plugin files
+				findAndCompileNewJavaFiles("features", splash);
+				findAndCompileNewJavaFiles("segmentors", splash);
+				// Hiding the splash, now that we have loaded everything
+
+				splash.setVisible(false);
+				// init the project with the startupdialog
+				StartupDialog startup = new StartupDialog();
+			}
+
+			//
+			// Command Line
+			//
+			else
+			{
+				// Reading commandline parameters
+				File InputDir = new File(args[0]);
+
+
+				float wellsPerPlate = Float.parseFloat(args[1]);
+				float NucleusThreshold = Float.parseFloat(args[2]);
+				float CytoThreshold = Float.parseFloat(args[3]);
+				float BkgdThreshold = Float.parseFloat(args[4]);
+				float CoordsToSave = Float.parseFloat(args[5]);
+
+				System.out.println("*****Processing Input Directory: "
+						+ InputDir.getName());
+				System.out.println("     ------->    Wells per Plate: "
+						+ wellsPerPlate);
+				System.out.println("     ------->    Nucleus Threshold: "
+						+ NucleusThreshold);
+				System.out.println("     ------->    Cyto Threshold: "
+						+ CytoThreshold);
+				System.out.println("     ------->    Bkgd Threshold: "
+						+ BkgdThreshold);
+				System.out.println("     ------->    CoordsToSave: "
+						+ CoordsToSave);
+
+				File[] subDirs = InputDir.listFiles();
+				int len = subDirs.length;
+				int counter = 0;
+				for (int i = 0; i < len; i++)
+					if (shouldProcess(subDirs[i].getName()))
+						counter++;
+				System.out.println("Number of Plate Directories Found: "
+						+ counter);
+				// Init the project and plates
+				int numRows = 0;
+				int numCols = 0;
+				if (wellsPerPlate == 96) {
+					numRows = 8;
+					numCols = 12;
+				} else if (wellsPerPlate == 384) {
+					numRows = 16;
+					numCols = 24;
+				}
+
+				// Creating a new project for this job
+				new MainGUI();
+				MainGUI.getGUI().setVisible(false);
+				MainGUI.getGUI().initFilterManager();
+
+				// Loading all new plugin files
+				findAndCompileNewJavaFiles("features", null);
+				findAndCompileNewJavaFiles("segmentors", null);
+				// Hiding the splash, now that we have loaded everything
+
+				boolean worked = main.MainGUI
+				.getGUI()
+						.initNewPlates_ClusterRun(InputDir, counter, numRows,
+								numCols);
+				if (worked) {
+
+					main.MainGUI gui = main.MainGUI.getGUI();
+					PrintWriter pw = new PrintWriter(new File(
+gui
+							.getProjectDirectory().getAbsolutePath()
+							+ "/OriginalPlateNames.csv"));
+					pw.println("new plate name, original plate directory name");
+
+					// loading the images into the plates
+					int num = subDirs.length;
+					Plate[] plates = gui.getThePlateHoldingPanel()
+							.getThePlates();
+
+					counter = 0;
+					for (int i = 0; i < num; i++)
+						if (shouldProcess(subDirs[i].getName())) {
+							gui.load(subDirs[i], plates[counter]);
+							pw.println("plate_" + counter + " , "
+									+ subDirs[i].getName());
+							counter++;
+						}
+
+					pw.flush();
+					pw.close();
+
+					//
+					// Now process the images
+					processPlates_commandLine(plates, NucleusThreshold,
+							CytoThreshold, BkgdThreshold, (int) CoordsToSave);
+
+				}
+
+			}
 
 		} catch (Exception e) {
 
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * For commandline image directory processing
+	 * 
+	 * @author BLM
+	 * 
+	 * */
+	static public void processPlates_commandLine(Plate[] plates,
+			float Threshold_Nucleus, float Threshold_CellBoundary,
+			float Threshold_Background, int CoordsToSave) {
+
+		ArrayList<Well> arr = new ArrayList<Well>();
+		// Storing the Parameters for each Well
+		for (int p = 0; p < plates.length; p++) {
+
+			Plate plate = plates[p];
+			Well[] TheWells = plate.getAllWells();
+
+			int NucBoundaryChannel = 0;
+			int CytoBoundaryChannel = 0;
+
+			int len = TheWells.length;
+			for (int i = 0; i < len; i++) {
+				Well well = TheWells[i];
+				ParameterSet pset = well.TheParameterSet;
+				pset.setModified(true);
+				// ProcessType
+				pset.setProcessType(ParameterSet.SINGLECELL);
+				// Threshold Channel Nucleus
+				pset.setThresholdChannel_nuc_Name(MainGUI.getGUI()
+						.getTheChannelNames()[NucBoundaryChannel]);
+				// Threshold Channel Cytoplasm
+				pset.setThresholdChannel_cyto_Name(MainGUI.getGUI()
+						.getTheChannelNames()[CytoBoundaryChannel]);
+				// Nuc bound threshold
+				pset.setThreshold_Nucleus(Threshold_Nucleus);
+				// Cell bound Threshold
+				pset.setThreshold_Cell(Threshold_CellBoundary);
+				// Bkgd threshold
+				pset.setThreshold_Background(Threshold_Background);
+
+				if (CoordsToSave == 0)
+					pset.setCoordsToSaveToHDF("Centroid");
+				else if (CoordsToSave == 1)
+					pset.setCoordsToSaveToHDF("BoundingBox");
+				else if (CoordsToSave == 2)
+					pset.setCoordsToSaveToHDF("Outlines");
+				else if (CoordsToSave == 3)
+					pset.setCoordsToSaveToHDF("Everything");
+
+				well.TheParameterSet
+						.setMeanOrIntegrated(well.TheParameterSet.MEAN);
+
+				// Finding the index of this channel name
+				for (int j = 0; j < MainGUI.getGUI().getTheChannelNames().length; j++)
+					if (MainGUI.getGUI().getTheChannelNames()[j]
+							.equalsIgnoreCase(pset
+									.getThresholdChannel_nuc_Name()))
+						pset.setThresholdChannel_nuc_Index(j);
+				// Finding the index of this channel name
+				for (int j = 0; j < MainGUI.getGUI().getTheChannelNames().length; j++)
+					if (MainGUI.getGUI().getTheChannelNames()[j]
+							.equalsIgnoreCase(pset
+									.getThresholdChannel_cyto_Name()))
+						pset.setThresholdChannel_cyto_Index(j);
+			}
+			if (Threshold_Background > 0)
+				MainGUI.getGUI().setBackgroundSubtract(true);
+
+			// Adding to master list to process
+			for (int i = 0; i < TheWells.length; i++)
+				arr.add(TheWells[i]);
+		}
+
+		int len = arr.size();
+		Well[] allWells = new Well[len];
+		for (int i = 0; i < len; i++)
+			allWells[i] = arr.get(i);
+
+		Processor_SingleCells tasker = new Processor_SingleCells(allWells,
+				new DefaultSegmentor());
+		tasker.start();
+	}
+
+	static public boolean shouldProcess(String fileName) {
+		if (fileName.indexOf("DS") < 0 && fileName.indexOf("Ignore") < 0
+				&& fileName.indexOf("Output") < 0)
+			return true;
+
+		return false;
 
 	}
 
@@ -2509,7 +2734,7 @@ public class MainGUI extends JFrame {
 	 * */
 	public void setBackgroundSubtract(boolean boo) {
 		SubtractBackground = boo;
-		}
+	}
 
 	/**
 	 * Returns the default file directory to make file choosers more convenient
@@ -2782,10 +3007,10 @@ public class MainGUI extends JFrame {
 	private void shutDown() {
 		if (areDataSetsModified) {
 			int result = JOptionPane
-					.showConfirmDialog(
-							(Component) null,
-							"\nCells have been Deleted \n\n Would you like to save these changes \n in your project files?\n",
-							"alert", JOptionPane.YES_NO_OPTION);
+			.showConfirmDialog(
+					(Component) null,
+					"\nCells have been Deleted \n\n Would you like to save these changes \n in your project files?\n",
+					"alert", JOptionPane.YES_NO_OPTION);
 			System.out.println("result: " + result);
 
 			if (result == 1)
@@ -2835,19 +3060,19 @@ public class MainGUI extends JFrame {
 
 							if (well.Feature_Means != null && sCon != null) {
 								sCon.writeWellMeanValues(plates[i]
-										.getPlateIndex(), well.getWellIndex(),
-										well.Feature_Means);
+								                                .getPlateIndex(), well.getWellIndex(),
+								                                well.Feature_Means);
 								if (featureNames != null)
 									sCon.writeMeanFeatureNames(plates[i]
-											.getPlateIndex(), featureNames);
+									                                  .getPlateIndex(), featureNames);
 							}
 							if (well.Feature_Stdev != null && sCon != null)
 								sCon.writeWellStdDevValues(plates[i]
-										.getPlateIndex(), well.getWellIndex(),
-										well.Feature_Stdev);
+								                                  .getPlateIndex(), well.getWellIndex(),
+								                                  well.Feature_Stdev);
 						} catch (HDFConnectorException e) {
 							System.out
-									.println("Error Writing Well Means/STDEV for new HDF5 files **** ");
+							.println("Error Writing Well Means/STDEV for new HDF5 files **** ");
 						}
 						well.setCellsModified(false);
 					}

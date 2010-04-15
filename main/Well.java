@@ -6,8 +6,6 @@
 
 package main;
 
-import features.Feature;
-
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
@@ -27,6 +25,7 @@ import us.hms.systemsbiology.metadata.Description;
 import us.hms.systemsbiology.metadata.MetaDataConnector;
 import us.hms.systemsbiology.segmentedobject.Cell;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import features.Feature;
 
 
 public class Well
@@ -169,7 +168,7 @@ public class Well
 
 	/** Returns all the cells from all the fields in this well
 	 * @author BLM*/
-	public ArrayList<Cell> getCells()
+	public synchronized ArrayList<Cell> getCells()
 	{
 		ArrayList<Cell> arr = new ArrayList<Cell>();
 		
@@ -208,7 +207,7 @@ public class Well
 	 * 
 	 * @author BLM
 	 */
-	public float[][] getCell_values() {
+	public synchronized float[][] getCell_values() {
 		ArrayList<Cell> cells = getCells();
 		if (cells == null || cells.size() == 0)
 			return null;

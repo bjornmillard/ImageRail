@@ -8,8 +8,6 @@ package main;
 
 import java.io.File;
 
-import processors.Processor_SingleCells;
-import processors.Processor_WellAverage;
 import segmentors.DefaultSegmentor;
 
 public class ClusterRun
@@ -30,13 +28,14 @@ public class ClusterRun
 			File InputDir = new File(args[0]);
 			File OutputDir = new File(InputDir.getAbsolutePath()+File.separator+"Output");
 			OutputDir.mkdir();
-			String ProcessType = args[1];
+			float wellsPerPlate = Float.parseFloat(args[1]);
 			float NucleusThreshold = Float.parseFloat(args[2]);
 			float CytoThreshold = Float.parseFloat(args[3]);
 			float BkgdThreshold = Float.parseFloat(args[4]);
 			
 			System.out.println("*****Processing Input Directory: "+InputDir.getName());
-			System.out.println("     ------->    Process Type: "+ProcessType);
+			System.out.println("     ------->    Wells per Plate: "
+					+ wellsPerPlate);
 			System.out.println("     ------->    Nucleus Threshold: "+NucleusThreshold);
 			System.out.println("     ------->    Cyto Threshold: "+CytoThreshold);
 			System.out.println("     ------->    Bkgd Threshold: "+BkgdThreshold);
@@ -44,7 +43,9 @@ public class ClusterRun
 			
 			//
 			
-			if (ProcessType.equalsIgnoreCase("SingleCell"))
+
+			// if (ProcessType.equalsIgnoreCase("SingleCell"))
+			if (true)
 			{
 				DefaultSegmentor segmentor = new DefaultSegmentor();
 				File[] subDirs = InputDir.listFiles();
@@ -53,68 +54,99 @@ public class ClusterRun
 				for (int i = 0; i < len; i++)
 					if (shouldProcess(subDirs[i].getName()))
 						counter++;
+				System.out.println("Number of Plate Directories Found: "
+						+ counter);
 				
-				System.out.println("Number of Input Directories Found: "+counter);
-				for (int i = 0; i < len; i++)
-				{
-					String name = subDirs[i].getName();
-					if (shouldProcess(name))
-					{
-						MainGUI gui = MainGUI.getGUI();
-						Plate plate = gui.getThePlateHoldingPanel().getThePlates()[0];
-						File f = subDirs[i];
-						System.out.println("***Processing: "+f.getAbsolutePath());
-						
-						gui.load(f, plate);
-						Well[] wells = plate.getAllWells_wImages();
-						setParameters(wells, 0,0, NucleusThreshold, CytoThreshold, BkgdThreshold);
-						
-						Processor_SingleCells processor = new Processor_SingleCells(wells, segmentor);
-						processor.setResultsFile(new File(OutputDir.getAbsolutePath()+File.separator+f.getName()+"_results_"+System.currentTimeMillis()+".csv"));
-						System.out.println("***Starting**** "+f.getName());
-						processor.start();
-						
-					}
+				// Init the project and plates
+				int numRows = 0;
+				int numCols = 0;
+				if (wellsPerPlate == 96) {
+					numRows = 8;
+					numCols = 12;
+				} else if (wellsPerPlate == 384) {
+					numRows = 16;
+					numCols = 24;
 				}
+
+				// // Creating a new project for this job
+				// new main.MainGUI();
+				// main.MainGUI.getGUI().setVisible(false);
+				//				
+				// boolean worked = main.MainGUI.getGUI()
+				// .initNewPlates_ClusterRun(counter,
+				// numRows, numCols);
+				// if (worked) {
+				// main.MainGUI.getGUI().setVisible(true);
+				// }
+
+
+				// for (int i = 0; i < len; i++)
+				// {
+				// String name = subDirs[i].getName();
+				// if (shouldProcess(name))
+				// {
+				// MainGUI gui = MainGUI.getGUI();
+				// Plate plate =
+				// gui.getThePlateHoldingPanel().getThePlates()[0];
+				// File f = subDirs[i];
+				// System.out.println("***Processing: "+f.getAbsolutePath());
+				//						
+				// gui.load(f, plate);
+				// Well[] wells = plate.getAllWells_wImages();
+				// setParameters(wells, 0,0, NucleusThreshold, CytoThreshold,
+				// BkgdThreshold);
+				//						
+				// Processor_SingleCells processor = new
+				// Processor_SingleCells(wells, segmentor);
+				// processor.setResultsFile(new
+				// File(OutputDir.getAbsolutePath()+File.separator+f.getName()+"_results_"+System.currentTimeMillis()+".csv"));
+				// System.out.println("***Starting**** "+f.getName());
+				// processor.start();
+				//						
+				// }
+				// }
 			}
-			else if (ProcessType.equalsIgnoreCase("WellMeans"))
-			{
-				File[] subDirs = InputDir.listFiles();
-				int len = subDirs.length;
-				int counter=0;
-				for (int i = 0; i < len; i++)
-					if (subDirs[i].getName().indexOf("DS")<0)
-						counter++;
-				
-				System.out.println("Number of Input Directories Found: "+counter);
-				MainGUI gui = MainGUI.getGUI();
-				for (int i = 0; i < len; i++)
-				{
-					String name = subDirs[i].getName();
-					if (shouldProcess(name))
-					{
-						Plate plate = gui.getPlateHoldingPanel().getThePlates()[0];
-						File f = subDirs[i];
-						System.out.println("***Processing: "+f.getAbsolutePath());
-						
-						gui.load(f, plate);
-						Well[] wells = plate.getAllWells_wImages();
-						setParameters(wells, 0,0, NucleusThreshold, CytoThreshold, BkgdThreshold);
-						
-						Processor_WellAverage processor = new Processor_WellAverage(wells);
-						
-						
-						processor.setResultsFile(new File(OutputDir.getAbsolutePath()+File.separator+f.getName()+"_results_"+System.currentTimeMillis()+".csv"));
-						System.out.println("***Starting**** "+f.getName());
-						processor.start();
-						gui.setProcessing(true);
-					}
-					//Waiting till the processor is done with this plate
-					while (gui.isProcessing())
-						Thread.sleep(1000);
-				
-				}
-			}
+			// else if (ProcessType.equalsIgnoreCase("WellMeans"))
+			// {
+			// File[] subDirs = InputDir.listFiles();
+			// int len = subDirs.length;
+			// int counter=0;
+			// for (int i = 0; i < len; i++)
+			// if (subDirs[i].getName().indexOf("DS")<0)
+			// counter++;
+			//				
+			// System.out.println("Number of Input Directories Found: "+counter);
+			// MainGUI gui = MainGUI.getGUI();
+			// for (int i = 0; i < len; i++)
+			// {
+			// String name = subDirs[i].getName();
+			// if (shouldProcess(name))
+			// {
+			// Plate plate = gui.getPlateHoldingPanel().getThePlates()[0];
+			// File f = subDirs[i];
+			// System.out.println("***Processing: "+f.getAbsolutePath());
+			//						
+			// gui.load(f, plate);
+			// Well[] wells = plate.getAllWells_wImages();
+			// setParameters(wells, 0,0, NucleusThreshold, CytoThreshold,
+			// BkgdThreshold);
+			//						
+			// Processor_WellAverage processor = new
+			// Processor_WellAverage(wells);
+			//						
+			//						
+			// processor.setResultsFile(new
+			// File(OutputDir.getAbsolutePath()+File.separator+f.getName()+"_results_"+System.currentTimeMillis()+".csv"));
+			// System.out.println("***Starting**** "+f.getName());
+			// processor.start();
+			// gui.setProcessing(true);
+			// }
+			// //Waiting till the processor is done with this plate
+			// while (gui.isProcessing())
+			// Thread.sleep(1000);
+			//				
+			// }
+			// }
 			
 		}
 		catch (Exception e)

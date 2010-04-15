@@ -193,7 +193,7 @@ public class Field {
 	 * 
 	 * @author BLM
 	 */
-	public ArrayList<Cell> getCells()
+	public synchronized ArrayList<Cell> getCells()
 	{
 		if(TheCellRepository==null)
 			return null;

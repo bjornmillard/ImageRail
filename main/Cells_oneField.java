@@ -10,16 +10,14 @@ package main;
  * Included here is both the Cell_coords (coordinates) and the float[][] data matrix values
  *
  @author BLM*/
-import features.Feature;
-
 import java.util.ArrayList;
 
 import us.hms.systemsbiology.data.Data2D;
-import us.hms.systemsbiology.data.HDFConnector;
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.data.HDFConnectorException;
+import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.segmentedobject.Cell;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import features.Feature;
 
 public class Cells_oneField
 {
@@ -171,7 +169,7 @@ public class Cells_oneField
 	
 	/** Returns the indexed names of the features that this dataset contains
 	 * @author BLM*/
-	public StringBuffer[] getFeatureNames()
+	public synchronized StringBuffer[] getFeatureNames()
 	{
 		return featureNames;
 	}
@@ -187,7 +185,7 @@ public class Cells_oneField
 	 * 
 	 * @author BLM
 	 */
-	public float[][] getFeatureVals_all() {
+	public synchronized float[][] getFeatureVals_all() {
 		return dataValues;
 	}
 	
@@ -196,7 +194,7 @@ public class Cells_oneField
 	 * 
 	 * @author BLM
 	 */
-	public Cell getCell(int indexOfCell)
+	public synchronized Cell getCell(int indexOfCell)
 	{
 		return cells.get(indexOfCell);
 	}
@@ -206,7 +204,7 @@ public class Cells_oneField
 	 * 
 	 * @author BLM
 	 */
-	public ArrayList<Cell> getCells()
+	public synchronized ArrayList<Cell> getCells()
 	{
 		return cells;
 	}
@@ -274,7 +272,7 @@ public class Cells_oneField
 	}
 
 	/** */
-	private void writeCoordinates(SegmentationHDFConnector sCon)
+	private synchronized void writeCoordinates(SegmentationHDFConnector sCon)
 			throws HDFConnectorException {
 		// Assuming all cells in this cell bank are stored with the same
 		// structure

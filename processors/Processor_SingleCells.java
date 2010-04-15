@@ -426,13 +426,7 @@ public class Processor_SingleCells extends Thread implements Processor
 				if(well.Feature_Stdev!=null && sCon!=null)
 					sCon.writeWellStdDevValues(plateIndex, wellIndex, well.Feature_Stdev);
 				
-				
-//				if (!ClusterRun)
-//				{
-//					MainGUI.getGUI().getPlateHoldingPanel().updatePanel();
-//					MainGUI.getGUI().updateAllPlots();
-//				}
-				
+
 				
 			}
 			
