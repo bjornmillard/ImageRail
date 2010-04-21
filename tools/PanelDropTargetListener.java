@@ -1,5 +1,7 @@
 package tools;
 
+import gui.MainGUI;
+
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
@@ -16,11 +18,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import main.MainGUI;
-import main.Plate;
+import models.Model_Plate;
 
 public class PanelDropTargetListener implements DropTargetListener {
-	public Plate ThePlate;
+	public Model_Plate ThePlate;
 
 	private static final String URI_LIST_MIME_TYPE = "text/uri-list;class=java.lang.String";
 

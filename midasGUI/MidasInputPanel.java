@@ -35,8 +35,8 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import main.Plate;
-import main.Well;
+import models.Model_Plate;
+import models.Model_Well;
 import us.hms.systemsbiology.metadata.Description;
 import us.hms.systemsbiology.metadata.MetaDataConnector;
 
@@ -49,7 +49,7 @@ public class MidasInputPanel extends JPanel
 	private JLabel wellTitleLabel;
     private JOptionPane optionPane;
 	
-	private Plate thePlate;
+	private Model_Plate thePlate;
 	private ArrayList TreatmentsToAdd;
 	private JComboBox treatmentComboBox;
 	private JComboBox measurementComboBox;
@@ -60,12 +60,12 @@ public class MidasInputPanel extends JPanel
 	private JButton removeMeasurementButton;
 	private JButton editMeasurementButton;
 	private JCheckBox[] checkBoxes;
-	private Well[] theWells;
+	private Model_Well[] theWells;
 	private JPanel TheInputContainerPanel;
 	private MetaDataConnector TheMetaDataWriter;
 	private File CurrentProjectDirectory;
 	
-	public MidasInputPanel(Plate plate)
+	public MidasInputPanel(Model_Plate plate)
 	{
 		setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
 		
@@ -100,7 +100,7 @@ public class MidasInputPanel extends JPanel
 								theWells[i].date = string;
 								TheMetaDataWriter.writeDate(theWells[i].getWellIndex(), string);
 								TheMetaDataWriter.writeMetaDataXML();
-								thePlate.updateMetaDataLegend();
+						thePlate.getGUI().updateMetaDataLegend();
 							}
 						}
 					}
@@ -116,7 +116,7 @@ public class MidasInputPanel extends JPanel
 								theWells[i].date = string;
 								TheMetaDataWriter.writeDate(theWells[i].getWellIndex(), string);
 								TheMetaDataWriter.writeMetaDataXML();
-								thePlate.updateMetaDataLegend();
+						thePlate.getGUI().updateMetaDataLegend();
 							}
 						}
 					}
@@ -133,7 +133,7 @@ public class MidasInputPanel extends JPanel
 								theWells[i].date = string;
 								TheMetaDataWriter.writeDate(theWells[i].getWellIndex(), string);
 								TheMetaDataWriter.writeMetaDataXML();
-								thePlate.updateMetaDataLegend();
+						thePlate.getGUI().updateMetaDataLegend();
 							}
 						}
 					}
@@ -155,7 +155,7 @@ public class MidasInputPanel extends JPanel
 								theWells[i].description = string;
 								TheMetaDataWriter.writeDescription(theWells[i].getWellIndex(), string);
 								TheMetaDataWriter.writeMetaDataXML();
-								thePlate.updateMetaDataLegend();
+						thePlate.getGUI().updateMetaDataLegend();
 							}
 						}
 					}
@@ -171,7 +171,7 @@ public class MidasInputPanel extends JPanel
 								theWells[i].description = string;
 								TheMetaDataWriter.writeDescription( theWells[i].getWellIndex(), string);
 								TheMetaDataWriter.writeMetaDataXML();
-								thePlate.updateMetaDataLegend();
+						thePlate.getGUI().updateMetaDataLegend();
 							}
 						}
 					}
@@ -187,7 +187,7 @@ public class MidasInputPanel extends JPanel
 								theWells[i].description = string;
 								TheMetaDataWriter.writeDescription(theWells[i].getWellIndex(), string);
 								TheMetaDataWriter.writeMetaDataXML();
-								thePlate.updateMetaDataLegend();
+						thePlate.getGUI().updateMetaDataLegend();
 							}
 						}
 					}
@@ -221,7 +221,7 @@ public class MidasInputPanel extends JPanel
 						TheMetaDataWriter.writeMeasurementTime(theWells[i]
 								.getWellIndex(), time, time_units);
 								TheMetaDataWriter.writeMetaDataXML();
-								thePlate.updateMetaDataLegend();
+						thePlate.getGUI().updateMetaDataLegend();
 							}
 							
 						}
@@ -250,7 +250,7 @@ public class MidasInputPanel extends JPanel
 						TheMetaDataWriter.writeMeasurementTime(theWells[i]
 								.getWellIndex(), time, time_units);
 								TheMetaDataWriter.writeMetaDataXML();
-								thePlate.updateMetaDataLegend();
+						thePlate.getGUI().updateMetaDataLegend();
 							}
 							
 						}
@@ -278,7 +278,7 @@ public class MidasInputPanel extends JPanel
 						TheMetaDataWriter.writeMeasurementTime(theWells[i]
 								.getWellIndex(), time, time_units);
 								TheMetaDataWriter.writeMetaDataXML();
-								thePlate.updateMetaDataLegend();
+						thePlate.getGUI().updateMetaDataLegend();
 							}
 							
 						}
@@ -302,7 +302,7 @@ public class MidasInputPanel extends JPanel
 					{
 						NewTreatmentInputDialog n = new NewTreatmentInputDialog();
 						TheMetaDataWriter.writeMetaDataXML();
-						thePlate.updateMetaDataLegend();
+				thePlate.getGUI().updateMetaDataLegend();
 						updateInputPanel(thePlate);
 					}
 					
@@ -325,7 +325,7 @@ public class MidasInputPanel extends JPanel
 							treatmentComboBox.removeItemAt(treatmentComboBox.getSelectedIndex());
 							treatmentComboBox.repaint();
 							
-							thePlate.updateMetaDataLegend();
+					thePlate.getGUI().updateMetaDataLegend();
 						}
 					}
 				});
@@ -342,7 +342,7 @@ public class MidasInputPanel extends JPanel
 							NewTreatmentInputDialog n = new NewTreatmentInputDialog(treat);
 							
 							treatmentComboBox.repaint();
-							thePlate.updateMetaDataLegend();
+					thePlate.getGUI().updateMetaDataLegend();
 						}
 					}
 				});
@@ -361,7 +361,7 @@ public class MidasInputPanel extends JPanel
 						NewMeasurmentInputDialog n = new NewMeasurmentInputDialog();
 						
 						measurementComboBox.repaint();
-						thePlate.updateMetaDataLegend();
+				thePlate.getGUI().updateMetaDataLegend();
 					}
 				});
 		removeMeasurementButton = new JButton("Remove");
@@ -380,7 +380,7 @@ public class MidasInputPanel extends JPanel
 							TheMetaDataWriter.writeMetaDataXML();
 							measurementComboBox.removeItemAt(measurementComboBox.getSelectedIndex());
 							measurementComboBox.repaint();
-							thePlate.updateMetaDataLegend();
+					thePlate.getGUI().updateMetaDataLegend();
 						}
 					}
 				});
@@ -398,7 +398,7 @@ public class MidasInputPanel extends JPanel
 							
 							TheMetaDataWriter.writeMetaDataXML();
 							measurementComboBox.repaint();
-							thePlate.updateMetaDataLegend();
+					thePlate.getGUI().updateMetaDataLegend();
 						}
 					}
 				});
@@ -513,7 +513,7 @@ public class MidasInputPanel extends JPanel
 	/**
 	 *
 	 * */
-	public void updateInputPanel(Plate plate)
+	public void updateInputPanel(Model_Plate plate)
 	{
 		TheMetaDataWriter = plate.getMetaDataConnector();
 		enableComponents(false);
@@ -533,7 +533,7 @@ public class MidasInputPanel extends JPanel
 			String str1 = ranges[0][0]+ranges[1][0];
 			String str2 = ranges[0][1]+ranges[1][1];
 			if (str1.equalsIgnoreCase(str2))
-				wellTitleLabel.setText("Well: "+str1);
+				wellTitleLabel.setText("Well: " + str1);
 			else
 				wellTitleLabel.setText("Wells: "+str1+ "-"+str2);
 			
@@ -651,7 +651,6 @@ public class MidasInputPanel extends JPanel
 			//Measurement Time Point:
 			same = true;
 			val0 = TheMetaDataWriter.readTimePoint(theWells[0].getWellIndex());
-			System.out.println(val0);
 			for (int i=1; i < numWells; i++)
 			{
 				Description val_i = TheMetaDataWriter.readTimePoint( theWells[i].getWellIndex());
@@ -775,7 +774,7 @@ public class MidasInputPanel extends JPanel
 		textField[3].setEditable(checkBoxes[4].isSelected());
 	}
 	
-	private String[][] getWellRanges(Well[] wells)
+	private String[][] getWellRanges(Model_Well[] wells)
 	{
 		String[][] ranges = new String[2][2];
 		int len = wells.length;
@@ -793,24 +792,24 @@ public class MidasInputPanel extends JPanel
 				colMax = wells[i].Column;
 			
 			
-			if (Plate.getRowName(wells[i].Row).compareTo(rowMin)<0)
-				rowMin = Plate.getRowName(wells[i].Row);
-			if (Plate.getRowName(wells[i].Row).compareTo(rowMin)>=0)
-				rowMax = Plate.getRowName(wells[i].Row);
+			if (Model_Plate.getRowName(wells[i].Row).compareTo(rowMin)<0)
+				rowMin = Model_Plate.getRowName(wells[i].Row);
+			if (Model_Plate.getRowName(wells[i].Row).compareTo(rowMin)>=0)
+				rowMax = Model_Plate.getRowName(wells[i].Row);
 		}
 		
 		ranges[0][0] = rowMin;
 		ranges[0][1] = rowMax;
 		
-		ranges[1][0] = ""+Plate.getColumnName(colMin);
-		ranges[1][1] = ""+Plate.getColumnName(colMax);
+		ranges[1][0] = ""+Model_Plate.getColumnName(colMin);
+		ranges[1][1] = ""+Model_Plate.getColumnName(colMax);
 		
 		return ranges;
 	}
 	
 	/** Looks at all the wells in this plate and returns a list of all unique treatments
 	 * @author BLM*/
-	private ArrayList<Description> getAllUniqueTreatments(Plate plate)
+	private ArrayList<Description> getAllUniqueTreatments(Model_Plate plate)
 	{
 		ArrayList<Description> arr = new ArrayList<Description>();
 		
@@ -818,7 +817,7 @@ public class MidasInputPanel extends JPanel
 		{
 			for (int j = 0; j < plate.getNumColumns(); j++)
 			{
-				Description[] des = TheMetaDataWriter.readTreatments(plate.getTheWells()[i][j].getWellIndex());
+				Description[] des = TheMetaDataWriter.readTreatments(plate.getWells()[i][j].getWellIndex());
 				if (des!=null)
 				{
 					int len = des.length;
@@ -1105,7 +1104,7 @@ public class MidasInputPanel extends JPanel
 				}
 			}
 			
-			thePlate.updateMetaDataLegend();
+			thePlate.getGUI().updateMetaDataLegend();
 		}
 		
 		/** This method clears the dialog and hides it. */
@@ -1338,7 +1337,7 @@ public class MidasInputPanel extends JPanel
 				{
 					clearAndHide();
 				}
-				thePlate.updateMetaDataLegend();
+				thePlate.getGUI().updateMetaDataLegend();
 			}
 		}
 		

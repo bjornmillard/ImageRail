@@ -6,13 +6,15 @@
 
 package dataSavers;
 
-import features.Feature;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+
 import javax.swing.JFileChooser;
-import main.MainGUI;
-import main.Plate;
+
+import models.Model_Plate;
+import features.Feature;
+import gui.MainGUI;
 
 public class DataSaver_XML implements DataSaver
 {
@@ -82,7 +84,8 @@ public class DataSaver_XML implements DataSaver
 			pw.println("<parsedData>");
 			
 
-			Plate plate = TheMainGUI.getPlateHoldingPanel().getThePlates()[0];
+			Model_Plate plate = TheMainGUI.getPlateHoldingPanel().getModel()
+					.getPlates()[0];
 			
 			//printing out each well's value
 			int numF  = TheMainGUI.getTheFeatures().size();
@@ -97,8 +100,8 @@ public class DataSaver_XML implements DataSaver
 					for (int r = 0; r < plate.getNumRows(); r++)
 					{
 						for (int c =0; c < plate.getNumColumns(); c++)
-							if (plate.getTheWells()[r][c].Feature_Means!=null)
-								pw.print(plate.getTheWells()[r][c].Feature_Means[i]+",");
+							if (plate.getWells()[r][c].Feature_Means!=null)
+								pw.print(plate.getWells()[r][c].Feature_Means[i]+",");
 							else
 								pw.print("0,");
 						
@@ -106,8 +109,8 @@ public class DataSaver_XML implements DataSaver
 						{
 							pw.print(", , , ");
 							for (int c =0; c < plate.getNumColumns(); c++)
-								if (plate.getTheWells()[r][c].Feature_Stdev!=null)
-									pw.print(plate.getTheWells()[r][c].Feature_Stdev[i]+",");
+								if (plate.getWells()[r][c].Feature_Stdev!=null)
+									pw.print(plate.getWells()[r][c].Feature_Stdev[i]+",");
 								else
 									pw.print("0,");
 						}
@@ -140,7 +143,8 @@ public class DataSaver_XML implements DataSaver
 			pw.println("<?xml version='1.0' encoding='UTF-8'?>");
 			pw.println("<parsedData>");
 			
-			Plate plate = TheMainGUI.getPlateHoldingPanel().getThePlates()[0];
+			Model_Plate plate = TheMainGUI.getPlateHoldingPanel().getModel()
+					.getPlates()[0];
 			//printing out each well's value
 			int numF  = TheMainGUI.getTheFeatures().size();
 			for (int i = 0; i < numF; i++)
@@ -157,9 +161,9 @@ public class DataSaver_XML implements DataSaver
 					double[][] normDispersions = new double[plate.getNumRows()][plate.getNumColumns()];
 					for (int r = 0; r <  plate.getNumRows(); r++)
 						for (int c =0; c <  plate.getNumColumns(); c++)
-							if ( plate.getTheWells()[r][c].Feature_Stdev!=null)
+							if ( plate.getWells()[r][c].Feature_Stdev!=null)
 							{
-								normDispersions[r][c] = (Math.pow( plate.getTheWells()[r][c].Feature_Stdev[i],1)/ plate.getTheWells()[r][c].Feature_Means[i]);
+								normDispersions[r][c] = (Math.pow( plate.getWells()[r][c].Feature_Stdev[i],1)/ plate.getWells()[r][c].Feature_Means[i]);
 								if (normDispersions[r][c]<minDisp)
 									minDisp=normDispersions[r][c];
 								if (normDispersions[r][c]>maxDisp)
@@ -178,9 +182,9 @@ public class DataSaver_XML implements DataSaver
 					double[][] normMeans = new double[ plate.getNumRows()][ plate.getNumColumns()];
 					for (int r = 0; r <  plate.getNumRows(); r++)
 						for (int c =0; c <  plate.getNumColumns(); c++)
-							if ( plate.getTheWells()[r][c].Feature_Means!=null)
+							if ( plate.getWells()[r][c].Feature_Means!=null)
 							{
-								normMeans[r][c] =  plate.getTheWells()[r][c].Feature_Means[i];
+								normMeans[r][c] =  plate.getWells()[r][c].Feature_Means[i];
 								if (normMeans[r][c]<minMean)
 									minMean=normMeans[r][c];
 								if (normMeans[r][c]>maxMean)
@@ -199,7 +203,7 @@ public class DataSaver_XML implements DataSaver
 					for (int r = 0; r < plate.getNumRows(); r++)
 					{
 						for (int c =0; c <  plate.getNumColumns(); c++)
-							if ( plate.getTheWells()[r][c].Feature_Means!=null)
+							if ( plate.getWells()[r][c].Feature_Means!=null)
 							{
 								
 								pw.println("<point x='"+r+"'  y='"+c+"'   z='"+ normMeans[r][c]+"'  colorValue1='"+normDispersions[r][c] +"'  colorValue2='"+bimodalDistance[r][c]+"'/>");

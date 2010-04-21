@@ -1,4 +1,4 @@
-package main;
+package imageViewers;
 
 import java.awt.*;
 import java.awt.event.*;

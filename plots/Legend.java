@@ -41,7 +41,7 @@ public class Legend
 	{
 		if (TheSpecies==null || TheSpecies.size()==0)
 			return;
-		g2.setFont(main.MainGUI.Font_12);
+		g2.setFont(gui.MainGUI.Font_12);
 		g2.setColor(Color.white);
 		g2.fillRect(outline.x, outline.y, outline.width, outline.height);
 		g2.setColor(Color.black);
@@ -131,7 +131,7 @@ public class Legend
 			g2.setColor(Color.black);
 			g2.drawRect(x,y, boxWidth,boxWidth);
 			
-			g2.setFont(main.MainGUI.Font_12);
+			g2.setFont(gui.MainGUI.Font_12);
 			if(name!=null)
 				g2.drawString(name, x + boxWidth + 6, y+boxWidth);
 		}

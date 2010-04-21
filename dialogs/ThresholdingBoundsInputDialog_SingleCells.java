@@ -6,6 +6,8 @@
 
 package dialogs;
 
+import gui.MainGUI;
+
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
@@ -31,9 +33,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
-import main.MainGUI;
-import main.ParameterSet;
-import main.Well;
+import models.Model_Well;
+import models.Model_ParameterSet;
 import processors.Processor_SingleCells;
 import segmentors.DefaultSegmentor;
 
@@ -44,12 +45,12 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 	private JOptionPane optionPane;
 	private String btnString1 = "Run";
 	private String btnString2 = "Cancel";
-	private Well[] TheWells;
+	private Model_Well[] TheWells;
 	private JComboBox channelBox_nuc;
 	private JComboBox channelBox_cyto;
 	private int CoordsToSave;
 
-	public ThresholdingBoundsInputDialog_SingleCells(Well[] wells) {
+	public ThresholdingBoundsInputDialog_SingleCells(Model_Well[] wells) {
 		int width = 470;
 		int height = 600;
 		setTitle("Input");
@@ -59,10 +60,10 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 				- height / 2);
 		setModal(true);
 
-		ParameterSet pset = ParameterSet.doWellsHaveSameParameterSet(wells);
+		Model_ParameterSet pset = Model_ParameterSet.doWellsHaveSameParameterSet(wells);
 		if (pset != null)
 			if (!pset.getProcessType()
-					.equalsIgnoreCase(ParameterSet.SINGLECELL))
+					.equalsIgnoreCase(Model_ParameterSet.SINGLECELL))
 				pset = null;
 
 		/** Features comboBox */
@@ -193,7 +194,7 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 			textField[1].setText("" + pset.getThreshold_Cell());
 			textField[2].setText("" + pset.getThreshold_Background());
 
-			if (pset.getAnnulusSize() != ParameterSet.NOVALUE) {
+			if (pset.getAnnulusSize() != Model_ParameterSet.NOVALUE) {
 				MainGUI.getGUI().getCytoplasmAnnulusCheckBox()
 						.setSelected(true);
 				textField[3].setText("" + pset.getAnnulusSize());
@@ -317,14 +318,14 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 							.isSelected())
 						AnnulusDiameter = Float.parseFloat(strings[3]);
 
-					// Storing the Parameters for each Well
+					// Storing the Parameters for each Model_Well
 					int len = TheWells.length;
 					for (int i = 0; i < len; i++) {
-						Well well = TheWells[i];
-						ParameterSet pset = well.TheParameterSet;
+						Model_Well well = TheWells[i];
+						Model_ParameterSet pset = well.TheParameterSet;
 						pset.setModified(true);
 						// ProcessType
-						pset.setProcessType(ParameterSet.SINGLECELL);
+						pset.setProcessType(Model_ParameterSet.SINGLECELL);
 						// Threshold Channel Nucleus
 						pset.setThresholdChannel_nuc_Name(MainGUI.getGUI()
 								.getTheChannelNames()[NucBoundaryChannel]);

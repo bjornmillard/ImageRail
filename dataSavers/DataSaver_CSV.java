@@ -6,13 +6,15 @@
 
 package dataSavers;
 
-import features.Feature;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+
 import javax.swing.JFileChooser;
-import main.MainGUI;
-import main.Plate;
+
+import models.Model_Plate;
+import features.Feature;
+import gui.MainGUI;
 
 public class DataSaver_CSV implements DataSaver
 {
@@ -95,11 +97,12 @@ public class DataSaver_CSV implements DataSaver
 			PrintWriter pw = new PrintWriter(outDir);
 			String tab = ", , , ";
 			
-			Plate[] thePlates = TheMainGUI.getPlateHoldingPanel().getThePlates();
+			Model_Plate[] thePlates = TheMainGUI.getPlateHoldingPanel()
+					.getModel().getPlates();
 			int numPlates = thePlates.length;
 			for (int p = 0; p < numPlates; p++)
 			{
-				Plate plate = thePlates[p];
+				Model_Plate plate = thePlates[p];
 				int numC = plate.getNumColumns();
 				int numR = plate.getNumRows();
 				pw.println("PlateID: "+plate.getTitle());
@@ -124,8 +127,8 @@ public class DataSaver_CSV implements DataSaver
 						for (int r = 0; r < numR; r++)
 						{
 							for (int c =0; c < numC; c++)
-								if (plate.getTheWells()[r][c].Feature_Means!=null)
-									pw.print(plate.getTheWells()[r][c].Feature_Means[i]+",");
+								if (plate.getWells()[r][c].Feature_Means!=null)
+									pw.print(plate.getWells()[r][c].Feature_Means[i]+",");
 								else
 									pw.print("0,");
 							
@@ -133,8 +136,8 @@ public class DataSaver_CSV implements DataSaver
 							{
 								pw.print(tab);
 								for (int c =0; c < numC; c++)
-									if (plate.getTheWells()[r][c].Feature_Stdev!=null)
-										pw.print(plate.getTheWells()[r][c].Feature_Stdev[i]+",");
+									if (plate.getWells()[r][c].Feature_Stdev!=null)
+										pw.print(plate.getWells()[r][c].Feature_Stdev[i]+",");
 									else
 										pw.print("0,");
 							}
@@ -152,8 +155,8 @@ public class DataSaver_CSV implements DataSaver
 				for (int r = 0; r < numR; r++)
 				{
 					for (int c =0; c < numC; c++)
-						if (plate.getTheWells()[r][c].getCell_values()!=null)
-							pw.print(plate.getTheWells()[r][c].getCell_values().length+",");
+						if (plate.getWells()[r][c].getCell_values()!=null)
+							pw.print(plate.getWells()[r][c].getCell_values().length+",");
 						else
 							pw.print("0,");
 					pw.println();
@@ -176,11 +179,12 @@ public class DataSaver_CSV implements DataSaver
 			MainGUI TheMainGUI =  MainGUI.getGUI();
 			PrintWriter pw = new PrintWriter(outDir);
 			
-			Plate[] thePlates = TheMainGUI.getPlateHoldingPanel().getThePlates();
+			Model_Plate[] thePlates = TheMainGUI.getPlateHoldingPanel()
+					.getModel().getPlates();
 			int numPlates = thePlates.length;
 			for (int p = 0; p < numPlates; p++)
 			{
-				Plate plate = thePlates[p];
+				Model_Plate plate = thePlates[p];
 				int numC = plate.getNumColumns();
 				int numR = plate.getNumRows();
 				pw.println("PlateID: "+plate.getTitle());
@@ -199,11 +203,11 @@ public class DataSaver_CSV implements DataSaver
 						for (int r = 0; r < numR; r++)
 						{
 							for (int c =0; c < numC; c++)
-								if (plate.getTheWells()[r][c].Feature_Means!=null)
+								if (plate.getWells()[r][c].Feature_Means!=null)
 									if(!LogScaleValues)
-										pw.print(plate.getTheWells()[r][c].Feature_Means[i]+",");
+										pw.print(plate.getWells()[r][c].Feature_Means[i]+",");
 									else
-										pw.print(tools.MathOps.log(plate.getTheWells()[r][c].Feature_Means[i])+",");
+										pw.print(tools.MathOps.log(plate.getWells()[r][c].Feature_Means[i])+",");
 								else
 									pw.print("0,");
 							
@@ -211,11 +215,11 @@ public class DataSaver_CSV implements DataSaver
 							{
 								pw.print(", , , ");
 								for (int c =0; c < numC; c++)
-									if (plate.getTheWells()[r][c].Feature_Stdev!=null)
+									if (plate.getWells()[r][c].Feature_Stdev!=null)
 										if(!LogScaleValues)
-											pw.print(plate.getTheWells()[r][c].Feature_Stdev[i]+",");
+											pw.print(plate.getWells()[r][c].Feature_Stdev[i]+",");
 										else
-											pw.print(tools.MathOps.log(plate.getTheWells()[r][c].Feature_Stdev[i])+",");
+											pw.print(tools.MathOps.log(plate.getWells()[r][c].Feature_Stdev[i])+",");
 									else
 										pw.print("0,");
 							}

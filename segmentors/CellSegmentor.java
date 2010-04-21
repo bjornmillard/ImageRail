@@ -6,11 +6,12 @@
 
 package segmentors;
 import java.util.ArrayList;
-import main.ParameterSet;
+
+import models.Model_ParameterSet;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 
 public interface CellSegmentor
 {
-	public ArrayList<CellCoordinates>  segmentCells(int[][][] raster, ParameterSet pset);
+	public ArrayList<CellCoordinates>  segmentCells(int[][][] raster, Model_ParameterSet pset);
 }
 

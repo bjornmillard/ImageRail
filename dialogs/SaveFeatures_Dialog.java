@@ -10,6 +10,8 @@ import javax.swing.*;
 
 import dataSavers.DataSaver;
 import features.Feature;
+import gui.MainGUI;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -22,7 +24,6 @@ import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import main.MainGUI;
 
 public class SaveFeatures_Dialog extends JFrame
 {

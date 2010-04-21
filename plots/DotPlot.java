@@ -8,6 +8,7 @@ package plots;
 
 import features.Feature;
 import filters.DotFilter;
+import gui.MainGUI;
 import imPanels.ImageCapturePanel;
 import imPanels.JPanel_highlightBox;
 import imageViewers.FilmStrip_Cells;
@@ -65,10 +66,9 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import main.MainGUI;
-import main.Plate;
-import main.PlateHoldingPanel;
-import main.Well;
+import models.Model_Plate;
+import models.Model_PlateRepository;
+import models.Model_Well;
 import tools.ColorRama;
 import tools.SVG_writer;
 import us.hms.systemsbiology.segmentedobject.Cell;
@@ -97,7 +97,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 
 	private MainGUI TheMainGUI;
 	public Dot[][] TheDots;
-	private Well[] TheWells;
+	private Model_Well[] TheWells;
 	private int NumDots_Total;
 	private int NumDots_Selected;
 
@@ -157,7 +157,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 	public ArrayList<ArrayList<Cell>> TheCells;
 	private ArrayList<DotFilter> TheDotFilters;
 
-	public DotPlot(MainGUI mainGUI, Well[] wells, Feature featureX,
+	public DotPlot(MainGUI mainGUI, Model_Well[] wells, Feature featureX,
 			Feature featureY, boolean logX, boolean logY, int plotType_,
 			boolean densityPlot, float percentToPlot_) {
 		ThePlot = this;
@@ -302,7 +302,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 				updatePlot(TheWells, FeatureX.toString(), FeatureY.toString());
 				validate();
 				repaint();
-				TheMainGUI.getPlateHoldingPanel().updateMinMaxValues();
+				TheMainGUI.getPlateHoldingPanel().getModel()
+						.updateMinMaxValues();
 			}
 		});
 		bottomPanel.add(ComboBoxes[0], 2);
@@ -326,7 +327,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 				updatePlot(TheWells, FeatureX.toString(), FeatureY.toString());
 				validate();
 				repaint();
-				TheMainGUI.getPlateHoldingPanel().updateMinMaxValues();
+				TheMainGUI.getPlateHoldingPanel().getModel()
+						.updateMinMaxValues();
 			}
 		});
 		bottomPanel.add(ComboBoxes[1], 3);
@@ -534,7 +536,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		// if (Button_slopeDisplay.isSelected())
 		// {
 		// Button_slopeDisplay.setIcon(tools.Icons.Icon_slopeDisplay_selected);
-		// Plate plate = new Plate(TheMainGUI,
+		// Model_Plate plate = new Model_Plate(TheMainGUI,
 		// TheMainGUI.ThePlatePanel.numPlates_Rows,
 		// TheMainGUI.ThePlatePanel.numPlates_Cols,
 		// "Distribution Slope Display");
@@ -673,12 +675,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								xyPoints_bounds[1][i] = tools.MathOps
 										.exp(xyPoints_bounds[1][i]);
 
-						int ID = TheMainGUI.getPlateHoldingPanel()
+						int ID = TheMainGUI.getPlateHoldingPanel().getModel()
 								.getUniqueGateID();
 						for (int n = 0; n < num; n++) {
 							Gate_DotPlot g = new Gate_DotPlot(xyPoints_bounds,
 									FeatureX, FeatureY, ID);
-							Well well = TheWells[n];
+							Model_Well well = TheWells[n];
 							well.TheGates.add(g);
 							well.GateCounter++;
 						}
@@ -730,12 +732,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								xyPoints_bounds[1][i] = tools.MathOps
 										.exp(xyPoints_bounds[1][i]);
 
-						int ID = TheMainGUI.getPlateHoldingPanel()
+						int ID = TheMainGUI.getPlateHoldingPanel().getModel()
 								.getUniqueGateID();
 						for (int n = 0; n < num; n++) {
 							Gate_DotPlot g = new Gate_DotPlot(xyPoints_bounds,
 									FeatureX, FeatureY, ID);
-							Well well = TheWells[n];
+							Model_Well well = TheWells[n];
 							well.TheGates.add(g);
 							well.GateCounter++;
 						}
@@ -800,12 +802,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								xyPoints_bounds[1][i] = tools.MathOps
 										.exp(xyPoints_bounds[1][i]);
 
-						int ID = TheMainGUI.getPlateHoldingPanel()
+						int ID = TheMainGUI.getPlateHoldingPanel().getModel()
 								.getUniqueGateID();
 						for (int n = 0; n < num; n++) {
 							Gate_DotPlot g = new Gate_DotPlot(xyPoints_bounds,
 									FeatureX, FeatureY, ID);
-							Well well = TheWells[n];
+							Model_Well well = TheWells[n];
 							well.TheGates.add(g);
 							well.GateCounter++;
 						}
@@ -875,12 +877,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								xyPoints_bounds[1][i] = tools.MathOps
 										.exp(xyPoints_bounds[1][i]);
 
-						int ID = TheMainGUI.getPlateHoldingPanel()
+						int ID = TheMainGUI.getPlateHoldingPanel().getModel()
 								.getUniqueGateID();
 						for (int n = 0; n < num; n++) {
 							Gate_DotPlot g = new Gate_DotPlot(xyPoints_bounds,
 									FeatureX, FeatureY, ID);
-							Well well = TheWells[n];
+							Model_Well well = TheWells[n];
 							well.TheGates.add(g);
 							well.GateCounter++;
 						}
@@ -903,12 +905,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 				if (TheDots == null || TheDots.length == 0)
 					return;
 
-				PlateHoldingPanel platePanel = TheMainGUI
-						.getPlateHoldingPanel();
+				Model_PlateRepository platePanel = TheMainGUI
+						.getPlateHoldingPanel().getModel();
 				int numPlates = platePanel.getNumPlates();
 
 				for (int p = 0; p < numPlates; p++) {
-					Plate plate = platePanel.getThePlates()[p];
+					Model_Plate plate = platePanel.getPlates()[p];
 					int numC = plate.getNumColumns();
 					int numR = plate.getNumRows();
 
@@ -974,13 +976,14 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 											.exp(xyPoints_bounds[1][i]);
 
 							int ID = TheMainGUI.getPlateHoldingPanel()
+									.getModel()
 									.getUniqueGateID();
 							for (int r = 0; r < numR; r++)
 								for (int c = 0; c < numC; c++) {
 									Gate_DotPlot g = new Gate_DotPlot(
 											xyPoints_bounds, FeatureX,
 											FeatureY, ID);
-									Well well = plate.getTheWells()[r][c];
+									Model_Well well = plate.getWells()[r][c];
 									well.TheGates.add(g);
 									well.GateCounter++;
 								}
@@ -1033,13 +1036,14 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 											.exp(xyPoints_bounds[1][i]);
 
 							int ID = TheMainGUI.getPlateHoldingPanel()
+									.getModel()
 									.getUniqueGateID();
 							for (int r = 0; r < numR; r++)
 								for (int c = 0; c < numC; c++) {
 									Gate_DotPlot g = new Gate_DotPlot(
 											xyPoints_bounds, FeatureX,
 											FeatureY, ID);
-									Well well = plate.getTheWells()[r][c];
+									Model_Well well = plate.getWells()[r][c];
 									well.TheGates.add(g);
 									well.GateCounter++;
 								}
@@ -1078,13 +1082,14 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 											.exp(xyPoints_bounds[1][i]);
 
 							int ID = TheMainGUI.getPlateHoldingPanel()
+									.getModel()
 									.getUniqueGateID();
 							for (int r = 0; r < numR; r++)
 								for (int c = 0; c < numC; c++) {
 									Gate_DotPlot g = new Gate_DotPlot(
 											xyPoints_bounds, FeatureX,
 											FeatureY, ID);
-									Well well = plate.getTheWells()[r][c];
+									Model_Well well = plate.getWells()[r][c];
 									well.TheGates.add(g);
 									well.GateCounter++;
 								}
@@ -1139,13 +1144,14 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 											.exp(xyPoints_bounds[1][i]);
 
 							int ID = TheMainGUI.getPlateHoldingPanel()
+									.getModel()
 									.getUniqueGateID();
 							for (int r = 0; r < numR; r++)
 								for (int c = 0; c < numC; c++) {
 									Gate_DotPlot g = new Gate_DotPlot(
 											xyPoints_bounds, FeatureX,
 											FeatureY, ID);
-									Well well = plate.getTheWells()[r][c];
+									Model_Well well = plate.getWells()[r][c];
 									well.TheGates.add(g);
 									well.GateCounter++;
 								}
@@ -1174,14 +1180,14 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		//
 		// for (int p = 0; p < numPlates; p++)
 		// {
-		// Plate plate =
+		// Model_Plate plate =
 		// TheMainGUI.getGUI().getThePlateHoldingPanel().getThePlates()[p];
 		// int rows = plate.getNumRows();
 		// int cols = plate.getNumColumns();
 		// for (int r = 0; r < rows; r++)
 		// for (int c = 0; c < cols; c++)
 		// {
-		// Well well = plate.getTheWells()[r][c];
+		// Model_Well well = plate.getTheWells()[r][c];
 		// int len = well.TheGates.size();
 		//
 		// for (int i = 0; i < len; i++)
@@ -1214,18 +1220,19 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		but.setToolTipText("Delete All Gates");
 		but.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				int numPlates = TheMainGUI.getPlateHoldingPanel()
+				int numPlates = TheMainGUI.getPlateHoldingPanel().getModel()
 						.getNumPlates();
 
 				for (int p = 0; p < numPlates; p++) {
 
-					Plate plate = TheMainGUI.getPlateHoldingPanel()
-							.getThePlates()[p];
+					Model_Plate plate = TheMainGUI.getPlateHoldingPanel()
+							.getModel()
+							.getPlates()[p];
 					int rows = plate.getNumRows();
 					int cols = plate.getNumColumns();
 					for (int r = 0; r < rows; r++)
 						for (int c = 0; c < cols; c++) {
-							Well well = plate.getTheWells()[r][c];
+							Model_Well well = plate.getWells()[r][c];
 							int len = well.TheGates.size();
 
 							for (int i = 0; i < len; i++) {
@@ -1322,17 +1329,17 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 						ArrayList<Gate_DotPlot> arr = new ArrayList<Gate_DotPlot>();
 
 						// Finding unique gate IDs for headers
-						PlateHoldingPanel platePanel = TheMainGUI
-								.getPlateHoldingPanel();
+						Model_PlateRepository platePanel = TheMainGUI
+								.getPlateHoldingPanel().getModel();
 						int numPlates = platePanel.getNumPlates();
-						Plate[] plates = platePanel.getThePlates();
+						Model_Plate[] plates = platePanel.getPlates();
 						for (int i = 0; i < numPlates; i++) {
-							Plate plate = platePanel.getThePlates()[i];
+							Model_Plate plate = platePanel.getPlates()[i];
 							int numC = plate.getNumColumns();
 							int numR = plate.getNumRows();
 							for (int r = 0; r < numR; r++)
 								for (int c = 0; c < numC; c++) {
-									Well well = plate.getTheWells()[r][c];
+									Model_Well well = plate.getWells()[r][c];
 									int len = well.TheGates.size();
 									for (int d = 0; d < len; d++) {
 										Gate_DotPlot g = well.TheGates.get(d);
@@ -1365,16 +1372,16 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 
 						// for each well:
 						for (int i = 0; i < numPlates; i++) {
-							Plate plate = platePanel.getThePlates()[i];
+							Model_Plate plate = platePanel.getPlates()[i];
 							int numC = plate.getNumColumns();
 							int numR = plate.getNumRows();
 							for (int r = 0; r < numR; r++)
 								for (int c = 0; c < numC; c++) {
-									Well well = plate.getTheWells()[r][c];
+									Model_Well well = plate.getWells()[r][c];
 									ArrayList<Cell> cells = well.getCells();
 									if (cells != null && cells.size() > 0) {
 										int len = well.TheGates.size();
-										// Well Name... ex: A01
+										// Model_Well Name... ex: A01
 										pw.print(well.name);
 										pw.print("," + well.getPlate().getID());
 										// Printing Total number of cells:
@@ -1503,12 +1510,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 			TheWells[i].purgeSelectedCellsAndRecomputeWellMeans();
 		}
 
-		TheMainGUI.getPlateHoldingPanel().updateMinMaxValues();
+		TheMainGUI.getPlateHoldingPanel().getModel().updateMinMaxValues();
 		return numToDelete;
 	}
 
 	private int getFeatureIndex(String fname) {
-		Feature[] fs = main.MainGUI.getGUI().getFeatures();
+		Feature[] fs = gui.MainGUI.getGUI().getFeatures();
 		for (int i = 0; i < fs.length; i++) {
 			// System.out.println("FeatureName: "+fs[i].toString()
 			// +"  vs   "+fname);
@@ -1541,7 +1548,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 	 * 
 	 * @author BLM
 	 */
-	private void updatePlot(Well[] wells, String featureName_X,
+	private void updatePlot(Model_Well[] wells, String featureName_X,
 			String featureName_Y) {
 		UpdatePlotImage = true;
 
@@ -1665,7 +1672,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 	 * 
 	 * @author BLM
 	 * */
-	public Well[] getWells() {
+	public Model_Well[] getWells() {
 		return TheWells;
 	}
 
@@ -1900,7 +1907,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 				int num = TheWells.length;
 				int counter = 0;
 				for (int n = 0; n < num; n++) {
-					Well well = TheWells[n];
+					Model_Well well = TheWells[n];
 					int len = well.TheGates.size();
 					ArrayList<Cell> cells = well.getCells();
 					if (cells != null && cells.size() > 0) {
@@ -2593,7 +2600,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 				g2.setColor(Color.green);
 				int num = TheWells.length;
 				for (int n = 0; n < num; n++) {
-					Well well = TheWells[n];
+					Model_Well well = TheWells[n];
 					int len = well.TheGates.size();
 
 					for (int i = 0; i < len; i++) {
@@ -2616,7 +2623,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 				// int num = TheWells.length;
 				// for (int n = 0; n < num; n++)
 				// {
-				// Well well = TheWells[n];
+				// Model_Well well = TheWells[n];
 				// int len = well.TheGates.size();
 				// for (int i = 0; i < len; i++)
 				// {
@@ -2957,7 +2964,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 						xStartK = (int) xStart;
 					}
 
-					Well well = TheWells[n];
+					Model_Well well = TheWells[n];
 					len = well.TheGates.size();
 
 					for (int i = 0; i < len; i++) {
@@ -2999,7 +3006,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 						xStartK = (int) xStart;
 					}
 
-					Well well = TheWells[n];
+					Model_Well well = TheWells[n];
 					len = well.TheGates.size();
 
 					for (int i = 0; i < len; i++) {
@@ -3026,7 +3033,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 				// looking at gates in other well with same ID and giving it the
 				// same selection as above
 				for (int n = 0; n < num; n++) {
-					Well well = TheWells[n];
+					Model_Well well = TheWells[n];
 					len = well.TheGates.size();
 					for (int i = 0; i < len; i++) {
 						Gate_DotPlot g = (Gate_DotPlot) well.TheGates.get(i);
@@ -3135,7 +3142,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		private String btnString1 = "Set";
 		private String btnString2 = "Cancel";
 
-		public BoundsInputDialog(Well[] wells) {
+		public BoundsInputDialog(Model_Well[] wells) {
 			int width = 400;
 			int height = 310;
 			setTitle("Input");

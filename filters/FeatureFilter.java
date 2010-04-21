@@ -7,6 +7,8 @@
 package filters;
 
 import features.Feature;
+import gui.MainGUI;
+
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -15,7 +17,6 @@ import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import main.MainGUI;
 import tempObjects.Cell_RAM;
 
 public class FeatureFilter

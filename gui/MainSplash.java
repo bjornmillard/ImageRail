@@ -1,4 +1,5 @@
-package main;
+package gui;
+
 
 import java.awt.*;
 
@@ -7,18 +8,18 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
 
-public class SplashScreen extends JWindow {
+public class MainSplash extends JWindow {
 	private Image im;
 	private int duration;
 	private int width = 580;
 	private int height = 160;
 	private String TheMessage;
 
-	public SplashScreen(int d) {
+	public MainSplash(int d) {
 		duration = d;
 	}
 
-	public SplashScreen() {
+	public MainSplash() {
 		duration = -1;
 	}
 

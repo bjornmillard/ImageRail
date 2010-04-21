@@ -7,7 +7,7 @@
 package features;
 
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
-import us.hms.systemsbiology.segmentedobject.Point;
+import us.hms.systemsbiology.idx2coordinates.Point;
 
 public class Integrated_Cytoplasm extends Feature
 {

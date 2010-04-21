@@ -11,6 +11,8 @@ import javax.swing.*;
 
 import dataSavers.DataSaver;
 import features.Feature;
+import gui.MainGUI;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -21,7 +23,6 @@ import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import main.MainGUI;
 
 public class FeatureSelectionDialog extends JDialog
 {

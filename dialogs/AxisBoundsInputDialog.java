@@ -6,6 +6,8 @@
 
 package dialogs;
 
+import gui.MainGUI;
+
 import java.awt.event.*;
 
 import plots.Bound;
@@ -18,7 +20,6 @@ import java.text.NumberFormat;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import main.MainGUI;
 
 public class AxisBoundsInputDialog extends JDialog implements ActionListener,PropertyChangeListener
 {

@@ -1,55 +1,46 @@
 /**
- * Well.java
+ * Model_Well.java
  *
  * @author Bjorn L Millard
  */
 
-package main;
+package models;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.Rectangle;
+import features.Feature;
+import gui.Gui_Well;
+import gui.MainGUI;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 import midasGUI.Measurement;
 import midasGUI.Treatment;
 import plots.DotSelectionListener;
 import plots.Gate_DotPlot;
 import us.hms.systemsbiology.data.SegmentationHDFConnector;
-import us.hms.systemsbiology.metadata.Description;
 import us.hms.systemsbiology.metadata.MetaDataConnector;
 import us.hms.systemsbiology.segmentedobject.Cell;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
-import features.Feature;
 
 
-public class Well
+public class Model_Well
 {
 	/** */
-	private Plate ThePlate;
+	private Model_Plate ThePlate;
 	/** */
 	public int Row;
 	/** */
 	public int Column;
 	/** */
 	public int ID;
-	/** */
-	public Rectangle outline;
+
 	/** */
 	private boolean selected;
 	/** */
 	public boolean processing;
+
 	/** */
-	public Color color;
-	/** */
-	public Color color_outline;
-	/** */
-	private Field[] TheFields;
+	private Model_Field[] TheFields;
 	/** */
 	public float[] Feature_Means;
 	/** */
@@ -59,11 +50,8 @@ public class Well
 	/** */
 	public DotSelectionListener TheDotSelectionListener;
 	/** */
-	public ParameterSet TheParameterSet;
-	// /** */
-	// public WellHistograms TheHistograms;
-	/** */
-	static final public AlphaComposite translucComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
+	public Model_ParameterSet TheParameterSet;
+
 	//MIDAS fields:
 	public String name;
 	/** */
@@ -76,10 +64,7 @@ public class Well
 	public ArrayList<Measurement> measurements;
 	/** */
 	public String measurementTime;
-	/** */
-	private Color initColor = Color.black;
-	/** */
-	public boolean AllowImageCountDisplay;
+
 	/** */
 	public int GateCounter;
 	/** */
@@ -88,54 +73,66 @@ public class Well
 	private boolean cellsModified;
 	/** */
 	private boolean loading;
+	/** */
+	private Gui_Well ThisGUI;
 	
-	/** Main Well Constructor*/
-	public Well(Plate plate, int row, int col)
+	/** Main Model_Well Constructor*/
+	public Model_Well(Model_Plate plate, int row, int col)
 	{
 		ThePlate = plate;
 		Row = row;
 		Column = col;
 		cellsModified = false;
-		color = initColor;
-		color_outline = Color.white;
 		treatments = new ArrayList();
 		measurements = new ArrayList();
-		name = Plate.getRowName(row)+Plate.getColumnName(col);
+		name = Model_Plate.getRowName(row)+Model_Plate.getColumnName(col);
 		TheGates = new ArrayList<Gate_DotPlot>();
 		GateCounter = 1;
-		TheParameterSet = new ParameterSet();
+		TheParameterSet = new Model_ParameterSet();
 		selected = false;
-		outline = new Rectangle();
-		outline.width = getWidth();
-		outline.height = getHeight();
-		outline.x = getXpos();
-		outline.y = getYpos();
-		AllowImageCountDisplay = true;
+
 	}
 	
+	public void setGUI(Gui_Well gui) {
+		ThisGUI = gui;
+	}
+
+	public Gui_Well getGUI() {
+		return ThisGUI;
+	}
+
+	public void initGUI() {
+		ThisGUI = new Gui_Well(this);
+	}
+
 	/** Returns the plate that this well belongs to
 	 * @author BLM*/
-	public Plate getPlate()
+	public Model_Plate getPlate()
 	{
 		return ThePlate;
 	}
 	
 	/** Returns the fields that exist within this well
 	 * @author BLM*/
-	public Field[] getFields()
+	public Model_Field[] getFields()
 	{
 		return TheFields;
 	}
 	
 	/** Sets the fields that exist within this well
 	 * @author BLM*/
-	public void setTheFields(Field[] fields)
+	public void setTheFields(Model_Field[] fields)
 	{
 		TheFields = fields;
 	}
-	/** If cells have been deleted, this will be triggered... at which point when the program is closed, it will ask we we want to make
-	 * these changes permenant
-	 * @author BLM*/
+
+	/**
+	 * If cells have been deleted, this will be triggered... at which point when
+	 * the program is closed, it will ask we we want to make these changes
+	 * permanent
+	 * 
+	 * @author BLM
+	 */
 	public void setCellsModified(boolean boo)
 	{
 		cellsModified = boo;
@@ -143,6 +140,15 @@ public class Well
 			MainGUI.getGUI().setCellsModified(true);
 
 	}
+
+	public Model_ParameterSet getParameterSet() {
+		return TheParameterSet;
+	}
+
+	public void setParameterSet(Model_ParameterSet pset) {
+		TheParameterSet = pset;
+	}
+
 	public boolean areCellsModified()
 	{
 		return cellsModified;
@@ -326,56 +332,6 @@ public class Well
 //		newVals = null;
 	}
 	
-//	/** Returns the mean and stdev values of the given cells for all features loaded into the MainGUI
-//	 * @author BLM
-//	 * @return float[][] where float[].length = 2 (mean/stdev) and float[][].length = numFeatures*/
-//	public float[][] getCellMeansAndStdev_allFeatures(Cell_coords[] cells)
-//	{
-//		if (cells==null || cells.length<=0)
-//			return null;
-//
-//		int numF = MainGUI.getGUI().getTheFeatures().size();
-//
-//		int numCells = cells.length;
-//		float[][] data = new float[2][numF];
-//		float[] mean = new float[numF];
-//		float[] stdev = new float[numF];
-//
-//		int[] counter = new int[numF];
-//		for (int j = 0; j < numCells; j++)
-//			for (int i = 0; i < numF; i++)
-//			{
-//				Feature f = (Feature)MainGUI.getGUI().getTheFeatures().get(i);
-//				double val = f.getValue(cells[j]);
-//				if (val>-1000000000 && val<1000000000)
-//				{
-//					mean[i] += val;
-//					counter[i]++;
-//				}
-//			}
-//		for (int i = 0; i < numF; i++)
-//			mean[i] = (mean[i]/(float)counter[i]);
-//
-//		//computing the stdev
-//		for (int j = 0; j < numCells; j++)
-//			for (int i = 0; i < numF; i++)
-//			{
-//				Feature f = (Feature)MainGUI.getGUI().getTheFeatures().get(i);
-//				double val = f.getValue(cells[j]);
-//				if (val>-1000000000 && val<1000000000)
-//					stdev[i] += Math.pow(val - mean[i],2);
-//			}
-//
-//		for (int i = 0; i < numF; i++)
-//			stdev[i] = (float)Math.sqrt((1f/(counter[i]-1f)*stdev[i]));
-//
-//
-//		data[0] = mean;
-//		data[1] = stdev;
-//		return data;
-//
-//	}
-	
 	
 	/** Sets whether this well is selected in the GUI
 	 * @author BLM*/
@@ -418,73 +374,6 @@ public class Well
 	
 	
 	
-	/** Computes the width of this Well in the GUI
-	 * @author BLM*/
-	public int getWidth()
-	{
-		int val = 5;
-		if (ThePlate.getNumColumns() == 24)
-			val = 4;
-		if (ThePlate.getNumColumns() == 12)
-			val = 5;
-		if (ThePlate.getNumColumns() == 6)
-			val = 7;
-		if (ThePlate.getNumColumns() == 4)
-			val = 10;
-		if (ThePlate.getNumColumns()== 3)
-			val = 12;
-		
-		int bufferX = 0;
-		int bufferY = 50;
-		float panelW = ThePlate.getWidth()-bufferX;
-		float panelH = ThePlate.getHeight()-bufferY;
-		float ratio = panelW/panelH;
-		float desiredRatio = 12f/8f;
-		if (ratio<desiredRatio)
-			return (int)(panelW/ThePlate.getNumColumns()-val);
-		return (int)(panelH/ThePlate.getNumRows()-val);
-	}
-	
-	/** Computes the height of this Well in the GUI
-	 * @author BLM*/
-	public int getHeight()
-	{
-		int val = 5;
-		if (ThePlate.getNumRows() == 16)
-			val = 4;
-		if (ThePlate.getNumRows() == 8)
-			val = 5;
-		if (ThePlate.getNumRows() == 4)
-			val = 7;
-		if (ThePlate.getNumRows() == 2)
-			val = 10;
-		if (ThePlate.getNumRows()== 2)
-			val = 12;
-		
-		int bufferX = 0;
-		int bufferY = 50;
-		float panelW = ThePlate.getWidth()-bufferX;
-		float panelH = ThePlate.getHeight()-bufferY;
-		float ratio = panelW/panelH;
-		float desiredRatio = 12f/8f;
-		if (ratio<desiredRatio)
-			return (int)(panelW/ThePlate.getNumColumns()-val);
-		return (int)(panelH/ThePlate.getNumRows()-val);
-	}
-	
-	/** Computes the xPosition of this Well in the GUI
-	 * @author BLM*/
-	public int getXpos()
-	{
-		return (int)(ThePlate.getXstart()+Column*(outline.width+3));
-	}
-	
-	/** Computes the yPosition of this Well in the GUI
-	 * @author BLM*/
-	public int getYpos()
-	{
-		return (int)(ThePlate.getYstart()+Row*(outline.height+3));
-	}
 	
 	/** Determines if this well has cell data loaded into the RAM for display purposes
 	 * @author BLM*/
@@ -501,257 +390,7 @@ public class Well
 		return false;
 	}
 	
-	/** Draws this Well in the GUI Plate
-	 * @author BLM*/
-	public void draw(Graphics2D g2)
-	{
-		outline.width = getWidth();
-		outline.height = getHeight();
-		outline.x = getXpos();
-		outline.y = getYpos();
-		
-		if(color!=null)
-			g2.setColor(color);
-		
-		//Seeing if we want to plot well according to metadata
-		if(ThePlate.shouldDisplayMetaData()>-1)
-		{
-			int Type = ThePlate.shouldDisplayMetaData();
-			ArrayList<String> arr = new ArrayList<String>();
-			if(Type == 0) //Treatments
-				arr =  ThePlate.getMetaDataConnector().getAllTreatmentNames(ThePlate.getPlateIndex(), getWellIndex());
-			else if(Type == 1) //Measurements
-				arr =  ThePlate.getMetaDataConnector().getAllMeasurementNames(ThePlate.getPlateIndex(), getWellIndex());
-			else if(Type == 2) //Descriptions
-			{
-				Description des = ((Description)ThePlate.getMetaDataConnector().readDescription( getWellIndex()));
-				if (des == null || des.getValue()== null)
-					arr= null;
-				else
-					arr.add(des.getValue());
-			}
-			else if(Type == 3)
-			{
-				Description des = ((Description)ThePlate.getMetaDataConnector().readTimePoint(getWellIndex()));
-				if (des == null || des.getValue()== null)
-					arr= null;
-				else
-					arr.add(des.getValue());
-			}
-			
-			
-			if (arr!=null && arr.size()>0)
-			{
-				Hashtable hash = ThePlate.getMetaDataHashtable();
-				//Now adding it to the hastable
-				String treatsCat = "";
-				for (int i = 0; i < arr.size()-1; i++)
-					treatsCat+=arr.get(i)+" + ";
-				treatsCat+=arr.get(arr.size()-1);
-				
-				Color color2 = (Color)hash.get(treatsCat);
-				if(color2!=null)
-					g2.setColor(color2);
-			}
-		}
-		
-		
-		g2.fillRect(outline.x, outline.y, outline.width, outline.height);
-		
-		
-		//384 well plates get too busy to have a white border
-		
-		if (processing)
-			g2.setColor(Color.green);
-		else if (!selected)
-			g2.setColor(color_outline);
-		else if (selected)
-			g2.setColor(Color.red);
-		g2.drawRect(outline.x, outline.y, outline.width, outline.height);
-		
-		if (!selected&&!processing)
-			g2.setColor(color_outline);
-		
-		
-		//Drawing the number of images text display
-		if (AllowImageCountDisplay && MainGUI.getGUI().getDisplayNumberLoadedImagesCheckBox()!=null &&
-			MainGUI.getGUI().getDisplayNumberLoadedImagesCheckBox().isSelected() && TheFields!=null)
-		{
-			g2.setFont(new Font("Helvetca", Font.PLAIN, 9));
-			if (TheFields.length>0)
-				g2.drawString((TheFields.length+"x"+TheFields[0].getNumberOfChannels()), (outline.x+outline.width/2f-9),(outline.y+outline.height/2f+5));
-		}
-		
-		//Checking to see if any HDF files are available for this well
-		if (MainGUI.getGUI().shouldDisplayHDFicons())
-		{
-			int numHDF = getHDFcount();
-			if (numHDF>0)
-			{
-				int xS = outline.x+5;
-				int yS = outline.y+5;
-				int hdfIco_width = 5;
-				int hdfIco_height = 8;
-				int offset = 3;
-				int xCounter = 0;
-				int yCounter = 0;
-				for (int i = 0; i < numHDF; i++)
-				{
-					int xStart = xS+xCounter*(hdfIco_width+offset);
-					int yStart = yS+yCounter*(hdfIco_height+offset);
-					
-					if ((xStart+hdfIco_width)>(outline.x+outline.width))
-					{
-						xCounter = 0;
-						yCounter++;
-						xStart = xS+xCounter*(hdfIco_width+offset);
-						yStart = yS+yCounter*(hdfIco_height+offset);
-					}
-					
-					int xEnd = xStart+hdfIco_width;
-					int yEnd = yStart+hdfIco_height;
-					drawHDFicon(g2, xStart, yStart, xEnd, yEnd);
-//					g2.setColor(Color.white);
-//					g2.fillOval(xStart, yStart, 3,3);
-					xCounter++;
-				}
-			}
-		}
-		
-		
-//		String projPath = main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
-//		MetaDataConnector TheMetaDataWriter = null;
-//		try
-//		{
-//			TheMetaDataWriter = new MetaDataConnector(projPath);
-//		}
-//		catch(Exception e)
-//		{
-//			System.out.println("------* Error creating MetaData XML writer *------");
-//		}
-//		if (TheMetaDataWriter!=null)
-//		{
-//			Description[] arr  = TheMetaDataWriter.readTreatments(getPlate().getPlateIndex(), getWellIndex());
-//			int len = arr.length;
-//			g2.setColor(Color.cyan);
-//			for (int i = 0; i < len; i++)
-//			{
-//				if (arr[i].getName().equalsIgnoreCase("gefitinib"))
-//				{
-////				g2.drawString(arr[i].getName(), outline.x+5 , 10+outline.y+i*10);
-//					float val = Float.parseFloat(arr[i].getValue());
-//
-////					float norm = (float)(val/1.6e-8);
-//					float norm = (float)(val/3.2);
-//					g2.setColor(new Color(norm, norm, norm));
-//					g2.fillRect(outline.x+5 , 10+outline.y+i*10, 5, 5);
-//				}
-//			}
-//		}
-		
-		
-		
-		
-		//drawing the histograms if desired
-		if (!isLoading() && MainGUI.getGUI().getPlateHoldingPanel().shouldDisplayHistograms() && containsCellData() && getCell_values()!=null)
-		{
-			// int xStart = outline.x+1;
-			// int yStart = outline.y+1;
-			// int xLen = outline.width-1;
-			// int yLen = outline.height-2;
-			// int numBins = 50;
-			// float[][] values = getCell_values();
-			// int numCells = values.length;
-			// float dX = (float)xLen/(float)numBins;
-			// int[] bins = new int[numBins];
-			// int feature_index =
-			// MainGUI.getGUI().getTheSelectedFeature_Index();
-			//			
-			// double minVal = 0;
-			// double maxVal = 1;
-			//			
-			// if (!MainGUI.getGUI().getPlateHoldingPanel().isLogScaled())
-			// {
-			// float[][] vals = ThePlate.getMinMaxFeatureValues();
-			// if (vals!=null)
-			// {
-			// minVal = vals[0][MainGUI.getGUI().getTheSelectedFeature_Index()];
-			// maxVal = vals[1][MainGUI.getGUI().getTheSelectedFeature_Index()];
-			// }
-			// }
-			// else
-			// {
-			// if (ThePlate.getMinMaxFeatureValues_log()!=null)
-			// {
-			// minVal =
-			// ThePlate.getMinMaxFeatureValues_log()[0][MainGUI.getGUI().getTheSelectedFeature_Index()];
-			// maxVal =
-			// ThePlate.getMinMaxFeatureValues_log()[1][MainGUI.getGUI().getTheSelectedFeature_Index()];
-			// }
-			// }
-			//			
-			// //Binning values
-			// for (int i = 0; i < numCells; i++)
-			// {
-			// double val = values[i][feature_index];
-			// if (MainGUI.getGUI().getPlateHoldingPanel().isLogScaled())
-			// {
-			// if (val<=1)
-			// val = 1;
-			// val = tools.MathOps.log(val);
-			// }
-			// else
-			// if (val<=0)
-			// val = 0;
-			//				
-			// if (val>Double.NEGATIVE_INFINITY && val<
-			// Double.POSITIVE_INFINITY)
-			// {
-			//					
-			// double normVal = (val-minVal)/(maxVal-minVal);
-			// int ind = (int)(numBins*normVal);
-			// if (ind>0&&ind<numBins-1)
-			// bins[ind]++;
-			// }
-			// }
-			// //Finding max bin value so we can normalize the histogram
-			// float maxBinVal = 0;
-			// for (int i = 0; i < numBins; i++)
-			// if (bins[i]>maxBinVal)
-			// maxBinVal=bins[i];
-			//			
-			// //Creating the polygon
-			// if(maxBinVal>0)
-			// {
-			// Polygon p = new Polygon();
-			// for (int i = 0; i < numBins; i++)
-			// p.addPoint((int)(xStart+dX*i),
-			// (int)((yStart+yLen)-yLen*bins[i]/maxBinVal));
-			//				
-			// p.addPoint((int)(xStart+dX*(numBins-1)), yStart+yLen);
-			// p.addPoint(xStart, yStart+yLen);
-			// p.npoints = numBins+2;
-			//				
-			// g2.setColor(Color.black);
-			// g2.drawPolygon(p);
-			// g2.setColor(Color.white);
-			// g2.fillPolygon(p);
-			// }
 
-			int x = outline.x + 1;
-			int y = outline.y + 1;
-			int width = outline.width - 1;
-			int height = outline.height - 2;
-			Polygon histo = getHistogram(x, y, width, height);
-			if (histo != null)
- {
-				g2.setColor(Color.white);
-				g2.fill(histo);
-
-			}
-		}
-
-	}
 
 	/** Looks at each field and determines how many HDF files of prior data are available for this well
 	 * @author BLM*/
@@ -763,7 +402,7 @@ public class Well
 		
 		int len = TheFields.length;
 		for (int i = 0; i < len; i++)
-			if(TheFields[i].doesHDFexist(main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath(), "Data"))
+			if(TheFields[i].doesHDFexist(gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath(), "Data"))
 				count++;
 		
 		return count;
@@ -775,7 +414,7 @@ public class Well
 	public void loadCells(SegmentationHDFConnector sCon, boolean loadCoords,
 			boolean loadDataVals)
 	{
-		Field[] fields = getFields();
+		Model_Field[] fields = getFields();
 		int numF = fields.length;
 		setLoading(true);
 		System.out.println();
@@ -783,175 +422,10 @@ public class Well
 			fields[z].loadCells(sCon, loadCoords, loadDataVals);
 		setLoading(false);
 		updateDataValues();
-		ThePlate.repaint();
+		getPlate().getGUI().repaint();
 	}
 
-	/** Draws the mini-HDF file icon
-	 * @author BLM*/
-	private void drawHDFicon(Graphics2D g2, int xStart, int yStart, int xEnd, int yEnd)
-	{
-		// int[] xVals = new int[6];
-		// int[] yVals = new int[6];
-
-		int width = xEnd-xStart-1;
-		int height = yEnd-yStart-1;
-
-//		xVals[0] = xStart;
-//		yVals[0] = yStart;
-//
-//		xVals[1] = (int)(xStart+width*0.7);
-//		yVals[1] = yStart;
-//
-//		xVals[2] = (int)(xStart+width*0.7);
-//		yVals[2] = (int)(yStart+height*0.3);
-//
-//		xVals[3] = (int)(xStart+width);
-//		yVals[3] = (int)(yStart+height*0.3);
-//
-//		xVals[4] = (int)(xStart+width);
-//		yVals[4] = (int)(yStart+height);
-//
-//		xVals[5] = xStart;
-//		yVals[5] = yEnd;
-		
-		
-		g2.setColor(Color.white);
-		g2.fillRect(xStart, yStart, width, height);
-		g2.setColor(Color.gray);
-		g2.drawRect(xStart, yStart, width, height);
-	}
 	
-//	/** Draws the mini-HDF file icon
-//	 * @author BLM*/
-//	private void drawHDFicon(Graphics2D g2, int xStart, int yStart, int xEnd, int yEnd)
-//	{
-//		int[] xVals = new int[6];
-//		int[] yVals = new int[6];
-//
-//		int width = xEnd-xStart;
-//		int height = yEnd-yStart;
-//
-//		xVals[0] = xStart;
-//		yVals[0] = yStart;
-//
-//		xVals[1] = (int)(xStart+width*0.7);
-//		yVals[1] = yStart;
-//
-//		xVals[2] = (int)(xStart+width*0.7);
-//		yVals[2] = (int)(yStart+height*0.3);
-//
-//		xVals[3] = (int)(xStart+width);
-//		yVals[3] = (int)(yStart+height*0.3);
-//
-//		xVals[4] = (int)(xStart+width);
-//		yVals[4] = (int)(yStart+height);
-//
-//		xVals[5] = xStart;
-//		yVals[5] = yEnd;
-//
-//
-//		g2.setColor(Color.white);
-//		g2.fillPolygon(xVals, yVals, xVals.length);
-//		g2.setColor(Color.gray);
-//		g2.drawPolygon(xVals, yVals, xVals.length);
-//		g2.drawLine((int)(xStart+width*0.7), yStart, (int)(xStart+width), (int)(yStart+height*0.3));
-//	}
-	
-	public Polygon getHistogram(int x, int y, int width, int height)
-	{
-		int xStart = x+1;
-		int yStart = y+1;
-		int xLen = width-1;
-		int yLen = height-2;
-		int numBins = 50;
-		float[][] cells = getCell_values();
-		if (cells==null)
-			return null;
-		int numCells = cells.length;
-		float dX = (float)xLen/(float)numBins;
-		int[] bins = new int[numBins];
-		int feature_index = MainGUI.getGUI().getTheSelectedFeature_Index();
-		
-		double minVal = Double.POSITIVE_INFINITY;
-		double maxVal = Double.NEGATIVE_INFINITY;
-		
-		//Getting the min/max pre-stored values
-		if (!MainGUI.getGUI().getPlateHoldingPanel().isLogScaled())
-		{
-			if (ThePlate.getMinMaxFeatureValues()!=null)
-			{
-				minVal = ThePlate.getMinMaxFeatureValues()[0][MainGUI.getGUI().getTheSelectedFeature_Index()];
-				maxVal = ThePlate.getMinMaxFeatureValues()[1][MainGUI.getGUI().getTheSelectedFeature_Index()];
-				// System.out.println("LINEAR - minMax: " + minVal + " , "
-				// + maxVal);
-
-			}
-		}
-		else
-		{
-			if (ThePlate.getMinMaxFeatureValues_log()!=null)
-			{
-				minVal = ThePlate.getMinMaxFeatureValues_log()[0][MainGUI.getGUI().getTheSelectedFeature_Index()];
-				maxVal = ThePlate.getMinMaxFeatureValues_log()[1][MainGUI.getGUI().getTheSelectedFeature_Index()];
-				// System.out.println("LOG - minMax: " + minVal + " , " +
-				// maxVal);
-			}
-		}
-		
-		
-		//Binning values
-		for (int i = 0; i < numCells; i++)
-		{
-			double val = cells[i][feature_index];
-			if (MainGUI.getGUI().getPlateHoldingPanel().isLogScaled())
-			{
-				if (val<=1)
-					val = 1;
-				val = tools.MathOps.log(val);
-			}
-			else
-				if (val<=0)
-					val = 0;
-			
-			
-			if (val>Double.NEGATIVE_INFINITY && val< Double.POSITIVE_INFINITY)
-			{
-				double normVal = (val-minVal)/(maxVal-minVal);
-				int ind = (int)(numBins*normVal);
-				if (ind>0&&ind<numBins-1)
-					bins[ind]++;
-			}
-		}
-		//Finding max bin value so we can normalize the histogram
-		float maxBinVal = 0;
-		for (int i = 0; i < numBins; i++)
-			if (bins[i]>maxBinVal)
-				maxBinVal=bins[i];
-		
-		//Creating the polygon
-		if(maxBinVal>0)
-		{
-			Polygon p = new Polygon();
-			for (int i = 0; i < numBins; i++)
-				p.addPoint((int)(xStart+dX*i), (int)((yStart+yLen)-yLen*bins[i]/maxBinVal));
-			
-			p.addPoint((int)(xStart+dX*(numBins-1)), yStart+yLen);
-			p.addPoint(xStart, yStart+yLen);
-			p.npoints = numBins+2;
-			
-			return p;
-		}
-		
-		return null;
-	}
-	
-	public void updateDimensions()
-	{
-		outline.width = getWidth();
-		outline.height = getHeight();
-		outline.x = getXpos();
-		outline.y = getYpos();
-	}
 	
 	/** Toggles btw selected and unselected
 	 * @author BLM*/
@@ -1157,7 +631,7 @@ public class Well
 		Feature_Stdev = data[1];
 		
 		//updating the min/max of plate date
-		MainGUI.getGUI().getPlateHoldingPanel().updateMinMaxValues();
+		MainGUI.getGUI().getPlateHoldingPanel().getModel().updateMinMaxValues();
 		
 	}
 	
@@ -1172,7 +646,7 @@ public class Well
 		Feature_Stdev = data[1];
 		
 		//updating the min/max of plate date
-		MainGUI.getGUI().getPlateHoldingPanel().updateMinMaxValues();
+		MainGUI.getGUI().getPlateHoldingPanel().getModel().updateMinMaxValues();
 		
 	}
 	
@@ -1180,7 +654,7 @@ public class Well
 //	public void setDataValues(Cell_RAM[] cells)
 //	{
 //		TheCells = cells;
-//		System.out.println("	>> NumCells in Well: "+cells.length);
+//		System.out.println("	>> NumCells in Model_Well: "+cells.length);
 //
 //		float[][] data = Cell_RAM.getCellMeansAndStdev_allFeatures(cells);
 //		if (data==null)
@@ -1314,22 +788,21 @@ public class Well
 //		return arr;
 //	}
 	
-	public Well copy(Plate plate)
+	public Model_Well copy(Model_Plate plate)
 	{
-		Well well = new Well(plate, Row, Column);
+		Model_Well well = new Model_Well(plate, Row, Column);
 		well.ID = ID;
-		well.color = color;
+		if (getGUI() != null)
+			well.initGUI();
 		well.Feature_Means = Feature_Means;
 		well.Feature_Stdev = Feature_Stdev;
-		//TODO - note, I am not copying over the Image Files
-		
-		
+		// Note, I am not copying over the Image Files
 		return well;
 	}
 	
 	
 	public void printParameterSet(PrintWriter pw) {
-		pw.println("<Well  name='" + name
+		pw.println("<Model_Well  name='" + name
 				+ "' "
 				+ "  Processed='"
 				+ TheParameterSet.getProcessType()
@@ -1370,12 +843,12 @@ public class Well
 
 	public void deleteSelectedCells() {
 		purgeSelectedCellsAndRecomputeWellMeans();
-		MainGUI.getGUI().getPlateHoldingPanel().updateMinMaxValues();
+		MainGUI.getGUI().getPlateHoldingPanel().getModel().updateMinMaxValues();
 		MainGUI.getGUI().updateAllPlots();
 	}
 
 	public void clearOldData() {
-		Field[] fields = getFields();
+		Model_Field[] fields = getFields();
 		if (fields != null) {
 			int numF = fields.length;
 			for (int z = 0; z < numF; z++)
@@ -1392,132 +865,12 @@ public class Well
 			for (int i = 0; i < Feature_Stdev.length; i++)
 				Feature_Stdev[i] = 0;
 
-		ThePlate.updatePanel();
+		ThePlate.getGUI().updatePanel();
 		System.gc();
 
 	}
 
-	// /**
-	// *
-	// * */
-	// public class WellHistograms
-	// {
-	// public float[][] bins;
-	// public int numBins = 20;
-	// public float[][] minMaxs;
-	// public int numCells;
-	// public float[][] displayBins;
-	//		
-	//		
-	// public WellHistograms(float[][] cellValues)
-	// {
-	//
-	// numCells = cellValues.length;
-	// int numFeatures = MainGUI.getGUI().getTheFeatures().size();
-	// bins = new float[numFeatures][numBins];
-	//			
-	// //finding min/max
-	// minMaxs = new float[numFeatures][2];
-	// for (int j = 0; j < numFeatures; j++)
-	// {
-	// minMaxs[j][0] = Float.POSITIVE_INFINITY;
-	// minMaxs[j][1] = Float.NEGATIVE_INFINITY;
-	// }
-	// for (int j = 0; j < numFeatures; j++)
-	// {
-	// for (int i = 0; i < numCells; i++)
-	// {
-	// float val = cellValues[i][j];
-	// if (val<minMaxs[j][0])
-	// minMaxs[j][0]=val;
-	// if (val>minMaxs[j][1])
-	// minMaxs[j][1]=val;
-	// }
-	// }
-	//			
-	// //resetting bins
-	// for (int j = 0; j < numFeatures; j++)
-	// for (int i = 0; i < numBins; i++)
-	// bins[j][i] = 0;
-	// // createBins
-	// for (int j = 0; j < numFeatures; j++)
-	// {
-	// float range = minMaxs[j][1]-minMaxs[j][0];
-	// for (int i = 0; i < numCells; i++)
-	// {
-	// float val = cellValues[i][j];
-	// if (val > 10000000 || val < -10000000)
-	// System.out.println("val: " + val);
-	//
-	// float valN = (val-minMaxs[j][0])/range;
-	// int index = (int)(valN*numBins);
-	// if (index>=numBins)
-	// index = numBins-1;
-	//					
-	// bins[j][index]++;
-	// }
-	// }
-	//			
-	//			
-	// updateBounds(minMaxs);
-	//			
-	// }
-	//		
-	//		
-	// public void updateBounds(float[][] newMinMax)
-	// {
-	// int numFeatures = MainGUI.getGUI().getTheFeatures().size();
-	// displayBins = new float[numFeatures][numBins];
-	// for (int j = 0; j < numFeatures; j++)
-	// for (int i = 0; i < numBins; i++)
-	// displayBins[j][i] = 0;
-	//			
-	// for (int j = 0; j < numFeatures; j++)
-	// for (int i = 0; i < numBins; i++)
-	// {
-	// //backtracking the data
-	// float numInBin = bins[j][i];
-	// float binVal =
-	// (float)(i+1)/(float)numBins*(minMaxs[j][1]-minMaxs[j][0])+minMaxs[j][0];
-	//					
-	//					
-	// //rebinning into new bounded system
-	// float valN = (binVal-newMinMax[j][0])/(newMinMax[j][1]-newMinMax[j][0]);
-	// int index = (int)(valN*numBins);
-	// if (index>=numBins)
-	// index = numBins-1;
-	// if (index<0)
-	// index = 0;
-	// displayBins[j][index]+=numInBin;
-	// }
-	//			
-	//			
-	// //norm the bins
-	// float[][] barMinMax = new float[numFeatures][2];
-	// for (int j = 0; j < numFeatures; j++)
-	// {
-	// barMinMax[j][0] = Float.POSITIVE_INFINITY;
-	// barMinMax[j][1] = Float.NEGATIVE_INFINITY;
-	// }
-	//			
-	// for (int j = 0; j < numFeatures; j++)
-	// for (int i = 0; i < numBins; i++)
-	// {
-	// displayBins[j][i] = displayBins[j][i]/(float)numCells;
-	// if (displayBins[j][i] < barMinMax[j][0])
-	// barMinMax[j][0] = displayBins[j][i];
-	// if (displayBins[j][i] > barMinMax[j][1])
-	// barMinMax[j][1] = displayBins[j][i];
-	// }
-	// for (int j = 0; j < numFeatures; j++)
-	// for (int i = 0; i < numBins; i++)
-	// {
-	// displayBins[j][i] =
-	// (displayBins[j][i]-barMinMax[j][0])/(float)(barMinMax[j][1]-barMinMax[j][0]);
-	// }
-	// }
-	//
-	// }
+
 }
 
 

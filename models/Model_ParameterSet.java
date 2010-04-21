@@ -1,12 +1,14 @@
 /**
- * ParameterSet.java
+ * Model_ParameterSet.java
  *
  * @author Created by Omnicore CodeGuide
  */
 
-package main;
+package models;
 
-public class ParameterSet {
+import gui.MainGUI;
+
+public class Model_ParameterSet {
 	private String WellName;
 	private String ThresholdChannel_nuc_Name;
 	private String ThresholdChannel_cyto_Name;
@@ -28,7 +30,7 @@ public class ParameterSet {
 	static public String WELLMEAN = "WellMean";
 	static public String UNPROCESSED = "Unprocessed";
 
-	public ParameterSet() {
+	public Model_ParameterSet() {
 		Modified = false;
 		WellName = null;
 		ProcessType = UNPROCESSED;
@@ -47,22 +49,22 @@ public class ParameterSet {
 	 * 
 	 * @author BLM
 	 */
-	static public ParameterSet doWellsHaveSameParameterSet(Well[] wells) {
-		ParameterSet dummy = null;
+	static public Model_ParameterSet doWellsHaveSameParameterSet(Model_Well[] wells) {
+		Model_ParameterSet dummy = null;
 		boolean initDummy = false;
 		int len = wells.length;
 		if (len == 1 && wells[0].TheParameterSet != null)
-			return ParameterSet.copy(wells[0].TheParameterSet);
+			return Model_ParameterSet.copy(wells[0].TheParameterSet);
 
 		for (int i = 0; i < len; i++) {
-			ParameterSet p = wells[i].TheParameterSet;
+			Model_ParameterSet p = wells[i].TheParameterSet;
 			if (p != null) {
 				if (!initDummy) {
 					if (p.ProcessType.equalsIgnoreCase(UNPROCESSED))
 						return null;
-					dummy = ParameterSet.copy(p);
+					dummy = Model_ParameterSet.copy(p);
 					initDummy = true;
-				} else if (!ParameterSet.isSame(p, dummy))
+				} else if (!Model_ParameterSet.isSame(p, dummy))
 					return null;
 			} else
 				return null;
@@ -76,8 +78,8 @@ public class ParameterSet {
 	 * 
 	 * @author BLM
 	 */
-	static public ParameterSet copy(ParameterSet in) {
-		ParameterSet out = new ParameterSet();
+	static public Model_ParameterSet copy(Model_ParameterSet in) {
+		Model_ParameterSet out = new Model_ParameterSet();
 		out.Modified = true;
 		out.WellName = in.WellName;
 		out.ProcessType = in.ProcessType;
@@ -99,7 +101,7 @@ public class ParameterSet {
 	 * 
 	 * @author BLM
 	 */
-	static public boolean isSame(ParameterSet p1, ParameterSet p2) {
+	static public boolean isSame(Model_ParameterSet p1, Model_ParameterSet p2) {
 		if (p1.Modified != p2.Modified)
 			return false;
 		if (!p1.ProcessType.equalsIgnoreCase(p2.ProcessType))
@@ -147,7 +149,7 @@ public class ParameterSet {
 	}
 
 	/**
-	 * Field Getter/Setters
+	 * Model_Field Getter/Setters
 	 * 
 	 * @author BLM
 	 * */

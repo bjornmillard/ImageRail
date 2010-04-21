@@ -10,11 +10,10 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 
-import main.Field;
-import main.MainGUI;
-import main.Plate;
-import main.PlateHoldingPanel;
-import main.Well;
+import models.Model_Field;
+import models.Model_Plate;
+import models.Model_PlateRepository;
+import models.Model_Well;
 import plots.DotPlot;
 import us.hms.systemsbiology.data.Data2D;
 import us.hms.systemsbiology.data.HDFConnectorException;
@@ -22,6 +21,8 @@ import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.segmentedobject.Cell;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 import features.Feature;
+import gui.MainGUI;
+
 
 public class DotFilter {
 	private AlphaComposite transComposite = AlphaComposite.getInstance(
@@ -61,7 +62,7 @@ public class DotFilter {
 		int width = 85;
 		int height = 60;
 		int offset = (int) (width / 2f);
-		TheMainGUI = main.MainGUI.getGUI();
+		TheMainGUI = gui.MainGUI.getGUI();
 		if (upDown == 1) // Up Arrow
 		{
 			// Making Arrow
@@ -286,9 +287,9 @@ public class DotFilter {
 	}
 
 	public void execute_selectedWells() {
-		Well[] wells = TheDotPlot.getWells();
+		Model_Well[] wells = TheDotPlot.getWells();
 		for (int j = 0; j < wells.length; j++) {
-			Well well = wells[j];
+			Model_Well well = wells[j];
 			ArrayList<Cell> cells = well.getCells();
 			if (cells != null && cells.size() > 0) {
 				selectCellsToFilter(cells, well);
@@ -296,24 +297,25 @@ public class DotFilter {
 				well.purgeSelectedCellsAndRecomputeWellMeans();
 			}
 
-			TheMainGUI.getPlateHoldingPanel().updateMinMaxValues();
+			TheMainGUI.getPlateHoldingPanel().getModel().updateMinMaxValues();
 			TheMainGUI.updateDotPlot();
 		}
 
 	}
 
 	public void execute_allWells() {
-		PlateHoldingPanel platePanel = TheMainGUI.getPlateHoldingPanel();
+		Model_PlateRepository platePanel = TheMainGUI.getPlateHoldingPanel()
+				.getModel();
 		int numPlates = platePanel.getNumPlates();
-		Plate[] plates = platePanel.getThePlates();
+		Model_Plate[] plates = platePanel.getPlates();
 		// for each well:
 		for (int i = 0; i < numPlates; i++) {
-			Plate plate = plates[i];
+			Model_Plate plate = plates[i];
 			int numC = plate.getNumColumns();
 			int numR = plate.getNumRows();
 			for (int r = 0; r < numR; r++)
 				for (int c = 0; c < numC; c++) {
-					Well well = plate.getTheWells()[r][c];
+					Model_Well well = plate.getWells()[r][c];
 					ArrayList<Cell> cells = well.getCells();
 					if (cells != null && cells.size() > 0) {
 						selectCellsToFilter(cells, well);
@@ -322,30 +324,31 @@ public class DotFilter {
 					}
 				}
 		}
-		TheMainGUI.getPlateHoldingPanel().updateMinMaxValues();
+		TheMainGUI.getPlateHoldingPanel().getModel().updateMinMaxValues();
 		TheMainGUI.updateDotPlot();
 	}
 
 	public void execute_allHDF() {
 		System.out.println("Filtering all HDF files");
-		PlateHoldingPanel platePanel = TheMainGUI.getPlateHoldingPanel();
+		Model_PlateRepository platePanel = TheMainGUI.getPlateHoldingPanel()
+				.getModel();
 		int numPlates = platePanel.getNumPlates();
-		Plate[] plates = platePanel.getThePlates();
+		Model_Plate[] plates = platePanel.getPlates();
 		// for each well:
 		SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-				main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
+				gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
 		for (int i = 0; i < numPlates; i++) {
-			Plate plate = plates[i];
+			Model_Plate plate = plates[i];
 			int numC = plate.getNumColumns();
 			int numR = plate.getNumRows();
 			for (int r = 0; r < numR; r++)
 				for (int c = 0; c < numC; c++) {
-					Well well = plate.getTheWells()[r][c];
+					Model_Well well = plate.getWells()[r][c];
 
 					if (well.getHDFcount() > 0)// Just the HDF5 files
 					{
 						System.out.println("Processing: " + well.name);
-						Field[] fields = well.getFields();
+						Model_Field[] fields = well.getFields();
 						int numF = fields.length;
 						try {
 							for (int j = 0; j < numF; j++) {
@@ -418,7 +421,7 @@ public class DotFilter {
 					}
 				}
 		}
-		TheMainGUI.getPlateHoldingPanel().updateMinMaxValues();
+		TheMainGUI.getPlateHoldingPanel().getModel().updateMinMaxValues();
 		TheMainGUI.updateDotPlot();
 	}
 
@@ -499,7 +502,7 @@ public class DotFilter {
 	/** 
 	 * 
 	 * */
-	public void selectCellsToFilter(ArrayList<Cell> cells, Well well) {
+	public void selectCellsToFilter(ArrayList<Cell> cells, Model_Well well) {
 		if (cells == null)
 			return;
 		int numCells = cells.size();

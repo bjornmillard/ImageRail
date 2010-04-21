@@ -21,7 +21,7 @@ import javax.swing.JPanel;
 
 public class Tools
 {
-	//  Well known colors, positions, and directions
+	//  Model_Well known colors, positions, and directions
 	public final static Color3f White    = new Color3f( 1.0f, 1.0f, 1.0f );
 	public final static Color3f Gray     = new Color3f( 0.7f, 0.7f, 0.7f );
 	public final static Color3f DarkGray = new Color3f( 0.2f, 0.2f, 0.2f );

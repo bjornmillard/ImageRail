@@ -23,6 +23,7 @@ import javax.swing.JScrollPane;
 
 import us.hms.systemsbiology.segmentedobject.Cell;
 
+
 public class FilmStrip_Cells  extends JFrame implements WindowListener
 {
 	public FilmStrip_Cells TheFrame;
@@ -58,7 +59,7 @@ public class FilmStrip_Cells  extends JFrame implements WindowListener
 			int num = cells_.length;
 			TheDisplayPanel = this;
 			TheDisplayPanel.setBackground(Color.black);
-			numC = main.MainGUI.getGUI().getNumberOfChannels();
+			numC = gui.MainGUI.getGUI().getNumberOfChannels();
 			TheImageArray = new BufferedImage[numC][num];
 			yMax = 0;
 			xTotalLen = 0;

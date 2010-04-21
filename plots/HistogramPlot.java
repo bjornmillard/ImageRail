@@ -7,6 +7,7 @@
 package plots;
 
 import features.Feature;
+import gui.MainGUI;
 import imPanels.ImageCapturePanel;
 
 import java.awt.AlphaComposite;
@@ -42,8 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.border.BevelBorder;
 
-import main.MainGUI;
-import main.Well;
+import models.Model_Well;
 import tempObjects.Cell_RAM;
 import tools.SVG_writer;
 import us.hms.systemsbiology.segmentedobject.Cell;
@@ -89,8 +89,8 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 	private double[][] RotationMatrix;
 	private Point lastPoint;
 	private Feature TheFeature;
-	private Well[] TheWells;
-	/** Well name legend correlated with plot color*/
+	private Model_Well[] TheWells;
+	/** Model_Well name legend correlated with plot color*/
 	private Legend TheLegend;
 	/** Last point where the legend was so we can keep it there even if have to create new*/
 	private Point Legend_xy;
@@ -99,11 +99,11 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 //	private float xLabel_max = -1;
 	
 	
-	public HistogramPlot(Well[] wells, Feature feature)
+	public HistogramPlot(Model_Well[] wells, Feature feature)
 	{
 		//finding only those wells that actually have data
 		int len = wells.length;
-		ArrayList<Well> arr = new ArrayList<Well>();
+		ArrayList<Model_Well> arr = new ArrayList<Model_Well>();
 		for (int i = 0; i < len; i++)
  {
 			ArrayList<Cell> cells = wells[i].getCells();
@@ -111,9 +111,9 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 				arr.add(wells[i]);
 		}
 		len = arr.size();
-		TheWells = new Well[len];
+		TheWells = new Model_Well[len];
 		for (int i = 0; i < len; i++)
-			TheWells[i] = (Well)arr.get(i);
+			TheWells[i] = (Model_Well)arr.get(i);
 
 		TheFeature = feature;
 		TheHistogram = this;
@@ -331,10 +331,11 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 		}
 		if(Legend_xy==null)
 			Legend_xy = new Point(40, 40);
-		TheLegend = new Legend("Well:", speciesNames, col, Legend_xy.x, Legend_xy.y);
+		TheLegend = new Legend("Well:", speciesNames, col, Legend_xy.x,
+				Legend_xy.y);
 	}
 	
-	public void updateDataAndBins(Well[] wells, int feature_index)
+	public void updateDataAndBins(Model_Well[] wells, int feature_index)
 	{
 		float[][] data = constructData(wells, feature_index);
 		updateBins(data);
@@ -385,11 +386,11 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 		
 	}
 	
-	public float[][] constructData(Well[] wells, int feature_index)
+	public float[][] constructData(Model_Well[] wells, int feature_index)
 	{
 		//finding only those wells that actually have data
 		int len = wells.length;
-		ArrayList<Well> arr = new ArrayList<Well>();
+		ArrayList<Model_Well> arr = new ArrayList<Model_Well>();
 		for (int i = 0; i < len; i++)
  {
 			ArrayList<Cell> cells = wells[i].getCells();
@@ -399,9 +400,9 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 		}
 		
 		len = arr.size();
-		TheWells = new Well[len];
+		TheWells = new Model_Well[len];
 		for (int i = 0; i < len; i++)
-			TheWells[i] = (Well)arr.get(i);
+			TheWells[i] = (Model_Well)arr.get(i);
 		
 		float[][] data = null;
 		int numWells = TheWells.length;
@@ -812,7 +813,7 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 				
 				g2.drawLine((int)axis_Start[0],  (int)axis_Start[1], (int)y2[0], (int)y2[1]);
 				g2.setColor(Color.black);
-				g2.setFont(main.MainGUI.Font_12);
+				g2.setFont(gui.MainGUI.Font_12);
 				Font oldFont = g2.getFont();
 				if(!plotToSVG)
 				{

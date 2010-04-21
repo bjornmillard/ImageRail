@@ -10,6 +10,8 @@ import java.awt.*;
 import javax.swing.*;
 
 import features.Feature;
+import gui.MainGUI;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -18,10 +20,9 @@ import java.util.ArrayList;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import main.MainGUI;
-import main.Plate;
-import main.PlateHoldingPanel;
-import main.Well;
+import models.Model_Well;
+import models.Model_Plate;
+import models.Model_PlateRepository;
 import tempObjects.Cell_RAM;
 
 public class FilterManager extends JFrame
@@ -45,7 +46,7 @@ public class FilterManager extends JFrame
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		setLocation((int)(d.width/2f)-width/2,(int)(d.height/5f)-height/2);
 		
-		TheMainGUI = main.MainGUI.getGUI();
+		TheMainGUI = gui.MainGUI.getGUI();
 		
 		
 		TheMainPanel = new JPanel();
@@ -261,18 +262,18 @@ public class FilterManager extends JFrame
 //		int numF = filters.length;
 //		System.out.println("numFilters: "+numF);
 //
-//		PlateHoldingPanel platePanel = TheMainGUI.getPlateHoldingPanel();
-//		Plate[] plates = platePanel.getThePlates();
+//		Model_PlateRepository platePanel = TheMainGUI.getPlateHoldingPanel();
+//		Model_Plate[] plates = platePanel.getThePlates();
 //
 //		int numPlates = platePanel.getNumPlates();
 //		for (int p = 0; p < numPlates; p++)
 //		{
 //			//For each plate, execute this filter
-//			Plate plate = plates[p];
+//			Model_Plate plate = plates[p];
 //			for (int r = 0; r < plate.getNumRows(); r++)
 //				for (int c = 0; c < plate.getNumColumns(); c++)
 //				{
-//					Well well = plate.getTheWells()[r][c];
+//					Model_Well well = plate.getTheWells()[r][c];
 //					float[][] cellValues = well.getCell_values();
 //					int numCells = cellValues.length;
 //					

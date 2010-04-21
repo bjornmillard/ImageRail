@@ -1,18 +1,33 @@
 /**
- * StartupDialog.java
+ * MainStartupDialog.java
  *
  * @author Created by Omnicore CodeGuide
  */
 
-package main;
+package gui;
 
-import java.awt.*;
-import javax.swing.*;
 
-import dialogs.PlateInputDialog;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.File;
 
-public class StartupDialog extends JFrame
+import javax.swing.BorderFactory;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+import dialogs.PlateInputDialog;
+
+public class MainStartupDialog extends JFrame
 {
 	private Image im;
 	private int width = 475;
@@ -20,7 +35,7 @@ public class StartupDialog extends JFrame
 	private JFrame TheStartUpDialog = this;
 	
 	
-	public StartupDialog()
+	public MainStartupDialog()
 	{
 		setDefaultCloseOperation( EXIT_ON_CLOSE ) ;
 		JPanel content = (JPanel)getContentPane();
@@ -147,26 +162,29 @@ public class StartupDialog extends JFrame
 						{
 							if(evt.getClickCount() > 0)
 							{
-								MainGUI gui = main.MainGUI.getGUI();
-								File dir = main.MainGUI.getGUI().getTheDirectory();
+						MainGUI theGUI = gui.MainGUI.getGUI();
+								File dir = gui.MainGUI.getGUI().getTheDirectory();
 								JFileChooser fc = null;
 								if (dir!=null)
 									fc = new JFileChooser(dir);
 								else
 									fc = new JFileChooser();
 								
-								fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+						fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+						fc.addChoosableFileFilter(new FileChooserFilter_IR());
+
 								int returnVal = fc.showOpenDialog(null);
 								if (returnVal == JFileChooser.APPROVE_OPTION)
 								{
 									File f = fc.getSelectedFile();
 									if (f!=null && f.isDirectory())
 									{
-										if(gui.containsFile(f, "project.h5") || f.getName().indexOf(".ir")>0)
+								if (theGUI.containsFile(f, "project.h5")
+										|| f.getName().indexOf(".ir") > 0)
 										{
 											TheStartUpDialog.setVisible(false);
-											gui.loadProject(f);
-											gui.setVisible(true);
+									theGUI.loadProject(f);
+									theGUI.setVisible(true);
 										}
 										else
 										{
@@ -191,7 +209,16 @@ public class StartupDialog extends JFrame
 	
 	
 
-	
+	class FileChooserFilter_IR extends javax.swing.filechooser.FileFilter {
+		public boolean accept(File file) {
+			String filename = file.getName();
+			return filename.endsWith(".ir");
+		}
+
+		public String getDescription() {
+			return "*.ir";
+		}
+	}
 	
 	
 	

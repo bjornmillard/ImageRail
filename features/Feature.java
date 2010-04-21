@@ -6,8 +6,9 @@
 
 package features;
 
+import gui.MainGUI;
+
 import java.util.ArrayList;
-import main.MainGUI;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 
 public abstract class Feature

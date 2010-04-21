@@ -5,10 +5,14 @@
  * @date
  */
 
-package main;
+package gui;
 
+import features.Feature;
+import filters.DotFilterQueue;
+import filters.FilterManager;
 import imageViewers.FieldViewer;
 import imageViewers.FieldViewer_Frame;
+import imageViewers.HTMLViewer;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -26,7 +30,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -54,6 +57,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import midasGUI.MidasInputPanel;
+import models.Model_Field;
+import models.Model_ParameterSet;
+import models.Model_Plate;
+import models.Model_PlateRepository;
+import models.Model_Well;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -69,21 +77,14 @@ import us.hms.systemsbiology.data.HDFConnectorException;
 import us.hms.systemsbiology.data.ProjectHDFConnector;
 import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.segmentedobject.Cell;
-import analysisModules.AnalysisModuleFrame;
-import analysisModules.Grid_LinePlot;
-import analysisModules.Line_DoseResponseCalculator;
-import analysisModules.Plate_bimodalFit;
 import dataSavers.DataSaver_CSV;
 import dataSavers.DataSaver_Cells_Midas;
 import dataSavers.DataSaver_WellMeans_Midas;
-import dialogs.FeatureSelectionDialog;
 import dialogs.PlateInputDialog;
 import dialogs.SaveFeatures_Dialog;
 import dialogs.ThresholdingBoundsInputDialog_SingleCells;
 import dialogs.ThresholdingBoundsInputDialog_WellMeans;
-import features.Feature;
-import filters.DotFilterQueue;
-import filters.FilterManager;
+
 
 public class MainGUI extends JFrame {
 	/** The GUI object */
@@ -112,16 +113,10 @@ public class MainGUI extends JFrame {
 	private JCheckBoxMenuItem DisplayNumberLoadedImagesCheckBox;
 	private JCheckBoxMenuItem DisplayAvailableHDFfiles;
 	private String[] ChannelNames;
-	// private float NumberOfPixelsToInclude;
-	// private JCheckBoxMenuItem FindNeighborsCheckBox;
-	// private JCheckBoxMenuItem StorePixelInformationCheckBox;
 	private JCheckBoxMenuItem WellMeanOrIntegratedIntensityCheckBox;
-	// private JCheckBoxMenuItem TopXPixelsCheckBox;
 	private JCheckBoxMenuItem StoreCytoAndNuclearWellMeans;
 	private JCheckBoxMenuItem WatershedNucleiCheckBox;
 	private JCheckBoxMenuItem LoadCellsImmediatelyCheckBox;
-	// private JCheckBoxMenuItem StoreNeighborsCheckBox;
-	// private JCheckBoxMenuItem StoreMembranesCheckBox;
 	private JCheckBoxMenuItem CytoplasmAnnulusCheckBox;
 	private JRadioButtonMenuItem[] TheImageScalings;
 	private boolean SubtractBackground;
@@ -144,7 +139,7 @@ public class MainGUI extends JFrame {
 	private HistogramPlot TheHistogram;
 	private int LeftPanelDisplayed;
 	private boolean Processing;
-	private PlateHoldingPanel ThePlatePanel;
+	private Gui_PlateRepository ThePlatePanel;
 	private File TheProjectDirectory;
 	private ProjectHDFConnector TheHDFprojectConnector;
 	private boolean areDataSetsModified;
@@ -156,7 +151,7 @@ public class MainGUI extends JFrame {
 	 * 
 	 * @author BLM
 	 */
-	private MainGUI() {
+	public MainGUI() {
 		super("ImageRail");
 		setResizable(true);
 		int height = 700;
@@ -186,9 +181,11 @@ public class MainGUI extends JFrame {
 		pane.add(TheMainPanel, BorderLayout.CENTER);
 
 		// Initialize with single 96-well plate
-		Plate[] plates = new Plate[1];
-		plates[0] = new Plate(8, 12, 1);
-		ThePlatePanel = new PlateHoldingPanel(plates);
+		Model_Plate[] plates = new Model_Plate[1];
+		plates[0] = new Model_Plate(8, 12, 1);
+		plates[0].initGUI();
+		ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
+				plates));
 		int numplates = plates.length;
 		TheInputPanel_Container = new JTabbedPane();
 		for (int i = 0; i < numplates; i++)
@@ -264,12 +261,12 @@ public class MainGUI extends JFrame {
 					fc = new JFileChooser();
 
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				fc.addChoosableFileFilter(new FileChooserFilter_IR());
 
 				int returnVal = fc.showOpenDialog(null);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fc.getSelectedFile();
-					TheDirectory = new File(file.getParent());
-					TheProjectDirectory = file;
+
 
 					loadProject(TheProjectDirectory);
 
@@ -315,7 +312,7 @@ public class MainGUI extends JFrame {
 		});
 		menuI.add(item);
 
-		// item = new JMenuItem("Well Means (w/MetaData)");
+		// item = new JMenuItem("Model_Well Means (w/MetaData)");
 		// item.addActionListener(new ActionListener()
 		// {
 		// public void actionPerformed(ActionEvent ae)
@@ -375,7 +372,7 @@ public class MainGUI extends JFrame {
 			public void actionPerformed(ActionEvent ae) {
 				// Horiz ordering
 				ArrayList wells = new ArrayList();
-				Plate[] plates = getThePlateHoldingPanel().getThePlates();
+				Model_Plate[] plates = getThePlateHoldingPanel().getPlates();
 				int numPlates = plates.length;
 				for (int p = 0; p < numPlates; p++)
 					wells.addAll(plates[p].getSelectedWells_horizOrder());
@@ -387,7 +384,7 @@ public class MainGUI extends JFrame {
 
 				FieldViewer_Frame imageViewerFrame = new FieldViewer_Frame();
 				for (int i = 0; i < len; i++) {
-					Well w = (Well) wells.get(i);
+					Model_Well w = (Model_Well) wells.get(i);
 					if (w.getFields() != null) {
 						int numFields = w.getFields().length;
 						for (int j = 0; j < numFields; j++) {
@@ -439,41 +436,41 @@ public class MainGUI extends JFrame {
 		ToolsMenu.add(item);
 		// ToolsMenu.add(AnalysisModulesMenu);
 
-		JMenuItem but2 = new JMenuItem("Bimodal Fitting");
-		but2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				new AnalysisModuleFrame(new Plate_bimodalFit(TheMainGUI
-						.getPlateHoldingPanel().getThePlates()[0],
-						"Bimodal Fit", 800, 700));
-				validate();
-				repaint();
-				ThePlatePanel.updatePanel();
-			}
-		});
-		AnalysisModulesMenu.add(but2);
-
-		but2 = new JMenuItem("Dose Response Calculator");
-		but2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				new AnalysisModuleFrame(new Line_DoseResponseCalculator(
-						TheLinePlot, "Dose Response Ranges", 650, 400));
-			}
-		});
-		AnalysisModulesMenu.add(but2);
-
-		but2 = new JMenuItem("Multiple Line Plots");
-		but2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				Feature[] features = FeatureSelectionDialog
-				.showFeatureSelectionDialog();
-				if (features != null)
-					new AnalysisModuleFrame(new Grid_LinePlot(TheMainGUI
-							.getPlateHoldingPanel().getThePlates()[0],
-							features, "Multiple LineGraph Plotter", 800, 800));
-
-			}
-		});
-		AnalysisModulesMenu.add(but2);
+		// JMenuItem but2 = new JMenuItem("Bimodal Fitting");
+		// but2.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent ae) {
+		// new AnalysisModuleFrame(new Plate_bimodalFit(TheMainGUI
+		// .getPlateHoldingPanel().getModel().getPlates()[0],
+		// "Bimodal Fit", 800, 700));
+		// validate();
+		// repaint();
+		// ThePlatePanel.updatePanel();
+		// }
+		// });
+		// AnalysisModulesMenu.add(but2);
+		//
+		// but2 = new JMenuItem("Dose Response Calculator");
+		// but2.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent ae) {
+		// new AnalysisModuleFrame(new Line_DoseResponseCalculator(
+		// TheLinePlot, "Dose Response Ranges", 650, 400));
+		// }
+		// });
+		// AnalysisModulesMenu.add(but2);
+		//
+		// but2 = new JMenuItem("Multiple Line Plots");
+		// but2.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent ae) {
+		// Feature[] features = FeatureSelectionDialog
+		// .showFeatureSelectionDialog();
+		// if (features != null)
+		// new AnalysisModuleFrame(new Grid_LinePlot(TheMainGUI
+		// .getPlateHoldingPanel().getModel().getPlates()[0],
+		// features, "Multiple LineGraph Plotter", 800, 800));
+		//
+		// }
+		// });
+		// AnalysisModulesMenu.add(but2);
 
 		/**
 		 * Adding the Possible options for the leftPanelDisplay
@@ -642,8 +639,8 @@ public class MainGUI extends JFrame {
 				ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Plate[] plates = getThePlateHoldingPanel().getThePlates();
-				Plate.loadCellData(plates, false, true);
+				Model_Plate[] plates = getThePlateHoldingPanel().getPlates();
+				Model_Plate.loadCellData(plates, false, true);
 			}
 		});
 		loadMenu.add(item);
@@ -653,8 +650,8 @@ public class MainGUI extends JFrame {
 				ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Plate[] plates = getThePlateHoldingPanel().getThePlates();
-				Plate.loadCellData(plates, true, true);
+				Model_Plate[] plates = getThePlateHoldingPanel().getPlates();
+				Model_Plate.loadCellData(plates, true, true);
 			}
 		});
 		loadMenu.add(item);
@@ -664,7 +661,7 @@ public class MainGUI extends JFrame {
 				ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Plate[] plates = getThePlateHoldingPanel().getThePlates();
+				Model_Plate[] plates = getThePlateHoldingPanel().getPlates();
 				for (int i = 0; i < plates.length; i++)
 					plates[i].clearCellData();
 				updateAllPlots();
@@ -706,9 +703,11 @@ public class MainGUI extends JFrame {
 		bgroup.add(check);
 		check.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Plate[] plates = new Plate[1];
-				plates[0] = new Plate(2, 3, 1);
-				ThePlatePanel = new PlateHoldingPanel(plates);
+				Model_Plate[] plates = new Model_Plate[1];
+				plates[0] = new Model_Plate(2, 3, 1);
+				plates[0].initGUI();
+				ThePlatePanel = new Gui_PlateRepository(
+						new Model_PlateRepository(plates));
 				int numplates = plates.length;
 				TheInputPanel_Container = new JTabbedPane();
 				for (int i = 0; i < numplates; i++)
@@ -731,9 +730,11 @@ public class MainGUI extends JFrame {
 		bgroup.add(check);
 		check.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Plate[] plates = new Plate[1];
-				plates[0] = new Plate(3, 4, 1);
-				ThePlatePanel = new PlateHoldingPanel(plates);
+				Model_Plate[] plates = new Model_Plate[1];
+				plates[0] = new Model_Plate(3, 4, 1);
+				plates[0].initGUI();
+				ThePlatePanel = new Gui_PlateRepository(
+						new Model_PlateRepository(plates));
 				int numplates = plates.length;
 				TheInputPanel_Container = new JTabbedPane();
 				for (int i = 0; i < numplates; i++)
@@ -755,9 +756,11 @@ public class MainGUI extends JFrame {
 		bgroup.add(check);
 		check.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Plate[] plates = new Plate[1];
-				plates[0] = new Plate(4, 6, 1);
-				ThePlatePanel = new PlateHoldingPanel(plates);
+				Model_Plate[] plates = new Model_Plate[1];
+				plates[0] = new Model_Plate(4, 6, 1);
+				plates[0].initGUI();
+				ThePlatePanel = new Gui_PlateRepository(
+						new Model_PlateRepository(plates));
 				int numplates = plates.length;
 				TheInputPanel_Container = new JTabbedPane();
 				for (int i = 0; i < numplates; i++)
@@ -780,9 +783,11 @@ public class MainGUI extends JFrame {
 		check.setSelected(true);
 		check.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Plate[] plates = new Plate[1];
-				plates[0] = new Plate(8, 12, 1);
-				ThePlatePanel = new PlateHoldingPanel(plates);
+				Model_Plate[] plates = new Model_Plate[1];
+				plates[0] = new Model_Plate(8, 12, 1);
+				plates[0].initGUI();
+				ThePlatePanel = new Gui_PlateRepository(
+						new Model_PlateRepository(plates));
 				int numplates = plates.length;
 				TheInputPanel_Container = new JTabbedPane();
 				for (int i = 0; i < numplates; i++)
@@ -805,9 +810,11 @@ public class MainGUI extends JFrame {
 		bgroup.add(check);
 		check.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Plate[] plates = new Plate[1];
-				plates[0] = new Plate(16, 24, 1);
-				ThePlatePanel = new PlateHoldingPanel(plates);
+				Model_Plate[] plates = new Model_Plate[1];
+				plates[0] = new Model_Plate(16, 24, 1);
+				plates[0].initGUI();
+				ThePlatePanel = new Gui_PlateRepository(
+						new Model_PlateRepository(plates));
 				int numplates = plates.length;
 				TheInputPanel_Container = new JTabbedPane();
 				for (int i = 0; i < numplates; i++)
@@ -841,12 +848,14 @@ public class MainGUI extends JFrame {
 				int num = Integer.parseInt(response);
 
 				int counter = 0;
-				Plate[] plates = new Plate[num];
+				Model_Plate[] plates = new Model_Plate[num];
 				for (int p = 0; p < plates.length; p++) {
 					counter++;
-					plates[p] = new Plate(8, 12, counter);
+					plates[p] = new Model_Plate(8, 12, counter);
+					plates[p].initGUI();
 				}
-				ThePlatePanel = new PlateHoldingPanel(plates);
+				ThePlatePanel = new Gui_PlateRepository(
+						new Model_PlateRepository(plates));
 
 				int numplates = plates.length;
 				TheInputPanel_Container = new JTabbedPane();
@@ -880,13 +889,15 @@ public class MainGUI extends JFrame {
 				int num = Integer.parseInt(response);
 
 				int counter = 0;
-				Plate[] plates = new Plate[num];
+				Model_Plate[] plates = new Model_Plate[num];
 
 				for (int p = 0; p < plates.length; p++) {
 					counter++;
-					plates[p] = new Plate(16, 24, counter);
+					plates[p] = new Model_Plate(16, 24, counter);
+					plates[p].initGUI();
 				}
-				ThePlatePanel = new PlateHoldingPanel(plates);
+				ThePlatePanel = new Gui_PlateRepository(
+						new Model_PlateRepository(plates));
 
 				int numplates = plates.length;
 				TheInputPanel_Container = new JTabbedPane();
@@ -951,12 +962,13 @@ public class MainGUI extends JFrame {
 			public void actionPerformed(ActionEvent ae) {
 
 				// Finding which wells were selected
-				ArrayList arr = ThePlatePanel.getSelectedWells_horizOrder();
+				ArrayList<Model_Well> arr = ThePlatePanel.getModel()
+						.getSelectedWells_horizOrder();
 				int num = arr.size();
 
-				Well[] wells = new Well[num];
+				Model_Well[] wells = new Model_Well[num];
 				for (int n = 0; n < num; n++)
-					wells[n] = (Well) arr.get(n);
+					wells[n] = (Model_Well) arr.get(n);
 
 				ThresholdingBoundsInputDialog_WellMeans d = new ThresholdingBoundsInputDialog_WellMeans(
 						wells);
@@ -973,12 +985,13 @@ public class MainGUI extends JFrame {
 			public void actionPerformed(ActionEvent ae) {
 
 				// Finding which wells were selected
-				ArrayList arr = ThePlatePanel.getSelectedWells_horizOrder();
+				ArrayList<Model_Well> arr = ThePlatePanel.getModel()
+						.getSelectedWells_horizOrder();
 				int num = arr.size();
 
-				Well[] wells = new Well[num];
+				Model_Well[] wells = new Model_Well[num];
 				for (int n = 0; n < num; n++)
-					wells[n] = (Well) arr.get(n);
+					wells[n] = (Model_Well) arr.get(n);
 
 				ThresholdingBoundsInputDialog_SingleCells s = new ThresholdingBoundsInputDialog_SingleCells(
 						wells);
@@ -991,7 +1004,7 @@ public class MainGUI extends JFrame {
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				try {
-					SplashScreen splash = new SplashScreen();
+					MainSplash splash = new MainSplash();
 					splash.showSplash();
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -1042,7 +1055,7 @@ public class MainGUI extends JFrame {
 	 * @author BLM
 	 */
 	public ProjectHDFConnector initHDFprojectConnector() {
-		String projPath = main.MainGUI.getGUI().getProjectDirectory()
+		String projPath = gui.MainGUI.getGUI().getProjectDirectory()
 		.getAbsolutePath();
 		TheHDFprojectConnector = null;
 		try {
@@ -1059,7 +1072,7 @@ public class MainGUI extends JFrame {
 	 * 
 	 * @author BLM
 	 */
-	public void initHDFPlates(Plate[] plates) {
+	public void initHDFPlates(Model_Plate[] plates) {
 		try {
 			String algoName = "Data";
 			for (int i = 0; i < plates.length; i++) {
@@ -1080,10 +1093,10 @@ public class MainGUI extends JFrame {
 	 * 
 	 * @author BLM
 	 */
-	public ProjectHDFConnector initHDFprojectConnectorAndPlates(Plate[] plates) {
+	public ProjectHDFConnector initHDFprojectConnectorAndPlates(Model_Plate[] plates) {
 		TheHDFprojectConnector = null;
-		if (main.MainGUI.getGUI().getProjectDirectory() != null) {
-			String projPath = main.MainGUI.getGUI().getProjectDirectory()
+		if (gui.MainGUI.getGUI().getProjectDirectory() != null) {
+			String projPath = gui.MainGUI.getGUI().getProjectDirectory()
 			.getAbsolutePath();
 			try {
 				TheHDFprojectConnector = new ProjectHDFConnector(projPath);
@@ -1200,12 +1213,14 @@ public class MainGUI extends JFrame {
 			setProjectDirectory(newF);
 
 			int counter = 0;
-			Plate[] plates = new Plate[numPlates];
+			Model_Plate[] plates = new Model_Plate[numPlates];
 			for (int p = 0; p < plates.length; p++) {
 				counter++;
-				plates[p] = new Plate(numRows, numCols, counter);
+				plates[p] = new Model_Plate(numRows, numCols, counter);
+				plates[p].initGUI();
 			}
-			ThePlatePanel = new PlateHoldingPanel(plates);
+			ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
+					plates));
 
 			TheInputPanel_Container = new JTabbedPane();
 			for (int i = 0; i < numPlates; i++)
@@ -1225,38 +1240,6 @@ public class MainGUI extends JFrame {
 		return false;
 	}
 
-	public boolean initNewPlates_ClusterRun(File inDir, int numPlates,
-			int numRows,
-			int numCols) {
-
-		File file = new File(inDir.getPath() + "_"
- + System.currentTimeMillis() + ".ir");
-		file.mkdir();
-		setProjectDirectory(file);
-		setTheDirectory(new File(file.getParent()));
-
-		int counter = 0;
-		Plate[] plates = new Plate[numPlates];
-		for (int p = 0; p < plates.length; p++) {
-			counter++;
-			plates[p] = new Plate(numRows, numCols, counter);
-		}
-		ThePlatePanel = new PlateHoldingPanel(plates);
-
-		TheInputPanel_Container = new JTabbedPane();
-		for (int i = 0; i < numPlates; i++)
-			TheInputPanel_Container.addTab("Plate #" + (i + 1),
-					new MidasInputPanel(plates[i]));
-
-		initHDFprojectConnectorAndPlates(plates);
-		// TheMainPanel.setLeftComponent(TheInputPanel_Container);
-		// TheMainPanel.setRightComponent(ThePlatePanel);
-		// TheMainPanel.setDividerLocation(TheMainPanel.getDividerLocation());
-		// TheMainPanel.validate();
-		// TheMainPanel.repaint();
-		// TheMainGUI.repaint();
-		return true;
-	}
 
 	/**
 	 * Returns the dot filter queue manager for this project
@@ -1290,8 +1273,9 @@ public class MainGUI extends JFrame {
 			TheProjectDirectory.renameTo(newF);
 			TheProjectDirectory = newF;
 
-			Plate[] plates = ThePlatePanel.getThePlates();
-			ThePlatePanel = new PlateHoldingPanel(plates);
+			Model_Plate[] plates = ThePlatePanel.getModel().getPlates();
+			ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
+					plates));
 			int numplates = plates.length;
 			TheInputPanel_Container = new JTabbedPane();
 			for (int i = 0; i < numplates; i++)
@@ -1331,9 +1315,11 @@ public class MainGUI extends JFrame {
 			file.mkdir();
 			TheProjectDirectory = file;
 
-			Plate[] plates = new Plate[1];
-			plates[0] = new Plate(8, 12, 1);
-			ThePlatePanel = new PlateHoldingPanel(plates);
+			Model_Plate[] plates = new Model_Plate[1];
+			plates[0] = new Model_Plate(8, 12, 1);
+			plates[0].initGUI();
+			ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
+					plates));
 			int numplates = plates.length;
 			TheInputPanel_Container = new JTabbedPane();
 			for (int i = 0; i < numplates; i++)
@@ -1396,7 +1382,8 @@ public class MainGUI extends JFrame {
 	 * @author BLM
 	 */
 	public void updateMidasInputPanel() {
-		Plate[] ThePlates = TheMainGUI.getThePlateHoldingPanel().getThePlates();
+		Model_Plate[] ThePlates = TheMainGUI.getThePlateHoldingPanel()
+				.getPlates();
 		int numplates = ThePlates.length;
 		for (int i = 0; i < numplates; i++)
 			((MidasInputPanel) TheInputPanel_Container.getComponentAt(i))
@@ -1417,13 +1404,14 @@ public class MainGUI extends JFrame {
 		if (TheLinePlot == null)
 			return;
 
-		Well[][] wells = null;
+		Model_Well[][] wells = null;
 		if (TheLinePlot.getPlotType() == LinePlot.ROWS) // Rows
-			wells = ThePlatePanel.getAllSelectedWells_RowSeries();
+			wells = ThePlatePanel.getModel().getAllSelectedWells_RowSeries();
 		else if (TheLinePlot.getPlotType() == LinePlot.COLS)
-			wells = ThePlatePanel.getAllSelectedWells_ColumnSeries();
+			wells = ThePlatePanel.getModel().getAllSelectedWells_ColumnSeries();
 		else if (TheLinePlot.getPlotType() == LinePlot.MULTIPLATE)
-			wells = ThePlatePanel.getAllSelectedWells_TransPlateSeries();
+			wells = ThePlatePanel.getModel()
+					.getAllSelectedWells_TransPlateSeries();
 		;
 
 		if (wells == null)
@@ -1435,7 +1423,7 @@ public class MainGUI extends JFrame {
 				float[][] data = new float[numSeries][];
 				int counter = 0;
 				for (int i = 0; i < numSeries; i++) {
-					Well[] oneSeries = wells[i];
+					Model_Well[] oneSeries = wells[i];
 					int numC = oneSeries.length;
 					data[i] = new float[numC];
 					for (int c = 0; c < numC; c++) {
@@ -1451,10 +1439,10 @@ public class MainGUI extends JFrame {
 				Color[] colors = new Color[data.length];
 				if (TheLinePlot.getPlotType() == LinePlot.ROWS)
 					for (int i = 0; i < numSeries; i++)
-						colors[i] = Plate.getRowColor(wells[i][0].name);
+						colors[i] = Model_Plate.getRowColor(wells[i][0].name);
 				else if (TheLinePlot.getPlotType() == LinePlot.COLS)
 					for (int i = 0; i < numSeries; i++)
-						colors[i] = Plate.getColColor(wells[i][0].name);
+						colors[i] = Model_Plate.getColColor(wells[i][0].name);
 				else if (TheLinePlot.getPlotType() == LinePlot.MULTIPLATE)
 					for (int i = 0; i < numSeries; i++)
 						colors[i] = Color.BLACK;
@@ -1467,7 +1455,7 @@ public class MainGUI extends JFrame {
 				float[][] stdev = new float[numSeries][];
 
 				for (int r = 0; r < numSeries; r++) {
-					Well[] oneRowSeries = wells[r];
+					Model_Well[] oneRowSeries = wells[r];
 					int numC = oneRowSeries.length;
 					data[r] = new float[numC];
 					varianceBars[r] = new float[numC][2];
@@ -1493,10 +1481,10 @@ public class MainGUI extends JFrame {
 				Color[] colors = new Color[data.length];
 				if (TheLinePlot.getPlotType() == LinePlot.ROWS)
 					for (int r = 0; r < numSeries; r++)
-						colors[r] = Plate.getRowColor(wells[r][0].name);
+						colors[r] = Model_Plate.getRowColor(wells[r][0].name);
 				else if (TheLinePlot.getPlotType() == LinePlot.COLS)
 					for (int r = 0; r < numSeries; r++)
-						colors[r] = Plate.getColColor(wells[r][0].name);
+						colors[r] = Model_Plate.getColColor(wells[r][0].name);
 				else if (TheLinePlot.getPlotType() == LinePlot.MULTIPLATE)
 					for (int i = 0; i < numSeries; i++)
 						colors[i] = Color.BLACK;
@@ -1513,11 +1501,12 @@ public class MainGUI extends JFrame {
 	 * @author BLM
 	 */
 	public void updateDotPlot() {
-		ArrayList arr = ThePlatePanel.getSelectedWells_horizOrder();
+		ArrayList<Model_Well> arr = ThePlatePanel.getModel()
+				.getSelectedWells_horizOrder();
 		int numWells = arr.size();
-		Well[] wells = new Well[numWells];
+		Model_Well[] wells = new Model_Well[numWells];
 		for (int i = 0; i < numWells; i++)
-			wells[i] = (Well) arr.get(i);
+			wells[i] = (Model_Well) arr.get(i);
 
 		Feature featureX = null;
 		Feature featureY = null;
@@ -1560,17 +1549,18 @@ public class MainGUI extends JFrame {
 	 * @author BLM
 	 */
 	public void updateHistogramPlot() {
-		ArrayList<Well> arr = ThePlatePanel.getSelectedWells_horizOrder();
+		ArrayList<Model_Well> arr = ThePlatePanel.getModel()
+				.getSelectedWells_horizOrder();
 		int numWells = arr.size();
-		Well[] wells = new Well[numWells];
+		Model_Well[] wells = new Model_Well[numWells];
 		for (int i = 0; i < numWells; i++)
-			wells[i] = (Well) arr.get(i);
+			wells[i] = (Model_Well) arr.get(i);
 		if (wells == null)
 			return;
 
 		// finding only those wells that actually have data
 		int len = wells.length;
-		arr = new ArrayList<Well>();
+		arr = new ArrayList<Model_Well>();
 		for (int i = 0; i < len; i++)
 		{
 			ArrayList<Cell> cells = wells[i].getCells();
@@ -1579,9 +1569,9 @@ public class MainGUI extends JFrame {
 				arr.add(wells[i]);
 		}
 		len = arr.size();
-		Well[] wells2 = new Well[len];
+		Model_Well[] wells2 = new Model_Well[len];
 		for (int i = 0; i < len; i++)
-			wells2[i] = (Well) arr.get(i);
+			wells2[i] = (Model_Well) arr.get(i);
 
 		HistogramPlot newHist = new HistogramPlot(wells, TheSelectedFeature);
 		if (TheHistogram != null)
@@ -1636,7 +1626,7 @@ public class MainGUI extends JFrame {
 	 * 
 	 * @author BLM
 	 */
-	public PlateHoldingPanel getPlateHoldingPanel() {
+	public Gui_PlateRepository getPlateHoldingPanel() {
 		return ThePlatePanel;
 	}
 
@@ -1692,7 +1682,7 @@ public class MainGUI extends JFrame {
 	 * 
 	 * @author BLM
 	 */
-	public void loadParameterFile(File file, Plate plate) {
+	public void loadParameterFile(File file, Model_Plate plate) {
 		try {
 			ArrayList Wells = new ArrayList();
 			DocumentBuilderFactory factory = DocumentBuilderFactory
@@ -1726,7 +1716,7 @@ public class MainGUI extends JFrame {
 					float topXBrightestPixels = -1;
 					int annulusSize = -1;
 					String meanOrIntegrated = "MEAN";
-					String processType = ParameterSet.UNPROCESSED;
+					String processType = Model_ParameterSet.UNPROCESSED;
 
 					int length = (node.getAttributes() != null) ? node
 							.getAttributes().getLength() : 0;
@@ -1782,9 +1772,9 @@ public class MainGUI extends JFrame {
 									+ threshold_nucleus + "  " + meanOrIntegrated);
 
 							// TODO
-							Well well = plate.getWell(wellName);
+							Model_Well well = plate.getWell(wellName);
 							Wells.add(well);
-							ParameterSet p = well.TheParameterSet;
+							Model_ParameterSet p = well.TheParameterSet;
 							p.setModified(true);
 							p.setWellName(wellName);
 							p.setProcessType(processType);
@@ -1817,24 +1807,24 @@ public class MainGUI extends JFrame {
 			ArrayList ss = new ArrayList();
 			ArrayList wm = new ArrayList();
 			for (int i = 0; i < len; i++) {
-				Well w = (Well) Wells.get(i);
+				Model_Well w = (Model_Well) Wells.get(i);
 				System.out
 				.println("procTYPE: "
 						+ w.TheParameterSet.getProcessType());
 
 				if (w.TheParameterSet.getProcessType()
-						.equalsIgnoreCase(ParameterSet.SINGLECELL))
+						.equalsIgnoreCase(Model_ParameterSet.SINGLECELL))
 					ss.add(w);
 				else if (w.TheParameterSet.getProcessType()
-						.equalsIgnoreCase(ParameterSet.WELLMEAN))
+						.equalsIgnoreCase(Model_ParameterSet.WELLMEAN))
 					wm.add(w);
 			}
 			// Processing the SingleCell Wells
 			if (ss.size() > 0) {
 				int num = ss.size();
-				Well[] wellsToProcess = new Well[num];
+				Model_Well[] wellsToProcess = new Model_Well[num];
 				for (int i = 0; i < num; i++)
-					wellsToProcess[i] = (Well) ss.get(i);
+					wellsToProcess[i] = (Model_Well) ss.get(i);
 
 				// Starting the Processor
 				Processor_SingleCells tasker = new Processor_SingleCells(
@@ -1844,9 +1834,9 @@ public class MainGUI extends JFrame {
 			// Processing the WellMean Wells
 			if (wm.size() > 0) {
 				int num = wm.size();
-				Well[] wellsToProcess = new Well[num];
+				Model_Well[] wellsToProcess = new Model_Well[num];
 				for (int i = 0; i < num; i++)
-					wellsToProcess[i] = (Well) wm.get(i);
+					wellsToProcess[i] = (Model_Well) wm.get(i);
 				// Starting the Processor
 				Processor_WellAverage tasker = new Processor_WellAverage(
 						wellsToProcess);
@@ -1863,13 +1853,13 @@ public class MainGUI extends JFrame {
 	 * 
 	 * @author BLM
 	 */
-	public void loadImageDirectory(File ImageDir_, Plate plate,
+	public void loadImageDirectory(File ImageDir_, Model_Plate plate,
 			boolean copyImages) {
 
 		File dir = ImageDir_;
 
 		// Storing the images in the ImageDirectory
-		File Images = new File(main.MainGUI.getGUI().getProjectDirectory()
+		File Images = new File(gui.MainGUI.getGUI().getProjectDirectory()
 				+ File.separator + "Images");
 		if (!Images.exists())
 			Images.mkdir();
@@ -1917,11 +1907,11 @@ public class MainGUI extends JFrame {
 		// of wavelength - TODO features should be added better
 		ChannelNames = tools.ImageTools.getNameOfUniqueChannels(dir);
 
-		for (int r = 0; r < plate.getTheWells().length; r++)
-			for (int c = 0; c < plate.getTheWells()[0].length; c++) {
+		for (int r = 0; r < plate.getWells().length; r++)
+			for (int c = 0; c < plate.getWells()[0].length; c++) {
 				// Getting all files tagged for this well
 				File[] allFiles = tools.ImageTools.getFilesForGivenWell(dir,
-						plate.getTheWells()[r][c]);
+						plate.getWells()[r][c]);
 				// Organizing the images into sets of File[] in a an arraylist
 				// where each element of the arrList is a File[] of each
 				// wavelength for each field
@@ -1929,10 +1919,10 @@ public class MainGUI extends JFrame {
 				.getAllSetsOfCorresponsdingChanneledImageFiles(allFiles);
 				int numFields = allSets.size();
 
-				Well well = plate.getTheWells()[r][c];
-				well.setTheFields(new Field[numFields]);
+				Model_Well well = plate.getWells()[r][c];
+				well.setTheFields(new Model_Field[numFields]);
 				for (int i = 0; i < numFields; i++) {
-					plate.getTheWells()[r][c].getFields()[i] = new Field(
+					plate.getWells()[r][c].getFields()[i] = new Model_Field(
 							((File[]) allSets.get(i)), i, well);
 
 				}
@@ -1990,7 +1980,7 @@ public class MainGUI extends JFrame {
 		}
 
 		// creating a project directory if doesn't exist
-		String projPath = main.MainGUI.getGUI().getProjectDirectory()
+		String projPath = gui.MainGUI.getGUI().getProjectDirectory()
 		.getAbsolutePath();
 		File f = new File(projPath);
 		if (!f.exists())
@@ -2002,7 +1992,7 @@ public class MainGUI extends JFrame {
 		updateFeatures();
 		updateAllPlots();
 		ThePlatePanel.updatePanel();
-		plate.updatePanel();
+		plate.getGUI().updatePanel();
 		validate();
 		repaint();
 
@@ -2027,6 +2017,7 @@ public class MainGUI extends JFrame {
 	 * @author BLM
 	 */
 	public void loadProject(File ProjectDir) {
+
 		try {
 			System.out.println("Loading Project: " + ProjectDir.getName());
 			TheDirectory = new File(ProjectDir.getParent());
@@ -2034,7 +2025,7 @@ public class MainGUI extends JFrame {
 
 			// Looking for what sort of plates were loaded in this prior project
 			initHDFprojectConnector();
-			ArrayList<Plate> arr = new ArrayList<Plate>();
+			ArrayList<Model_Plate> arr = new ArrayList<Model_Plate>();
 			int counter = 1;
 			for (int i = 0; i < 100; i++) {
 				int pSize = 0;
@@ -2049,7 +2040,7 @@ public class MainGUI extends JFrame {
 
 				int numR = (int) Math.sqrt(pSize / 1.5f);
 				int numC = pSize / numR;
-				arr.add(new Plate(numR, numC, counter));
+				arr.add(new Model_Plate(numR, numC, counter));
 				counter++;
 
 			}
@@ -2057,16 +2048,20 @@ public class MainGUI extends JFrame {
 
 
 			// Creating the new plate holder with new plates
-			Plate[] plates = new Plate[arr.size()];
+			Model_Plate[] plates = new Model_Plate[arr.size()];
 			for (int p = 0; p < plates.length; p++)
+ {
 				plates[p] = arr.get(p);
-			ThePlatePanel = new PlateHoldingPanel(plates);
+				plates[p].initGUI();
+			}
+			ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
+					plates));
 			initHDFPlates(plates);
 
 			int numplates = plates.length;
 			TheInputPanel_Container = new JTabbedPane();
 			for (int i = 0; i < numplates; i++) {
-				Plate plate = plates[i];
+				Model_Plate plate = plates[i];
 				TheInputPanel_Container.addTab("Plate #" + plate.getID(),
 						new MidasInputPanel(plate));
 				// Trying to load the well mean data from the HDF file if exists
@@ -2084,6 +2079,7 @@ public class MainGUI extends JFrame {
 				// based off of wavelength - TODO features should be added
 				// better
 				String[] names = tools.ImageTools.getNameOfUniqueChannels(dir);
+
 				if (names != null && names.length > 0)
 					ChannelNames = names;
 
@@ -2093,7 +2089,7 @@ public class MainGUI extends JFrame {
 							// Getting all files tagged for this well
 							File[] allFiles = tools.ImageTools
 							.getFilesForGivenWell(dir, plate
-									.getTheWells()[r][c]);
+									.getWells()[r][c]);
 							// Organizing the images into sets of File[] in a an
 							// arraylist where each element of the arrList is a
 							// File[] of each wavelength for each field
@@ -2101,10 +2097,10 @@ public class MainGUI extends JFrame {
 							.getAllSetsOfCorresponsdingChanneledImageFiles(allFiles);
 							int numFields = allSets.size();
 
-							Well well = plate.getTheWells()[r][c];
-							well.setTheFields(new Field[numFields]);
+							Model_Well well = plate.getWells()[r][c];
+							well.setTheFields(new Model_Field[numFields]);
 							for (int j = 0; j < numFields; j++)
-								plate.getTheWells()[r][c].getFields()[j] = new Field(
+								plate.getWells()[r][c].getFields()[j] = new Model_Field(
 										((File[]) allSets.get(j)), j, well);
 						}
 				}
@@ -2141,7 +2137,7 @@ public class MainGUI extends JFrame {
 			//
 			//Checking if loaded project features match up 
 			SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-					main.MainGUI.getGUI().getProjectDirectory()
+					gui.MainGUI.getGUI().getProjectDirectory()
 					.getAbsolutePath());
 			StringBuffer[] fNames = new StringBuffer[TheFeatures.size()];
 			for (int j = 0; j < TheFeatures.size(); j++) {
@@ -2149,24 +2145,24 @@ public class MainGUI extends JFrame {
 			}
 
 
-			// Plate[] ps= TheMainGUI.getPlateHoldingPanel().getThePlates();
+			// Model_Plate[] ps= TheMainGUI.getPlateHoldingPanel().getThePlates();
 			// boolean featureNameProblems = false;
 			// for (int i = 0; i < numplates; i++)
 			// {
-			// Plate plate = ps[i];
+			// Model_Plate plate = ps[i];
 			// int pInd = plate.getPlateIndex();
-			// Well[][] wells = plate.getTheWells();
+			// Model_Well[][] wells = plate.getTheWells();
 			// int numR = plate.getNumRows();
 			// int numC = plate.getNumColumns();
 			// for (int j = 0; j < numR; j++) {
 			// for (int j2 = 0; j2 < numC; j2++) {
-			// Well well = wells[j][j2];
+			// Model_Well well = wells[j][j2];
 			// int numHDF = well.getHDFcount();
 			// if (numHDF>0)
 			// {
-			// Field[] fields = well.getFields();
+			// Model_Field[] fields = well.getFields();
 			// for (int k = 0; k < fields.length; k++) {
-			// Field field = fields[k];
+			// Model_Field field = fields[k];
 			// StringBuffer[] featureNames = sCon.readFeatureNames(pInd,
 			// well.getWellIndex(), field.getIndexInWell());
 			// if (featureNames!=null)
@@ -2231,11 +2227,11 @@ public class MainGUI extends JFrame {
 	}
 
 	/**
-	 * Loads the given file directory of images into the given Plate
+	 * Loads the given file directory of images into the given Model_Plate
 	 * 
 	 * @author BLM
 	 */
-	public void load(File f, Plate plate) {
+	public void load(File f, Model_Plate plate) {
 		if (f.isDirectory()) {
 			// Loading a project
 			if (containsFile(f, "project.h5") || f.getName().indexOf(".ir") > 0) {
@@ -2260,7 +2256,7 @@ public class MainGUI extends JFrame {
 	 * @author BLM
 	 */
 	static public void findAndCompileNewJavaFiles(String packageName,
-			SplashScreen splash) throws ClassNotFoundException {
+			MainSplash splash) throws ClassNotFoundException {
 
 		File f = new File("./" + packageName);
 		File[] fs = f.listFiles();
@@ -2275,8 +2271,8 @@ public class MainGUI extends JFrame {
 				String message = "Loading: " + name;
 				if (splash != null)
 					splash.setMessage(message);
-				else
-					System.out.println(message);
+				// else
+				// System.out.println(message);
 
 				String fileStub = name.replace('.', '/');
 				// Build objects pointing to the source code (.java) and object
@@ -2319,7 +2315,7 @@ public class MainGUI extends JFrame {
 	// Spawn a process to compile the java source code file
 	// specified in the 'javaFile' parameter. Return a true if
 	// the compilation worked, false otherwise.
-	static public boolean compile(String javaFile, SplashScreen splash)
+	static public boolean compile(String javaFile, MainSplash splash)
 	throws IOException {
 		// Let the user know what's going on
 		String message = "Compiling " + javaFile + "...";
@@ -2352,226 +2348,8 @@ public class MainGUI extends JFrame {
 		TheFilterManager = new FilterManager();
 	}
 
-	/** Main ImageRail GUI start call */
-	public static void main(String[] args) {
-		try {
-
-			if (args.length == 0) {
-
-				// Throw a nice little title page up on the screen first
-				SplashScreen splash = new SplashScreen(2000);
-				// Normally, we'd call splash.showSplash() and get on with the
-				// program.
-				// But, since this is only a test...
-				splash.showSplashAndExit();
-
-				new MainGUI();
-				MainGUI.getGUI().setVisible(false);
-				MainGUI.getGUI().initFilterManager();
-
-				// Loading all new plugin files
-				findAndCompileNewJavaFiles("features", splash);
-				findAndCompileNewJavaFiles("segmentors", splash);
-				// Hiding the splash, now that we have loaded everything
-
-				splash.setVisible(false);
-				// init the project with the startupdialog
-				StartupDialog startup = new StartupDialog();
-			}
-
-			//
-			// Command Line
-			//
-			else
-			{
-				// Reading commandline parameters
-				File InputDir = new File(args[0]);
 
 
-				float wellsPerPlate = Float.parseFloat(args[1]);
-				float NucleusThreshold = Float.parseFloat(args[2]);
-				float CytoThreshold = Float.parseFloat(args[3]);
-				float BkgdThreshold = Float.parseFloat(args[4]);
-				float CoordsToSave = Float.parseFloat(args[5]);
-
-				System.out.println("*****Processing Input Directory: "
-						+ InputDir.getName());
-				System.out.println("     ------->    Wells per Plate: "
-						+ wellsPerPlate);
-				System.out.println("     ------->    Nucleus Threshold: "
-						+ NucleusThreshold);
-				System.out.println("     ------->    Cyto Threshold: "
-						+ CytoThreshold);
-				System.out.println("     ------->    Bkgd Threshold: "
-						+ BkgdThreshold);
-				System.out.println("     ------->    CoordsToSave: "
-						+ CoordsToSave);
-
-				File[] subDirs = InputDir.listFiles();
-				int len = subDirs.length;
-				int counter = 0;
-				for (int i = 0; i < len; i++)
-					if (shouldProcess(subDirs[i].getName()))
-						counter++;
-				System.out.println("Number of Plate Directories Found: "
-						+ counter);
-				// Init the project and plates
-				int numRows = 0;
-				int numCols = 0;
-				if (wellsPerPlate == 96) {
-					numRows = 8;
-					numCols = 12;
-				} else if (wellsPerPlate == 384) {
-					numRows = 16;
-					numCols = 24;
-				}
-
-				// Creating a new project for this job
-				new MainGUI();
-				MainGUI.getGUI().setVisible(false);
-				MainGUI.getGUI().initFilterManager();
-
-				// Loading all new plugin files
-				findAndCompileNewJavaFiles("features", null);
-				findAndCompileNewJavaFiles("segmentors", null);
-				// Hiding the splash, now that we have loaded everything
-
-				boolean worked = main.MainGUI
-				.getGUI()
-						.initNewPlates_ClusterRun(InputDir, counter, numRows,
-								numCols);
-				if (worked) {
-
-					main.MainGUI gui = main.MainGUI.getGUI();
-					PrintWriter pw = new PrintWriter(new File(
-gui
-							.getProjectDirectory().getAbsolutePath()
-							+ "/OriginalPlateNames.csv"));
-					pw.println("new plate name, original plate directory name");
-
-					// loading the images into the plates
-					int num = subDirs.length;
-					Plate[] plates = gui.getThePlateHoldingPanel()
-							.getThePlates();
-
-					counter = 0;
-					for (int i = 0; i < num; i++)
-						if (shouldProcess(subDirs[i].getName())) {
-							gui.load(subDirs[i], plates[counter]);
-							pw.println("plate_" + counter + " , "
-									+ subDirs[i].getName());
-							counter++;
-						}
-
-					pw.flush();
-					pw.close();
-
-					//
-					// Now process the images
-					processPlates_commandLine(plates, NucleusThreshold,
-							CytoThreshold, BkgdThreshold, (int) CoordsToSave);
-
-				}
-
-			}
-
-		} catch (Exception e) {
-
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * For commandline image directory processing
-	 * 
-	 * @author BLM
-	 * 
-	 * */
-	static public void processPlates_commandLine(Plate[] plates,
-			float Threshold_Nucleus, float Threshold_CellBoundary,
-			float Threshold_Background, int CoordsToSave) {
-
-		ArrayList<Well> arr = new ArrayList<Well>();
-		// Storing the Parameters for each Well
-		for (int p = 0; p < plates.length; p++) {
-
-			Plate plate = plates[p];
-			Well[] TheWells = plate.getAllWells();
-
-			int NucBoundaryChannel = 0;
-			int CytoBoundaryChannel = 0;
-
-			int len = TheWells.length;
-			for (int i = 0; i < len; i++) {
-				Well well = TheWells[i];
-				ParameterSet pset = well.TheParameterSet;
-				pset.setModified(true);
-				// ProcessType
-				pset.setProcessType(ParameterSet.SINGLECELL);
-				// Threshold Channel Nucleus
-				pset.setThresholdChannel_nuc_Name(MainGUI.getGUI()
-						.getTheChannelNames()[NucBoundaryChannel]);
-				// Threshold Channel Cytoplasm
-				pset.setThresholdChannel_cyto_Name(MainGUI.getGUI()
-						.getTheChannelNames()[CytoBoundaryChannel]);
-				// Nuc bound threshold
-				pset.setThreshold_Nucleus(Threshold_Nucleus);
-				// Cell bound Threshold
-				pset.setThreshold_Cell(Threshold_CellBoundary);
-				// Bkgd threshold
-				pset.setThreshold_Background(Threshold_Background);
-
-				if (CoordsToSave == 0)
-					pset.setCoordsToSaveToHDF("Centroid");
-				else if (CoordsToSave == 1)
-					pset.setCoordsToSaveToHDF("BoundingBox");
-				else if (CoordsToSave == 2)
-					pset.setCoordsToSaveToHDF("Outlines");
-				else if (CoordsToSave == 3)
-					pset.setCoordsToSaveToHDF("Everything");
-
-				well.TheParameterSet
-						.setMeanOrIntegrated(well.TheParameterSet.MEAN);
-
-				// Finding the index of this channel name
-				for (int j = 0; j < MainGUI.getGUI().getTheChannelNames().length; j++)
-					if (MainGUI.getGUI().getTheChannelNames()[j]
-							.equalsIgnoreCase(pset
-									.getThresholdChannel_nuc_Name()))
-						pset.setThresholdChannel_nuc_Index(j);
-				// Finding the index of this channel name
-				for (int j = 0; j < MainGUI.getGUI().getTheChannelNames().length; j++)
-					if (MainGUI.getGUI().getTheChannelNames()[j]
-							.equalsIgnoreCase(pset
-									.getThresholdChannel_cyto_Name()))
-						pset.setThresholdChannel_cyto_Index(j);
-			}
-			if (Threshold_Background > 0)
-				MainGUI.getGUI().setBackgroundSubtract(true);
-
-			// Adding to master list to process
-			for (int i = 0; i < TheWells.length; i++)
-				arr.add(TheWells[i]);
-		}
-
-		int len = arr.size();
-		Well[] allWells = new Well[len];
-		for (int i = 0; i < len; i++)
-			allWells[i] = arr.get(i);
-
-		Processor_SingleCells tasker = new Processor_SingleCells(allWells,
-				new DefaultSegmentor());
-		tasker.start();
-	}
-
-	static public boolean shouldProcess(String fileName) {
-		if (fileName.indexOf("DS") < 0 && fileName.indexOf("Ignore") < 0
-				&& fileName.indexOf("Output") < 0)
-			return true;
-
-		return false;
-
-	}
 
 	/**
 	 * Sets whether the GUI is running a processor
@@ -2768,8 +2546,8 @@ gui
 	 * 
 	 * @author BLM
 	 * */
-	public PlateHoldingPanel getThePlateHoldingPanel() {
-		return ThePlatePanel;
+	public Model_PlateRepository getThePlateHoldingPanel() {
+		return ThePlatePanel.getModel();
 	}
 
 	//
@@ -3030,9 +2808,9 @@ gui
 	 */
 	private void resaveCells() {
 		SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-				main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
+				gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
 
-		Plate[] plates = getPlateHoldingPanel().getThePlates();
+		Model_Plate[] plates = getPlateHoldingPanel().getModel().getPlates();
 		int numP = plates.length;
 		System.out.println("*** Saving Changes to Wells:");
 
@@ -3045,16 +2823,16 @@ gui
 		}
 
 		for (int i = 0; i < numP; i++) {
-			Well[][] wells = plates[i].getTheWells();
+			Model_Well[][] wells = plates[i].getWells();
 			for (int r = 0; r < wells.length; r++) {
 				for (int c = 0; c < wells[0].length; c++) {
-					Well well = wells[r][c];
+					Model_Well well = wells[r][c];
 					if (well.areCellsModified()) {
 						try {
 							System.out.println("Well: " + wells[r][c].name);
 							// Parameters to write: plateIdx, wellIdx, fieldIdx,
 							// cellList
-							Field[] fields = wells[r][c].getFields();
+							Model_Field[] fields = wells[r][c].getFields();
 							for (int j = 0; j < fields.length; j++)
 								fields[j].resaveCells(sCon);
 
@@ -3072,7 +2850,7 @@ gui
 								                                  well.Feature_Stdev);
 						} catch (HDFConnectorException e) {
 							System.out
-							.println("Error Writing Well Means/STDEV for new HDF5 files **** ");
+							.println("Error Writing Model_Well Means/STDEV for new HDF5 files **** ");
 						}
 						well.setCellsModified(false);
 					}
@@ -3081,5 +2859,56 @@ gui
 			}
 		}
 		setCellsModified(false);
+	}
+	
+	
+	/**
+	 * Main ImageRail GUI start call
+	 * 
+	 * @author BLM
+	 * 
+	 * */
+	public static void main(String[] args) {
+			if (args.length == 0) {
+			try {
+				// Throw a nice little title page up on the screen first
+				MainSplash splash = new MainSplash(2000);
+				// Normally, we'd call splash.showSplash() and get on with the
+				// program.
+				// But, since this is only a test...
+				splash.showSplashAndExit();
+
+				new MainGUI();
+				MainGUI gui = MainGUI.getGUI();
+				gui.setVisible(false);
+				gui.initFilterManager();
+
+				// Loading all new plugin files
+				MainGUI.findAndCompileNewJavaFiles("features", splash);
+				MainGUI.findAndCompileNewJavaFiles("segmentors", splash);
+				// Hiding the splash, now that we have loaded everything
+
+				splash.setVisible(false);
+				// init the project with the startupdialog
+				MainStartupDialog startup = new MainStartupDialog();
+
+			} catch (Exception e) {
+
+				e.printStackTrace();
+			}
+			}
+
+
+	}
+
+	class FileChooserFilter_IR extends javax.swing.filechooser.FileFilter {
+		public boolean accept(File file) {
+			String filename = file.getName();
+			return filename.endsWith(".ir");
+		}
+
+		public String getDescription() {
+			return "*.ir";
+		}
 	}
 }

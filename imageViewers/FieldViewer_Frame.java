@@ -6,33 +6,50 @@
 
 package imageViewers;
 
-import java.awt.event.*;
-import javax.swing.*;
+import gui.MainGUI;
 
-import imageViewers.FieldViewer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+
 import javax.imageio.ImageIO;
 import javax.media.jai.TiledImage;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSlider;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import main.Field;
-import main.MainGUI;
-import main.PlateHoldingPanel;
-import main.Well;
+
+import models.Model_Field;
+import models.Model_PlateRepository;
+import models.Model_Well;
 
 public class FieldViewer_Frame extends JFrame implements WindowListener, KeyListener
 {
 	private JSlider MovieFrameSlider;
 	private FieldViewer[] TheFieldViewers;
 	private FieldViewer TheCurrentViewer;
+	private JCheckBoxMenuItem PlotBackgroundCheckBox;
 	private int Type_Shape;
 	//CONSTANTS
 	static public int RECTANGLE = 0;
@@ -47,7 +64,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		setResizable(true);
 		Type_Shape = RECTANGLE;
 		setLayout(new BorderLayout());
-		
+
 		//setting up the menubar
 		JMenuBar TheMenuBar = new JMenuBar();
 		JMenu FileMenu = new JMenu("File");
@@ -108,6 +125,48 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 //				});
 //		OptionsMenu.add(item);
 		
+		item = new JMenuItem("Threshold Wizard");
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B,
+				ActionEvent.CTRL_MASK));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				if (Type_Shape == RECTANGLE) {
+					Rectangle rect = (Rectangle) TheCurrentViewer
+							.getScaledSelectionBounds(getScaling());
+					if (rect == null || rect.width <= 2 || rect.height <= 2) // nothing
+																				// selected
+					{
+						JOptionPane
+								.showMessageDialog(
+										null,
+										"No selection made. \nPlease highlight a region and try again.",
+										"Screen Shot",
+										JOptionPane.ERROR_MESSAGE);
+					} else {
+						TiledImage t = new TiledImage(TheCurrentViewer
+								.getTheDisplayedImage(), true);
+						TiledImage ts = t.getSubImage(rect.x, rect.y,
+								rect.width, rect.height);
+						BufferedImage bf = ts.getAsBufferedImage();
+
+						TiledImage t2 = new TiledImage(TheCurrentViewer
+								.getTheCurrentImage(), true);
+						TiledImage ts2 = t2.getSubImage(rect.x, rect.y,
+								rect.width, rect.height);
+						BufferedImage bf2 = ts2.getAsBufferedImage();
+
+						ThresholdWizard tw = new ThresholdWizard(bf,
+ bf2
+								.getData());
+
+						}
+
+				}
+			}
+		});
+		OptionsMenu.add(item);
+		OptionsMenu.addSeparator();
+
 		item = new JMenuItem("Save Image Selection");
 		item.addActionListener(new ActionListener()
 							   {
@@ -245,7 +304,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 				});
 		SelectionMenu.add(item);
 		
-		item = new JMenuItem("Optimize XY to fit hole in each Field");
+		item = new JMenuItem("Optimize XY to fit hole in each Model_Field");
 		item.addActionListener(new ActionListener()
 							   {
 					public void actionPerformed(ActionEvent ae)
@@ -396,12 +455,12 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 						
 						if (pw!=null)
 						{
-							pw.println("Well, Field, # Cells Bound by ROIs");
+					pw.println("Well, Field, # Cells Bound by ROIs");
 							//Getting all fields and printing number of cells bound by ROI
 							int len = TheFieldViewers.length;
 							for (int i = 0; i < len; i++)
 							{
-								Field field = TheFieldViewers[i].getTheField();
+								Model_Field field = TheFieldViewers[i].getTheField();
 								int numROIs = field.getROIs().size();
 								pw.print(field.getParentWell().name+","+field.getIndexInWell()+",");
 								for (int j = 0; j < numROIs; j++)
@@ -419,8 +478,22 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 					}
 				});
 		PrintRIOMenu.add(item);
+
+		// PlotBackgroundCheckBox = new JCheckBoxMenuItem("Show Background");
+		// PlotBackgroundCheckBox.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent ae) {
+		// repaint();
+		// }
+		// });
+		// OptionsMenu.add(PlotBackgroundCheckBox);
+
 	}
 	
+
+	// public boolean shouldPlotBackground() {
+	// return PlotBackgroundCheckBox.isSelected();
+	// }
+
 	public void setImageViewers(FieldViewer[] viewers_horiz)
 	{
 		//setting this as the parent container for all the sub-image containers
@@ -432,7 +505,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		
 		//adding the slider
 		MovieFrameSlider = new MovieFrameSlider(JSlider.HORIZONTAL, 0, TheFieldViewers.length-1, 0);
-		MovieFrameSlider.setToolTipText("Change Well or Field");
+		MovieFrameSlider.setToolTipText("Change Model_Well or Model_Field");
 		add(MovieFrameSlider, BorderLayout.SOUTH);
 		
 		TheCurrentViewer = TheFieldViewers[0];
@@ -445,9 +518,10 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 	{
 		setVisible(false);
 		
-		PlateHoldingPanel p = MainGUI.getGUI().getPlateHoldingPanel();
-		if (p.isBlocked())
-			p.unblock();
+		Model_PlateRepository p = MainGUI.getGUI().getPlateHoldingPanel()
+				.getModel();
+		if (p.getGUI().isBlocked())
+			p.getGUI().unblock();
 		
 		System.gc();
 	}
@@ -465,7 +539,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		getContentPane().repaint();
 	}
 	
-	public void setCurrentWell(Well well)
+	public void setCurrentWell(Model_Well well)
 	{
 		int len = TheFieldViewers.length;
 		for (int i = 0; i < len; i++)
@@ -480,7 +554,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		}
 	}
 	
-	/** Bottom slider that changes Image Field*/
+	/** Bottom slider that changes Image Model_Field*/
 	private class MovieFrameSlider extends JSlider implements ChangeListener
 	{
 		public MovieFrameSlider(int orientation, int min,int max, int initVal)

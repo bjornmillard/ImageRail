@@ -7,6 +7,8 @@
 package plots3D;
 
 
+import gui.MainGUI;
+
 import javax.swing.*;
 
 import java.awt.BorderLayout;
@@ -15,7 +17,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.File;
 import javax.vecmath.Point3d;
-import main.MainGUI;
 
 public class ImageRail3D_Frame extends JFrame
 {

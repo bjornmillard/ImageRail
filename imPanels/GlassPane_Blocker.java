@@ -6,6 +6,8 @@
 
 package imPanels;
 
+import gui.MainGUI;
+
 import java.awt.*;
 
 import java.awt.event.MouseEvent;
@@ -16,7 +18,6 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import javax.swing.JComponent;
-import main.MainGUI;
 
 public class GlassPane_Blocker extends JComponent implements MouseListener
 {

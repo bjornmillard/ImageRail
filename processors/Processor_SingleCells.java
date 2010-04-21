@@ -11,21 +11,21 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 
-import main.Field;
-import main.MainGUI;
-import main.Plate;
-import main.Well;
+import models.Model_Field;
+import models.Model_Plate;
+import models.Model_Well;
 import segmentors.CellSegmentor;
 import us.hms.systemsbiology.data.Data2D;
 import us.hms.systemsbiology.data.ProjectHDFConnector;
 import us.hms.systemsbiology.data.SegmentationHDFConnector;
+import us.hms.systemsbiology.idx2coordinates.Point;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
-import us.hms.systemsbiology.segmentedobject.Point;
 import features.Feature;
+import gui.MainGUI;
 
 public class Processor_SingleCells extends Thread implements Processor
 {
-	private Well[] WellsToProcess;
+	private Model_Well[] WellsToProcess;
 	private int[][][] Raster;
 	private int TotalCells;
 	private CellSegmentor TheSegmentor;
@@ -33,7 +33,7 @@ public class Processor_SingleCells extends Thread implements Processor
 	private boolean ClusterRun;
 	
 	
-	public Processor_SingleCells(Well[] wellsToProcess, CellSegmentor segmentor)
+	public Processor_SingleCells(Model_Well[] wellsToProcess, CellSegmentor segmentor)
 	{
 		//These are the wells we will process
 		WellsToProcess = wellsToProcess;
@@ -54,9 +54,9 @@ public class Processor_SingleCells extends Thread implements Processor
 		if (WellsToProcess==null || WellsToProcess.length==0)
 			return;
 		
-		//Updating Well colors to indicate they are in the queue to be processed
+		//Updating Model_Well colors to indicate they are in the queue to be processed
 		for (int i = 0; i < WellsToProcess.length; i++)
-			WellsToProcess[i].color_outline = Color.gray;
+			WellsToProcess[i].getGUI().color_outline = Color.gray;
 		
 		//
 		//		Main Processing call
@@ -66,9 +66,9 @@ public class Processor_SingleCells extends Thread implements Processor
 		//
 		//
 		
-		//Updating Well colors to indicate we are finished
+		//Updating Model_Well colors to indicate we are finished
 		for (int i = 0; i < WellsToProcess.length; i++)
-			WellsToProcess[i].color_outline = Color.white;
+			WellsToProcess[i].getGUI().color_outline = Color.white;
 		
 	}
 	
@@ -84,7 +84,7 @@ public class Processor_SingleCells extends Thread implements Processor
 	/** Returns the number of unique plate IDs that the wells of the given array came from, also returns the number of wells in each unique plate
 	 * @returns int[2][numUniquePlateIDs] where [0][] --> plateID and [1][] --> number of Wells
 	 * @author BLM*/
-	static public int[][] getAllUniquePlateIDsAndNumWells(Well[] wells)
+	static public int[][] getAllUniquePlateIDsAndNumWells(Model_Well[] wells)
 	{
 		ArrayList<Integer> uniquesIDs = new ArrayList<Integer>();
 		ArrayList<Integer> uniquesWells = new ArrayList<Integer>();
@@ -185,7 +185,7 @@ public class Processor_SingleCells extends Thread implements Processor
 	 * @author BLM*/
 	float[][] computeFeatureValues(ArrayList<CellCoordinates> cells, int[][][] raster, float[] backgroundValues)
 	{
-		ArrayList<Feature> features = main.MainGUI.getGUI().getTheFeatures();
+		ArrayList<Feature> features = gui.MainGUI.getGUI().getTheFeatures();
 		int numFeatures = features.size();
 		int numC = cells.size();
 		float[][] data = new float[numC][numFeatures];
@@ -213,7 +213,7 @@ public class Processor_SingleCells extends Thread implements Processor
 	
 	/*** Main processing method
 	 * @author BLM*/
-	public void processWells(Well[] wells, CellSegmentor theSegmentor)
+	public void processWells(Model_Well[] wells, CellSegmentor theSegmentor)
 	{
 		
 		// -------------- Create Project file --------------------------------------------------------
@@ -221,9 +221,9 @@ public class Processor_SingleCells extends Thread implements Processor
 		try
 		{
 			// Project name
-			ProjectHDFConnector con = main.MainGUI.getGUI().getHDFprojectConnector();
+			ProjectHDFConnector con = gui.MainGUI.getGUI().getHDFprojectConnector();
 			if(con==null)
-				con = main.MainGUI.getGUI().initHDFprojectConnectorAndPlates(main.MainGUI.getGUI().getThePlateHoldingPanel().getThePlates());
+				con = gui.MainGUI.getGUI().initHDFprojectConnectorAndPlates(gui.MainGUI.getGUI().getThePlateHoldingPanel().getPlates());
 			SegmentationHDFConnector sCon = null;
 			
 			//creating a HDF plate for each plate needed, since the wells could come from different plates
@@ -242,7 +242,7 @@ public class Processor_SingleCells extends Thread implements Processor
 			
 			for (int w = 0; w < numWells; w++)
 			{
-				Well well = wells[w];
+				Model_Well well = wells[w];
 				well.clearOldData();
 				
 				String thisWell = well.name;
@@ -263,10 +263,10 @@ public class Processor_SingleCells extends Thread implements Processor
 				ArrayList<float[][]> allDataForThisWell = new ArrayList<float[][]>();
 				for (int f = 0; f < numFields; f++)
 				{
-					System.out.println("	Field: " + (f+1));
+					System.out.println("	Field: " + (f + 1));
 					
 					//  (1) Getting all the channel images for this field
-					Field field = well.getFields()[f];
+					Model_Field field = well.getFields()[f];
 					File[] images_oneField = field.getImageFiles();
 					
 					//  (2) Converting the images files to a raster
@@ -286,13 +286,15 @@ public class Processor_SingleCells extends Thread implements Processor
 					// EX: Now that we have the pixel coordinates that make up each cell we need to look at the
 					//image and extract the proper values
 					long time = System.currentTimeMillis();
-					System.out.println("StartingFeature Computations-----------------");
+					System.out.println("-->> Performing Feature Computations");
 					float[][] dataMatrix = computeFeatureValues(cellCoords, Raster, backgroundValues);
 					if(dataMatrix!=null && dataMatrix.length>0)
 					{
 						
-						System.out.println("TIME to compute FeatureValues: "+(System.currentTimeMillis()-time));
-						System.out.println("DataMatrix size: "+dataMatrix.length +" , "+dataMatrix[0].length);
+
+						// System.out.println("TIME to compute FeatureValues: "+(System.currentTimeMillis()-time));
+						// System.out.println("DataMatrix size: "+dataMatrix.length
+						// +" , "+dataMatrix[0].length);
 						allDataForThisWell.add(dataMatrix);
 						
 						
@@ -307,7 +309,7 @@ public class Processor_SingleCells extends Thread implements Processor
 						// -------------- Store cells in HDF5 -------------------------------------------------------
 						try
 						{
-							sCon = new SegmentationHDFConnector(main.MainGUI
+							sCon = new SegmentationHDFConnector(gui.MainGUI
 									.getGUI().getProjectDirectory()
 									.getAbsolutePath());
 							// Parameters to write: plateIdx, wellIdx, fieldIdx, cellList
@@ -390,7 +392,7 @@ public class Processor_SingleCells extends Thread implements Processor
 						
 						//cleaning up
 						Raster = null;
-						well.getPlate().repaint();
+						well.getPlate().getGUI().repaint();
 					}
 					else
 						System.out.println("-----**No Cells Found in this well with the given parameter **-----");
@@ -398,7 +400,7 @@ public class Processor_SingleCells extends Thread implements Processor
 					System.gc();
 				}
 				
-				if(main.MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().isSelected())
+				if(gui.MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().isSelected())
 					well.loadCells(sCon, true, true);
 				
 				well.processing = false;
@@ -408,7 +410,7 @@ public class Processor_SingleCells extends Thread implements Processor
 					
 				}
 				
-				Feature[] features = main.MainGUI.getGUI().getFeatures();
+				Feature[] features = gui.MainGUI.getGUI().getFeatures();
 				StringBuffer[] featureNames = null;
 				if(features!=null && features.length>0)
 				{
@@ -445,18 +447,20 @@ public class Processor_SingleCells extends Thread implements Processor
 	
 	
 	
-	public Well getWellForGivenImage(String fileName)
+	public Model_Well getWellForGivenImage(String fileName)
 	{
-		for (int p = 0; p < MainGUI.getGUI().getPlateHoldingPanel().getNumPlates(); p++)
+		for (int p = 0; p < MainGUI.getGUI().getPlateHoldingPanel().getModel()
+				.getNumPlates(); p++)
 		{
-			Plate plate = MainGUI.getGUI().getPlateHoldingPanel().getThePlates()[p];
+			Model_Plate plate = MainGUI.getGUI().getPlateHoldingPanel()
+					.getModel().getPlates()[p];
 			int rows = plate.getNumRows();
 			int cols = plate.getNumColumns();
 			for (int r = 0; r< rows; r++)
 				for (int c= 0; c < cols; c++)
 				{
-					if (fileName.indexOf(plate.getTheWells()[r][c].name)>0)
-						return plate.getTheWells()[r][c];
+					if (fileName.indexOf(plate.getWells()[r][c].name)>0)
+						return plate.getWells()[r][c];
 				}
 		}
 		

@@ -32,9 +32,9 @@ import javax.media.jai.TiledImage;
 import javax.media.jai.widget.ScrollingImagePanel;
 import javax.swing.JFrame;
 
-import main.ParameterSet;
-import main.Plate;
-import main.Well;
+import models.Model_Well;
+import models.Model_ParameterSet;
+import models.Model_Plate;
 import segmentors.Temp_Pixel;
 
 import com.sun.media.jai.codec.FileSeekableStream;
@@ -171,7 +171,7 @@ public class ImageTools
 	/** Computes the mean intensity value for background pixels lower than the MainGUI.Threshold_Background level in all other
 	 * channels and stores them in "backgorunds" array.
 	 * @author BLM*/
-	static public void computeBackgroundValues(int[][][] raster, float[] backgrounds, ParameterSet pset)
+	static public void computeBackgroundValues(int[][][] raster, float[] backgrounds, Model_ParameterSet pset)
 	{
 		for (int i = 0; i < backgrounds.length; i++)
 			backgrounds[i] = 0;
@@ -217,16 +217,16 @@ public class ImageTools
 	}
 	
 	
-	static public Well getWellOfImage(File file, Plate[][] thePlates)
+	static public Model_Well getWellOfImage(File file, Model_Plate[][] thePlates)
 	{
 		int nr = thePlates.length;
 		int nc = thePlates[0].length;
 		for (int rr = 0; rr < nr; rr++)
 			for (int cc = 0; cc < nc; cc++)
 			{
-				Plate thePlate = thePlates[rr][cc];
+				Model_Plate thePlate = thePlates[rr][cc];
 				
-				Well[][] wells = thePlate.getTheWells();
+				Model_Well[][] wells = thePlate.getWells();
 				int rows = wells.length;
 				int cols = wells[0].length;
 				String prefix = null;
@@ -247,9 +247,9 @@ public class ImageTools
 		return null;
 	}
 	
-	static public Well getWellOfImage(File file,Plate thePlate)
+	static public Model_Well getWellOfImage(File file,Model_Plate thePlate)
 	{
-		Well[][] wells = thePlate.getTheWells();
+		Model_Well[][] wells = thePlate.getWells();
 		int rows = wells.length;
 		int cols = wells[0].length;
 		String prefix = null;
@@ -730,7 +730,7 @@ public class ImageTools
 		return names;
 	}
 	
-	static public File[] getFilesForGivenWell(File dir, Well well)
+	static public File[] getFilesForGivenWell(File dir, Model_Well well)
 	{
 		File[] tiffs = getAllTifFiles(dir);
 		int len = tiffs.length;
@@ -865,7 +865,7 @@ public class ImageTools
 	}
 	
 	
-	static public File[] getFilesForGivenWells(File[] tiffs, Well[] desiredWells)
+	static public File[] getFilesForGivenWells(File[] tiffs, Model_Well[] desiredWells)
 	{
 		int len = tiffs.length;
 		int num = desiredWells.length;
@@ -892,7 +892,7 @@ public class ImageTools
 		
 		for (int j =0; j < num; j ++)
 			for (int i =0; i < len; i ++)
-				if (tiffs[i].getName().indexOf("_"+((Well)desiredWells.get(j)).name+"_")>0)
+				if (tiffs[i].getName().indexOf("_"+((Model_Well)desiredWells.get(j)).name+"_")>0)
 					arr.add(tiffs[i]);
 		
 		File[] files = new File[arr.size()];

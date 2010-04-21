@@ -6,12 +6,12 @@
 
 package processors;
 
-import main.Well;
+import models.Model_Well;
 
 public interface Processor
 {
 	public void runProcess();
-	public Well getWellForGivenImage(String fileName);
+	public Model_Well getWellForGivenImage(String fileName);
 	public void setClusterRun(boolean boo);
 }
 

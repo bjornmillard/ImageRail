@@ -7,16 +7,17 @@
 package dataSavers;
 
 import features.Feature;
+import gui.MainGUI;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
-import main.MainGUI;
-import main.Plate;
-import main.Well;
 import midasGUI.Measurement;
 import midasGUI.Treatment;
+import models.Model_Well;
+import models.Model_Plate;
 import tempObjects.Cell_RAM;
 
 public class DataSaver_Cells_Midas_wMetaData implements DataSaver
@@ -51,18 +52,18 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 //				//Print headers
 //				ArrayList headers = new ArrayList();
 //				ArrayList headerValues = new ArrayList();
-//				headers.add("Well");
+//				headers.add("Model_Well");
 //				headers.add("Date");
 //				headers.add("Description");
 //
 //				int numFeatures = featuresToSave.length;
 //				ArrayList uniqueT = new ArrayList();
 //				ArrayList uniqueM = new ArrayList();
-//				Plate[] plates = TheMainGUI.getPlateHoldingPanel().getThePlates();
+//				Model_Plate[] plates = TheMainGUI.getPlateHoldingPanel().getThePlates();
 //				int numplates = plates.length;;
 //				for (int p = 0; p < numplates; p++)
 //				{
-//					Plate plate = plates[p];
+//					Model_Plate plate = plates[p];
 //					int numC = plate.getNumColumns();
 //					int numR = plate.getNumRows();
 //
@@ -112,19 +113,19 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 //					pw.print(((String)headers.get(i))+",");
 //				pw.println((String)headers.get(headers.size()-1));
 //
-//				Plate[] thePlates = MainGUI.getGUI().getPlateHoldingPanel().getThePlates();
+//				Model_Plate[] thePlates = MainGUI.getGUI().getPlateHoldingPanel().getThePlates();
 //				//Printing out each well's value
 //				for (int rr = 0; rr < numplates; rr++)
 //				{
 //
-//					Plate plate = thePlates[rr];
+//					Model_Plate plate = thePlates[rr];
 //					int numC = plate.getNumColumns();
 //					int numR = plate.getNumRows();
 //
 //					for (int r = 0; r < numR; r++)
 //						for (int c =0; c < numC; c++)
 //						{
-//							Well theWell = plate.getTheWells()[r][c];
+//							Model_Well theWell = plate.getTheWells()[r][c];
 //							if (theWell.isSelected() && theWell.TheCells!=null)
 //							{
 //								int numCells = 	theWell.TheCells.length;

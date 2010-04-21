@@ -9,12 +9,12 @@ package segmentors;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import main.ParameterSet;
+import models.Model_ParameterSet;
 import tools.LinearKernals;
 import tools.SpatialFilter;
+import us.hms.systemsbiology.idx2coordinates.Point;
 import us.hms.systemsbiology.segmentedobject.CellCompartment;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
-import us.hms.systemsbiology.segmentedobject.Point;
 
 public class DefaultSegmentor implements CellSegmentor {
 	private Temp_Pixel[][] pixels;
@@ -32,7 +32,7 @@ public class DefaultSegmentor implements CellSegmentor {
 	 * 
 	 * */
 	public ArrayList<CellCoordinates> segmentCells(int[][][] raster,
-			ParameterSet pset) {
+			Model_ParameterSet pset) {
 		// Reinitializing the variables in case they are used in prior
 		// segmentation
 		pixels = null;
@@ -88,7 +88,7 @@ public class DefaultSegmentor implements CellSegmentor {
 	 * @author BLM
 	 */
 	private void segmentImage_nucleusThresholding_watershed(int[][][] raster,
-			ParameterSet pset) {
+			Model_ParameterSet pset) {
 
 		Long time = System.currentTimeMillis();
 
@@ -229,7 +229,8 @@ public class DefaultSegmentor implements CellSegmentor {
 		iRaster = null;
 		pixList = null;
 
-		System.out.println("TIME: " + (System.currentTimeMillis() - time));
+		System.out.println("Elapsed Time: "
+				+ (System.currentTimeMillis() - time));
 	}
 
 	private void assignAllOnNeighbors_nucleusThresholding(Temp_Pixel pix,
@@ -264,7 +265,7 @@ public class DefaultSegmentor implements CellSegmentor {
 	}
 
 	public float[][] getMeanChannelValuesOverMask_Compartmented(
-			int[][][] raster_, ParameterSet pset) {
+			int[][][] raster_, Model_ParameterSet pset) {
 		height = raster_.length;
 		width = raster_[0].length;
 		int numChannels = raster_[0][0].length;
@@ -332,7 +333,7 @@ public class DefaultSegmentor implements CellSegmentor {
 	}
 
 	public float[][] getIntegratedChannelValuesOverMask_wPixelCount(
-			int[][][] rgbRaster, ParameterSet pset) {
+			int[][][] rgbRaster, Model_ParameterSet pset) {
 		height = rgbRaster.length;
 		width = rgbRaster[0].length;
 		int numChannels = rgbRaster[0][0].length;
@@ -357,7 +358,7 @@ public class DefaultSegmentor implements CellSegmentor {
 	}
 
 	public Temp_Cell[] growSeedsIntoCells(Temp_Nucleus[] nuclei,
-			int[][][] Raster, ParameterSet pset) {
+			int[][][] Raster, Model_ParameterSet pset) {
 
 		int height = Raster.length;
 		int width = Raster[0].length;
@@ -493,7 +494,7 @@ public class DefaultSegmentor implements CellSegmentor {
 	 */
 	static public ArrayList<Temp_Nucleus> expandNucleiFromSeeds(
 			ArrayList<Temp_Nucleus> nucSeeds, Temp_Pixel[][] pixels,
-			int[][][] rgbRaster, ParameterSet pset) {
+			int[][][] rgbRaster, Model_ParameterSet pset) {
 		int numNuc = nucSeeds.size();
 
 		// Getting all the nucPoints and adding them to arrLists for convenience
@@ -564,7 +565,7 @@ public class DefaultSegmentor implements CellSegmentor {
 	}
 
 	static public float[][] findTotalIntegrationAndTotalPixUsed(
-			int[][][] rgbRaster, ParameterSet pset) {
+			int[][][] rgbRaster, Model_ParameterSet pset) {
 		float[][] vals = null;
 		DefaultSegmentor theSegmentor = new DefaultSegmentor();
 		vals = theSegmentor.getIntegratedChannelValuesOverMask_wPixelCount(
@@ -574,7 +575,7 @@ public class DefaultSegmentor implements CellSegmentor {
 	}
 
 	static public float[][] findWellAverageOnly_Compartments(
-			int[][][] rgbRaster, ParameterSet pset) {
+			int[][][] rgbRaster, Model_ParameterSet pset) {
 		DefaultSegmentor theSegmentor = new DefaultSegmentor();
 		float[][] vals = theSegmentor
 				.getMeanChannelValuesOverMask_Compartmented(rgbRaster, pset);

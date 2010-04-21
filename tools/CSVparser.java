@@ -6,6 +6,8 @@
 
 package tools;
 
+import gui.MainGUI;
+
 import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,19 +15,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import main.MainGUI;
-import main.Plate;
-import main.Well;
 import midasGUI.Measurement;
 import midasGUI.Treatment;
+import models.Model_Well;
+import models.Model_Plate;
 import tempObjects.Cell_RAM;
 import tempObjects.Nucleus;
 
 public class CSVparser
 {
 	private ArrayList allWells;
-	private Well currentWell;
-	private Well lastWell;
+	private Model_Well currentWell;
+	private Model_Well lastWell;
 	private Cell_RAM currentCell;
 	private boolean newWell;
 	
@@ -39,7 +40,7 @@ public class CSVparser
 	
 //	public void parseMidasFile_singleCells(File file, MainGUI TheGUI)
 //	{
-//		Plate plate = TheGUI.ThePlate;
+//		Model_Plate plate = TheGUI.ThePlate;
 //		Hashtable hashtable = new Hashtable();
 //		newWell = false;
 //		allWells = new ArrayList();
@@ -252,7 +253,7 @@ public class CSVparser
 //				Enumeration keys = hashtable.keys();
 //				while ( keys.hasMoreElements() )
 //				{
-//					Well well = (Well)keys.nextElement();
+//					Model_Well well = (Model_Well)keys.nextElement();
 //					ArrayList arr = (ArrayList)hashtable.get( well );
 //					int len  = arr.size();
 //					Cell[] cells = new Cell[len];
@@ -323,7 +324,7 @@ public class CSVparser
 	
 //	public void parseMidasFile_template(File file, MainGUI TheGUI)
 //	{
-//		Plate plate = TheGUI.ThePlates;
+//		Model_Plate plate = TheGUI.ThePlates;
 //		newWell = false;
 //		allWells = new ArrayList();
 //		int counter = 0;

@@ -7,16 +7,18 @@
 package processors;
 
 import features.Feature;
+import gui.MainGUI;
+
 import java.io.File;
-import main.MainGUI;
-import main.Plate;
-import main.Well;
+
+import models.Model_Plate;
+import models.Model_Well;
 import segmentors.DefaultSegmentor;
 
 public class Processor_WellAverage_Compartmented extends Thread implements Processor
 {
 
-	private Well[] WellsToProcess;
+	private Model_Well[] WellsToProcess;
 	private boolean ClusterRun=false;
 	
 	public void run()
@@ -26,7 +28,7 @@ public class Processor_WellAverage_Compartmented extends Thread implements Proce
 	
 	/*** Sets the wells that are supposed to be processed by this processor
 	 * @author BLM*/
-	public void setWellsToProcess(Well[] wells)
+	public void setWellsToProcess(Model_Well[] wells)
 	{
 		WellsToProcess = wells;
 	}
@@ -39,10 +41,10 @@ public class Processor_WellAverage_Compartmented extends Thread implements Proce
 		MainGUI.getGUI().setProcessing(true);
 		for (int b = 0; b < numWells; b++)
 		{
-			Well well = WellsToProcess[b];
+			Model_Well well = WellsToProcess[b];
 			well.processing = true;
 			MainGUI.getGUI().getPlateHoldingPanel().updatePanel();
-			System.out.println("******** Processing Well: "+ well.name +" ********");
+			System.out.println("******** Processing Model_Well: "+ well.name +" ********");
 			
 //			ArrayList allSetsOfChanneledImages = well.getAllSetsOfCorresponsdingChanneledImageFiles();
 			
@@ -139,25 +141,26 @@ public class Processor_WellAverage_Compartmented extends Thread implements Proce
 			well.processing = false;
 			if(!ClusterRun)
 			{
-				MainGUI.getGUI().getThePlateHoldingPanel().updatePanel();
+				MainGUI.getGUI().getThePlateHoldingPanel().getGUI()
+						.updatePanel();
 				MainGUI.getGUI().updateAllPlots();
 			}
 		}
 		MainGUI.getGUI().setProcessing(false);
 	}
 	
-	public Well getWellForGivenImage(String fileName)
+	public Model_Well getWellForGivenImage(String fileName)
 	{
 		for (int p = 0; p < MainGUI.getGUI().getThePlateHoldingPanel().getNumPlates(); p++)
 		{
-			Plate plate = MainGUI.getGUI().getThePlateHoldingPanel().getThePlates()[p];
+			Model_Plate plate = MainGUI.getGUI().getThePlateHoldingPanel().getPlates()[p];
 			int rows = plate.getNumRows();
 			int cols = plate.getNumColumns();
 			for (int r = 0; r< rows; r++)
 				for (int c= 0; c < cols; c++)
 				{
-					if (fileName.indexOf(plate.getTheWells()[r][c].name)>0)
-						return plate.getTheWells()[r][c];
+					if (fileName.indexOf(plate.getWells()[r][c].name)>0)
+						return plate.getWells()[r][c];
 				}
 		}
 		

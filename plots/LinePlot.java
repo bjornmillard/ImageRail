@@ -6,13 +6,22 @@
 
 package plots;
 
-import java.awt.*;
-import javax.swing.*;
-
-import dialogs.AxisBoundsInputDialog;
-import dialogs.CaptureImage_Dialog;
+import gui.MainGUI;
 import imPanels.ImageCapturePanel;
 import imPanels.JPanel_highlightBox;
+
+import java.awt.AlphaComposite;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Composite;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -22,15 +31,27 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JToolBar;
 import javax.swing.border.BevelBorder;
 import javax.vecmath.Point3d;
-import main.MainGUI;
-import main.Well;
+
+import models.Model_Well;
 import plots3D.ImageRail3D_Frame;
 import tools.SVG_writer;
 import us.hms.systemsbiology.metadata.Description;
 import us.hms.systemsbiology.metadata.MetaDataConnector;
+import dialogs.AxisBoundsInputDialog;
+import dialogs.CaptureImage_Dialog;
 
 /**
  * The main Line Plot used to plot the mean values of the wells of the plate
@@ -130,7 +151,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 		colors[2] = new Color(0.5f, 0.5f, 0.5f);
 		colors[3] = new Color(0.7f, 0.7f, 0.7f);
 		Type_yAxisScale = 0;
-		TheMainGUI = main.MainGUI.getGUI();
+		TheMainGUI = gui.MainGUI.getGUI();
 		yAxisLabelBox = new Rectangle();
 		Xstart_override = -1;
 		Ystart_override = -1;
@@ -319,7 +340,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 		
 		// adding the numCells buttons
 		final JButton but3 = new JButton(tools.Icons.Icon_numCells);
-		but3.setToolTipText("Cells per Well");
+		but3.setToolTipText("Cells per Model_Well");
 		but3.setSelected(false);
 		PlotType = ROWS;
 		TheToolBar.add(but3);
@@ -507,7 +528,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 			int len = TheSeries[i].TheDataPoints.length;
 			for (int j = 0; j < len; j++)
 			{
-				Well well = TheSeries[i].TheDataPoints[j].TheWell;
+				Model_Well well = TheSeries[i].TheDataPoints[j].TheWell;
 				Description[] treats = well.getMetaDataConnector().readTreatments( well.getWellIndex());
 				for (int z = 0; z < treats.length; z++)
 				{
@@ -523,7 +544,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 	
 	/** Returns the well indices within each plate
 	 * @author BLM*/
-	private ArrayList<Integer> getWellIndices(ArrayList<Well> wells)
+	private ArrayList<Integer> getWellIndices(ArrayList<Model_Well> wells)
 	{
 		ArrayList<Integer> wellIndices = new ArrayList<Integer>(wells.size());
 		for (int i = 0; i < wells.size(); i++)
@@ -539,7 +560,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 			return null;
 		
 		//get list of all wells represented in this plot
-		ArrayList<Well> wells = new ArrayList<Well>();
+		ArrayList<Model_Well> wells = new ArrayList<Model_Well>();
 		for (int i = 0; i < TheSeries.length; i++)
 			for (int j = 0; j < TheSeries[i].TheDataPoints.length; j++)
 				wells.add(TheSeries[i].TheDataPoints[j].TheWell);
@@ -560,7 +581,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 		for (int i = 0; i < uniqueNames.size(); i++)
 			for (int j = 0; j < TheSeries.length; j++)
 			{
-				Well well = TheSeries[j].TheDataPoints[0].TheWell;
+				Model_Well well = TheSeries[j].TheDataPoints[0].TheWell;
 				//Then we check specifically for our treatment
 				Description treat = getTreatmentFromWell(uniqueNames.get(i), well.getPlate().getPlateIndex(), well.getWellIndex() ,  well.getMetaDataConnector());
 				if(treat!=null)
@@ -582,7 +603,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 				
 				for (int d = 1; d < TheSeries[j].TheDataPoints.length; d++)
 				{
-					Well well = TheSeries[j].TheDataPoints[d].TheWell;
+					Model_Well well = TheSeries[j].TheDataPoints[d].TheWell;
 					
 					//Then we check specifically for our treatment
 					Description treat = getTreatmentFromWell(name, well.getPlate().getPlateIndex(), well.getWellIndex() ,  well.getMetaDataConnector());
@@ -616,7 +637,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 	
 	/** Looks for all treatments in the given wells and returns a list of unqiue treatments
 	 * @author BLM*/
-	private  ArrayList<String> getUniqueTreatments(ArrayList<Well> wells)
+	private  ArrayList<String> getUniqueTreatments(ArrayList<Model_Well> wells)
 	{
 		int numW = wells.size();
 		
@@ -651,7 +672,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 		
 		
 		//get list of all wells represented in this plot
-		ArrayList<Well> wells = new ArrayList<Well>();
+		ArrayList<Model_Well> wells = new ArrayList<Model_Well>();
 		for (int i = 0; i < TheSeries.length; i++)
 			for (int j = 0; j < TheSeries[i].TheDataPoints.length; j++)
 				wells.add(TheSeries[i].TheDataPoints[j].TheWell);
@@ -675,7 +696,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 			for (int d = 0; d < TheSeries[0].TheDataPoints.length; d++)
 			{
 				//See if this well has this treatment name
-				Well well = TheSeries[0].TheDataPoints[d].TheWell;
+				Model_Well well = TheSeries[0].TheDataPoints[d].TheWell;
 				Description treat = getTreatmentFromWell(uniqueNames.get(i), well.getPlate().getPlateIndex(), well.getWellIndex() ,  well.getMetaDataConnector());
 				if(treat!=null)
 					labels[i][d] = treat.getValue()+" "+treat.getUnits();
@@ -695,7 +716,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 			{
 				for (int d = 0; d < TheSeries[j].TheDataPoints.length; d++)
 				{
-					Well well = TheSeries[j].TheDataPoints[d].TheWell;
+					Model_Well well = TheSeries[j].TheDataPoints[d].TheWell;
 					Description treat = getTreatmentFromWell(uniqueNames.get(i), well.getPlate().getPlateIndex(), well.getWellIndex() ,  well.getMetaDataConnector());
 					if(treat!=null)
 					{
@@ -866,7 +887,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 	
 	
 	
-	public void updatePlot(float[][] vals, float[][] stdev, Color[] colors_, Well[][] wells)
+	public void updatePlot(float[][] vals, float[][] stdev, Color[] colors_, Model_Well[][] wells)
 	{
 		//Check if there is any data
 		int numSeries = vals.length;
@@ -1200,7 +1221,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 					
 					if(!plotToSVG)
 					{
-						g2.setFont(main.MainGUI.Font_12);
+						g2.setFont(gui.MainGUI.Font_12);
 						Font oldFont = g2.getFont();
 						Font f = oldFont.deriveFont(AffineTransform.getRotateInstance(-Math.PI / 4.0));
 						
@@ -1504,7 +1525,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 		public Polygon dummyPolygon;
 		public int xStep;
 		
-		public Series(float[] vals_orig, float[] stdev, Color color_, int ID_SERIES_, Well[] well)
+		public Series(float[] vals_orig, float[] stdev, Color color_, int ID_SERIES_, Model_Well[] well)
 		{
 			ID_SERIES = ID_SERIES_;
 			ID_PLATE = well[0].getPlate().getID();
@@ -2052,14 +2073,14 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 			public float x_real;
 			public float y_real;
 			public float stdev;
-			public Well TheWell;
+			public Model_Well TheWell;
 			private Rectangle box;
 			private Rectangle closeBox;
 			private Rectangle bounds_histo;
 			private boolean DrawMiniHistogram;
 			private Polygon MiniHistogram;
 			
-			public DataPoint(float x, float y, float stdev_, float y_plot_, Well well_)
+			public DataPoint(float x, float y, float stdev_, float y_plot_, Model_Well well_)
 			{
 				TheWell = well_;
 				x_real = x;
@@ -2164,7 +2185,8 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 					
 					//Drawing the Histogram
 					g2.setColor(Color.black);
-					MiniHistogram= TheWell.getHistogram(bounds_histo.x, bounds_histo.y, width, height);
+					MiniHistogram = TheWell.getGUI().getHistogram(
+							bounds_histo.x, bounds_histo.y, width, height);
 					if (MiniHistogram!=null)
 					{
 						g2.setColor(Color.black);

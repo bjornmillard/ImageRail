@@ -7,7 +7,8 @@
 package plots;
 import imageViewers.FieldViewer;
 import java.util.ArrayList;
-import main.Field;
+
+import models.Model_Field;
 import plots.DotPlot;
 
 public class DotSelectionListener

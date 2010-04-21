@@ -6,17 +6,18 @@
 
 package dataSavers;
 
-import features.Feature;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+
 import javax.swing.JFileChooser;
-import main.MainGUI;
-import main.Plate;
-import main.Well;
+
 import midasGUI.Measurement;
-import tempObjects.Cell_RAM;
+import models.Model_Plate;
+import models.Model_Well;
+import features.Feature;
+import gui.MainGUI;
 
 public class DataSaver_Cells_Midas implements DataSaver
 {
@@ -71,11 +72,11 @@ public class DataSaver_Cells_Midas implements DataSaver
 					pw.print(((String)headers.get(i))+",");
 				pw.println((String)headers.get(headers.size()-1));
 					
-				Plate[] thePlates = TheMainGUI.getThePlateHoldingPanel().getThePlates();
+				Model_Plate[] thePlates = TheMainGUI.getThePlateHoldingPanel().getPlates();
 				int numPlates = thePlates.length;
 				for (int p = 0; p < numPlates; p++)
 				{
-					Plate plate = thePlates[p];
+					Model_Plate plate = thePlates[p];
 					int numC = plate.getNumColumns();
 					int numR = plate.getNumRows();
 					
@@ -84,7 +85,7 @@ public class DataSaver_Cells_Midas implements DataSaver
 					for (int r = 0; r < numR; r++)
 						for (int c =0; c < numC; c++)
 						{
-							Well theWell = plate.getTheWells()[r][c];
+							Model_Well theWell = plate.getWells()[r][c];
 							if (theWell.isSelected() && theWell.getCell_values()!=null)
 							{
 								int numCells = 	theWell.getCell_values().length;

@@ -6,6 +6,8 @@
 
 package dialogs;
 
+import gui.MainGUI;
+
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -24,9 +26,8 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
-import main.MainGUI;
-import main.ParameterSet;
-import main.Well;
+import models.Model_Well;
+import models.Model_ParameterSet;
 import processors.Processor_WellAverage;
 import processors.Processor_WellAverage_Compartmented;
 
@@ -37,10 +38,10 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 	private JOptionPane optionPane;
 	private String btnString1 = "Run";
 	private String btnString2 = "Cancel";
-	private Well[] TheWells;
+	private Model_Well[] TheWells;
 	private JComboBox channelBox;
 	
-	public ThresholdingBoundsInputDialog_WellMeans(Well[] wells)
+	public ThresholdingBoundsInputDialog_WellMeans(Model_Well[] wells)
 	{
 		int width = 370;
 		int height = 250;
@@ -52,9 +53,9 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 		
 		setModal(true);
 		
-		ParameterSet pset = ParameterSet.doWellsHaveSameParameterSet(wells);
+		Model_ParameterSet pset = Model_ParameterSet.doWellsHaveSameParameterSet(wells);
 		if (pset!=null)
-			if (!pset.getProcessType().equalsIgnoreCase(ParameterSet.WELLMEAN))
+			if (!pset.getProcessType().equalsIgnoreCase(Model_ParameterSet.WELLMEAN))
 				pset = null;
 		
 		
@@ -118,7 +119,7 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 			}
 			
 			textField[0].setText("" + pset.getThreshold_Cell());
-			if (pset.getThreshold_Nucleus() != ParameterSet.NOVALUE)
+			if (pset.getThreshold_Nucleus() != Model_ParameterSet.NOVALUE)
 			{
 				textField[1].setEnabled(true);
 				textField[1].setText("" + pset.getThreshold_Nucleus());
@@ -239,12 +240,12 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 						
 						tasker.start();
 						
-						//Storing the Parameters for each Well
+						//Storing the Parameters for each Model_Well
 						int len = TheWells.length;
 						for (int i = 0; i < len; i++)
 						{
-							Well well = TheWells[i];
-							ParameterSet pset = well.TheParameterSet;
+							Model_Well well = TheWells[i];
+							Model_ParameterSet pset = well.TheParameterSet;
 							pset.setModified(true);
 							//Threshold Channel
 							pset.setThresholdChannel_cyto_Name(MainGUI.getGUI()
@@ -280,15 +281,15 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 						float Threshold_Nucleus = -1;
 						MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
 						
-						//Storing the Parameters for each Well
+						//Storing the Parameters for each Model_Well
 						int len = TheWells.length;
 						for (int i = 0; i < len; i++)
 						{
-							Well well = TheWells[i];
-							ParameterSet pset = well.TheParameterSet;
+							Model_Well well = TheWells[i];
+							Model_ParameterSet pset = well.TheParameterSet;
 							pset.setModified(true);
 							//ProcessType
-							pset.setProcessType(ParameterSet.WELLMEAN);
+							pset.setProcessType(Model_ParameterSet.WELLMEAN);
 							//Threshold Channel
 							pset.setThresholdChannel_cyto_Name(MainGUI.getGUI()
 									.getTheChannelNames()[CellBoundaryChannel]);

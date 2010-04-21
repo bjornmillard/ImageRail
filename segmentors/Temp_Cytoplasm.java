@@ -11,7 +11,7 @@ package segmentors;
 import java.util.ArrayList;
 import java.util.Iterator;
 import tempObjects.Cell_RAM;
-import us.hms.systemsbiology.segmentedobject.Point;
+import us.hms.systemsbiology.idx2coordinates.Point;
 
 public class Temp_Cytoplasm
 {

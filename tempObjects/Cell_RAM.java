@@ -6,6 +6,8 @@
 
 package tempObjects;
 
+import gui.MainGUI;
+
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -15,7 +17,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import main.MainGUI;
 import segmentors.Temp_Pixel;
 
 public class Cell_RAM {
@@ -223,7 +224,7 @@ public class Cell_RAM {
 	}
 
 	/**
-	 * Sets the Field number that this cell came from
+	 * Sets the Model_Field number that this cell came from
 	 * 
 	 * @author BLM
 	 */

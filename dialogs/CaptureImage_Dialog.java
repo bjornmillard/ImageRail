@@ -6,12 +6,17 @@
 
 package dialogs;
 
-import java.awt.event.*;
-
-import plots.Bound;
+import gui.MainGUI;
 import imPanels.ImageCapturePanel;
+
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -19,12 +24,13 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import main.MainGUI;
-import main.Plate;
+
+import plots.Bound;
 
 public class CaptureImage_Dialog extends JDialog implements ActionListener,PropertyChangeListener
 {
@@ -46,7 +52,7 @@ public class CaptureImage_Dialog extends JDialog implements ActionListener,Prope
 		setSize(width,height);
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		setLocation((int)(d.width/2f)-width/2,(int)(d.height/2f)-height/2);
-		setModal(true);
+		setModal(false);
 		
 		checkBoxes = new JCheckBox[3];
 		checkBoxes[0] = new JCheckBox("JPG");
@@ -133,15 +139,16 @@ public class CaptureImage_Dialog extends JDialog implements ActionListener,Prope
 			optionPane.setValue(
 				JOptionPane.UNINITIALIZED_VALUE);
 			
+
 			if (btnString1.equals(value))
 			{
+				setVisible(false);
+
 				JFileChooser fc = null;
 				if (MainGUI.getGUI().getTheDirectory()!=null)
 					fc = new JFileChooser(MainGUI.getGUI().getTheDirectory());
 				else
 					fc = new JFileChooser();
-				
-//				MainGUI.TheDirectory = new File(outDir.getParent());
 				
 				File outDir = null;
 				

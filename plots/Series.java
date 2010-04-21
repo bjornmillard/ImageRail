@@ -2,13 +2,14 @@ package plots;
 
 /** Data structure that holds the line series data
  * @author BLM*/
+import gui.MainGUI;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import main.MainGUI;
-import main.Well;
+import models.Model_Well;
 
 public class Series
 {
@@ -21,7 +22,7 @@ public class Series
 	public Color color;
 	public int xStep;
 	
-	public Series(float[] vals_, Well[] well, Color color_, boolean SmoothData)
+	public Series(float[] vals_, Model_Well[] well, Color color_, boolean SmoothData)
 	{
 		color = color_;
 
@@ -174,12 +175,12 @@ public class Series
 		public float y_plot;
 		public float x_real;
 		public float y_real;
-		public Well TheWell;
+		public Model_Well TheWell;
 		private Rectangle box;
 		private Rectangle closeBox;
 		private Rectangle bounds_histo;
 
-		public DataPoint(float x, float y, float y_plot_, Well well_)
+		public DataPoint(float x, float y, float y_plot_, Model_Well well_)
 		{
 			TheWell = well_;
 			x_real = x;

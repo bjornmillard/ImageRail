@@ -1,32 +1,35 @@
 /**
- * Field.java
+ * Model_Field.java
  *
  * @author Bjorn Millard
  */
 
-package main;
+package models;
 
 /** Holder for images and objects pertinent to a single field aquired in a well
  * @author BLM*/
+
+import gui.MainGUI;
 
 import java.awt.Shape;
 import java.io.File;
 import java.util.ArrayList;
 
+
 import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.idx2coordinates.IdxConverter;
 import us.hms.systemsbiology.segmentedobject.Cell;
 
-public class Field {
-	private Well parentWell;
+public class Model_Field {
+	private Model_Well parentWell;
 	private int indexInWell;
 	private File[] ImageFiles;
 	private ArrayList<Shape> ROIs;
 	private ArrayList<Boolean> ROIs_selected;
-	private Cells_oneField TheCellRepository;
+	private Model_FieldCellRepository TheCellRepository;
 	private float[] backgroundValues;
 
-	public Field(File[] imageFiles, int index, Well parentWell_) {
+	public Model_Field(File[] imageFiles, int index, Model_Well parentWell_) {
 		parentWell = parentWell_;
 		indexInWell = index;
 		ImageFiles = imageFiles;
@@ -38,7 +41,7 @@ public class Field {
 		return indexInWell;
 	}
 
-	public Well getParentWell() {
+	public Model_Well getParentWell() {
 		return parentWell;
 	}
 
@@ -135,12 +138,12 @@ public class Field {
 	 * 
 	 * @author BLM
 	 */
-	public synchronized void loadCells(SegmentationHDFConnector sCon,
+	public void loadCells(SegmentationHDFConnector sCon,
 			boolean loadCoords, boolean loadDataVals) {
-		if (doesHDFexist(main.MainGUI.getGUI().getProjectDirectory()
+		if (doesHDFexist(gui.MainGUI.getGUI().getProjectDirectory()
 				.getAbsolutePath(), "Data")) {
 			try {
-				TheCellRepository = new Cells_oneField(this, sCon, loadCoords,
+				TheCellRepository = new Model_FieldCellRepository(this, sCon, loadCoords,
 						loadDataVals);
 			} catch (Exception e) {
 			}
@@ -205,7 +208,7 @@ public class Field {
 	 * 
 	 * @author BLM
 	 */
-	public Cells_oneField getCellRepository() {
+	public synchronized Model_FieldCellRepository getCellRepository() {
 		return TheCellRepository;
 	}
 	
@@ -228,7 +231,7 @@ public class Field {
 		int numC = cells.size();
 		for (int i = 0; i < numC; i++)
 		{
-			us.hms.systemsbiology.segmentedobject.Point p = cells.get(i).getCoordinates()
+			us.hms.systemsbiology.idx2coordinates.Point p = cells.get(i).getCoordinates()
 					.getComCoordinates(0)[0];
 			if(roi.contains(p.x,p.y))
 				counter++;

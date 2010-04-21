@@ -6,16 +6,18 @@
 
 package dataSavers;
 
-import features.Feature;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+
 import javax.swing.JFileChooser;
-import main.MainGUI;
-import main.Plate;
-import main.Well;
+
 import midasGUI.Measurement;
+import models.Model_Plate;
+import models.Model_Well;
+import features.Feature;
+import gui.MainGUI;
 
 public class DataSaver_WellMeans_Midas implements DataSaver
 {
@@ -100,11 +102,12 @@ public class DataSaver_WellMeans_Midas implements DataSaver
 					pw.print(((String)headers.get(i))+",");
 				pw.println((String)headers.get(headers.size()-1));
 				
-				Plate[] thePlates = TheMainGUI.getPlateHoldingPanel().getThePlates();
+				Model_Plate[] thePlates = TheMainGUI.getPlateHoldingPanel()
+						.getModel().getPlates();
 				int numPlates = thePlates.length;
 				for (int rr = 0; rr < numPlates; rr++)
 				{
-					Plate plate = thePlates[rr];
+					Model_Plate plate = thePlates[rr];
 					int numC = plate.getNumColumns();
 					int numR = plate.getNumRows();
 					
@@ -112,7 +115,7 @@ public class DataSaver_WellMeans_Midas implements DataSaver
 					for (int r = 0; r < numR; r++)
 						for (int c =0; c < numC; c++)
 						{
-							Well theWell = plate.getTheWells()[r][c];
+							Model_Well theWell = plate.getWells()[r][c];
 							if (theWell.isSelected())
 							{
 								

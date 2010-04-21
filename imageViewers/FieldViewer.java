@@ -6,6 +6,8 @@
 
 package imageViewers;
 
+import gui.MainGUI;
+
 import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -37,11 +39,10 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import main.Cells_oneField;
-import main.Field;
-import main.MainGUI;
-import main.Plate;
-import main.Well;
+import models.Model_Field;
+import models.Model_FieldCellRepository;
+import models.Model_Plate;
+import models.Model_Well;
 import plots.DotSelectionListener;
 import us.hms.systemsbiology.segmentedobject.Cell;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
@@ -84,10 +85,10 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 	private JSlider ImageSelectionSlider;
 	private int ImageSelected_index;
-	private Field TheField;
+	private Model_Field TheField;
 	private File[] ImagesToView;
-	private Plate[] ThePlates;
-	private Well TheWell;
+	private Model_Plate[] ThePlates;
+	private Model_Well TheWell;
 	private int[] pixel;
 	private int pixelValue;
 	private int areaValue;
@@ -98,9 +99,9 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	private int[] LineProfileValues_X;
 	private int[] LineProfileValues_Y;
 	private FieldViewer_Frame HolderFrame;
-	private Cells_oneField TheCellBank;
+	private Model_FieldCellRepository TheCellBank;
 
-	public FieldViewer(FieldViewer_Frame holderFrame_, Well well, Field field) {
+	public FieldViewer(FieldViewer_Frame holderFrame_, Model_Well well, Model_Field field) {
 		HolderFrame = holderFrame_;
 		ImageSelected_index = 0;
 		pixelValue = -1;
@@ -188,25 +189,25 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			// currentRaster = TheCurrentImage.getData();
 
 			int numP = MainGUI.getGUI().getThePlateHoldingPanel()
-					.getThePlates().length;
-			ThePlates = new Plate[numP];
+					.getPlates().length;
+			ThePlates = new Model_Plate[numP];
 			for (int p = 0; p < numP; p++) {
 				ThePlates[p] = MainGUI.getGUI().getThePlateHoldingPanel()
-						.getThePlates()[p].copy();
-				ThePlates[p].allowImageCountDisplay(false);
-				ThePlates[p].setSize(200, 400);
+						.getPlates()[p].copy();
+				ThePlates[p].getGUI().allowImageCountDisplay(false);
+				ThePlates[p].getGUI().setSize(200, 400);
 
-				int rows = ThePlates[p].getTheWells().length;
-				int cols = ThePlates[p].getTheWells()[0].length;
+				int rows = ThePlates[p].getWells().length;
+				int cols = ThePlates[p].getWells()[0].length;
 				for (int i = 0; i < rows; i++)
 					for (int c = 0; c < cols; c++) {
-						Well w = MainGUI.getGUI().getThePlateHoldingPanel()
-								.getThePlates()[p].getTheWells()[i][c];
-						Well w2 = ThePlates[p].getTheWells()[i][c];
+						Model_Well w = MainGUI.getGUI().getThePlateHoldingPanel()
+								.getPlates()[p].getWells()[i][c];
+						Model_Well w2 = ThePlates[p].getWells()[i][c];
 						if (!w.isSelected())
-							w2.color_outline = Color.darkGray;
+							w2.getGUI().color_outline = Color.darkGray;
 						else
-							w2.color_outline = Color.white;
+							w2.getGUI().color_outline = Color.white;
 					}
 			}
 
@@ -246,8 +247,8 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 		int nr = ThePlates.length;
 		for (int p = 0; p < nr; p++) {
-			ThePlates[p].setYstart(60);
-			ThePlates[p].setXstart(TheCurrentImage.getWidth() + 15);
+			ThePlates[p].getGUI().setYstart(60);
+			ThePlates[p].getGUI().setXstart(TheCurrentImage.getWidth() + 15);
 		}
 		TheParentContainer.setSize(TheCurrentImage.getWidth() + 260,
 				TheCurrentImage.getHeight() + 170);
@@ -282,7 +283,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					// (1 point) or a Bounding box (2 points)
 					String comName = one.getComNames()[0];
 					// System.out.println("comName: "+comName);
-					us.hms.systemsbiology.segmentedobject.Point[] pts = one.getComCoordinates(0);
+					us.hms.systemsbiology.idx2coordinates.Point[] pts = one.getComCoordinates(0);
 					int ptsLen = pts.length;
 
 					if (comName.trim().equalsIgnoreCase("Centroid")) // Draw a
@@ -320,7 +321,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 						// System.out.println("pts: "+pts.length);
 						for (int z = 0; z < ptsLen; z++) {
 							if (z % factor == 0) {
-								us.hms.systemsbiology.segmentedobject.Point p = pts[z];
+								us.hms.systemsbiology.idx2coordinates.Point p = pts[z];
 								g2.drawLine((int) (scalingFactor * p.x),
 										(int) (scalingFactor * p.y),
 										(int) (scalingFactor * p.x),
@@ -329,158 +330,93 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 						}
 					}
 				}
-				// else //Draw all points - used for outlines and the such
-				// {
-				// us.hms.systemsbiology.segmentedobject.Point[] pts = one.getComCoordinates_AllUnique();
-				// int ptsLen = pts.length;
-				// for (int z = 0; z < ptsLen; z++)
-				// {
-				// if (z%factor==0)
-				// {
-				// us.hms.systemsbiology.segmentedobject.Point p = pts[z];
-				// g2.drawLine((int)(scalingFactor*p.x),
-				// (int)(scalingFactor*p.y),
-				// (int)(scalingFactor*p.x),(int)(scalingFactor*p.y));
-				// }
-				// }
-				// }
+			
 			}
 		}
 
+		/**
+		 * checking all pixels to see if they are @ the threshold value for
+		 * background, then highlight them in the image
+		 * 
+		 * @author BLM
+		 */
+		// if (TheParentContainer.shouldPlotBackground() && TheField != null
+		// && TheField.getBackgroundValues() != null
+		// && TheField.getBackgroundValues().length > 0
+		// && TheField.getParentWell().getParameterSet() != null) {
 		//
+		// int index = TheField.getParentWell().getParameterSet()
+		// .getThresholdChannel_cyto_Index();
 		//
-
-		// drawing annotations
-		// if (TheCells!=null)
-		// {
-		// int len = TheCells.length;
-		// g2.setFont(main.MainGUI.Font_Standard);
-		// float factor = 1;
-		// if (scalingFactor==0.50f)
-		// factor = 2f;
-		// else if (scalingFactor==0.25f)
-		// factor = 3f;
-		// else if (scalingFactor==0.1f)
-		// factor = 4f;
+		// if (ImageSelected_index == index) {
+		// float bkgd = TheField.getParentWell().getParameterSet()
+		// .getThreshold_Background();
 		//
-		// for (int i = 0; i < len ;i++)
-		// {
-		// if (TheCells[i].isSelected())
-		// {
-		// g2.setColor(TheCells[i].getColor());
-		// g2.setColor(Color.red);
-		// //drawing detailed cell boundary if information exists
-		// if (TheCells[i].getBoundaryPoints()!=null)
-		// {
-		// int num = TheCells[i].getBoundaryPoints().size();
-		// for (int j =0; j < num ;j++)
-		// {
-		// if (j%factor==0)
-		// {
-		// Point p = (Point)TheCells[i].getBoundaryPoints().get(j);
-		// g2.drawLine((int)(scalingFactor*p.x), (int)(scalingFactor*p.y),
-		// (int)(scalingFactor*p.x),(int)(scalingFactor*p.y));
-		// }
-		// }
-		// }
-		//
-		//
-		// //If no detailed cell boundary, then draw a simple bounding box
-		// around the cell
-		// if (TheCells[i].getBoundaryPoints()==null &&
-		// TheCells[i].getBoundingBox()!=null)
-		// {
-		// Rectangle box = TheCells[i].getBoundingBox();
-		// int x = box.x;
-		// int y = box.y;
-		// int width = box.width;
-		// int height = box.height;
-		// g2.drawRect((int)(scalingFactor*x), (int)(scalingFactor*y),
-		// (int)(scalingFactor*width),(int)(scalingFactor*height));
-		// }
-		//
-		// //drawing nucleus boundary
-		// if (TheCells[i].getNucleus().getBoundaryPoints()!=null)
-		// {
-		// g2.setColor(Color.magenta);
-		// int num = TheCells[i].getNucleus().getBoundaryPoints().length;
-		// for (int j =0; j < num ;j++)
-		// {
-		// if (j%factor==0)
-		// {
-		// us.hms.systemsbiology.segmentedobject.Point p =
-		// TheCells[i].getNucleus().getBoundaryPoints()[j];
-		// g2.drawLine((int)(scalingFactor*p.x), (int)(scalingFactor*p.y),
-		// (int)(scalingFactor*p.x),(int)(scalingFactor*p.y));
-		// }
-		// }
-		// }
-		//
-		// // Drawing neighbor lines
-		// Line2D[] li = TheCells[i].getNeighborLines();
-		// if (li!=null)
-		// {
 		// g2.setColor(Color.white);
-		// int num = li.length;
-		// for (int j = 0; j < num ;j++)
-		// {
-		// if
-		// (Math.abs(li[j].getX1()-li[j].getX2())+Math.abs(li[j].getY1()-li[j].getY2())
-		// < 30)
-		// g2.drawLine((int)(scalingFactor*li[j].getX1()),
-		// (int)(scalingFactor*li[j].getY1()),
-		// (int)(scalingFactor*li[j].getX2()),(int)(scalingFactor*li[j].getY2()));
-		// }
-		// }
 		//
+		// Raster raster = getCurrentRaster();
+		// int numBands = raster.getNumBands();
+		// int[] pix = new int[numBands];
+		// int width = raster.getWidth();
+		// int height = raster.getHeight();
+		// for (int x = 0; x < width; x++) {
+		// for (int y = 0; y < height; y++) {
 		//
-		//
-		//
-		//
-		//
+		// raster.getPixel(x, y, pix);
+		// if (pix[0] < bkgd) {
+		// g2.drawLine((int) (scalingFactor * x),
+		// (int) (scalingFactor * y),
+		// (int) (scalingFactor * x),
+		// (int) (scalingFactor * y));
 		//
 		// }
-		//
 		// }
-		//
 		// }
+		// }
+		//			
+		//			
+		// }
+
+	
 
 		// Drawing the mini-plates
 		int len = ThePlates.length;
-		Plate platew = TheWell.getPlate();
-		Plate platev = null;
+		Model_Plate platew = TheWell.getPlate();
+		Model_Plate platev = null;
 		for (int i = 0; i < len; i++)
 			if (ThePlates[i].getID() == platew.getID()) {
 				platev = ThePlates[i];
 				break;
 			}
 
-		int numR = platev.getTheWells().length;
-		int numC = platev.getTheWells()[0].length;
+		int numR = platev.getWells().length;
+		int numC = platev.getWells()[0].length;
 		// Drawing the plate name above it
 		g2.setColor(Color.WHITE);
 		g2.setFont(MainGUI.Font_12);
 		String st = "Plate #" + platev.getID();
-		g2.drawString(st, (platev.getXstart() + (platev.getWidth() / 2 - st
-				.length() * 5)), platev.getYstart() - 5);
+		g2.drawString(st, (platev.getGUI().getXstart() + (platev.getGUI()
+				.getWidth() / 2 - st.length() * 5)), platev.getGUI()
+				.getYstart() - 5);
 		for (int r = 0; r < numR; r++)
 			for (int c = 0; c < numC; c++) {
 				if (r == TheWell.Row && c == TheWell.Column)
-					platev.getTheWells()[r][c].setSelected(true);
+					platev.getWells()[r][c].setSelected(true);
 				else
-					platev.getTheWells()[r][c].setSelected(false);
-				platev.getTheWells()[r][c].draw(g2);
+					platev.getWells()[r][c].setSelected(false);
+				platev.getWells()[r][c].getGUI().draw(g2, false);
 			}
 
-		g2.setFont(main.MainGUI.Font_12);
+		g2.setFont(gui.MainGUI.Font_12);
 		g2.setColor(Color.white);
 		if (pixelValue != -1)
 			g2.drawString("Pixel Value = " + pixelValue, ThePlates[0]
-					.getXstart() + 20, ThePlates[0].getYstart() + 140);
+.getGUI()
+					.getXstart() + 20, ThePlates[0].getGUI().getYstart() + 140);
 		if (areaValue != -1)
 			g2.drawString("Pixel Area = " + areaValue,
-					ThePlates[0].getXstart() + 20,
-					ThePlates[0].getYstart() + 160);
+ ThePlates[0].getGUI()
+					.getXstart() + 20, ThePlates[0].getGUI().getYstart() + 160);
 
 		if (LineProfileValues_X != null && LineProfileValues_Y != null) {
 			g2.setColor(Color.white);
@@ -503,12 +439,12 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			}
 
 			int xLen = 60;
-			int xStart = platev.getXstart() + 50;
-			int yStart = platev.getYstart() + 250;
+			int xStart = platev.getGUI().getXstart() + 50;
+			int yStart = platev.getGUI().getYstart() + 250;
 			float yHeight = 30f;
 			// mini scale requires smaller params
 			if (scalingFactor == 0.25f || scalingFactor == 0.1f) {
-				yStart = platev.getYstart() + 200;
+				yStart = platev.getGUI().getYstart() + 200;
 				xLen = 20;
 				yHeight = 20;
 			}
@@ -570,7 +506,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					(int) (xStart - 0.125f * yHeight), (int) (yStart + xLen));
 
 			g2.setColor(Color.white);
-			g2.setFont(main.MainGUI.Font_8);
+			g2.setFont(gui.MainGUI.Font_8);
 			// Drawing the recommended thresholds
 			int xOff = 10;
 			g2.drawString("" + (int) (yMax), (int) (xStart + xLen + xOff),
@@ -588,11 +524,11 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 			// Drawing the yProfile
 			g2.setColor(Color.white);
-			xStart = platev.getYstart() + 250;
-			yStart = platev.getXstart() + 50;
+			xStart = platev.getGUI().getYstart() + 250;
+			yStart = platev.getGUI().getXstart() + 50;
 
 			if (scalingFactor == 0.25f) {
-				xStart = platev.getYstart() + 200;
+				xStart = platev.getGUI().getYstart() + 200;
 			}
 			lastVal = xStart;
 			xLast = yStart;
@@ -796,15 +732,15 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		int nr = ThePlates.length;
 		for (int rr = 0; rr < nr; rr++) {
 
-			int rows = ThePlates[rr].getTheWells().length;
-			int cols = ThePlates[rr].getTheWells()[0].length;
+			int rows = ThePlates[rr].getWells().length;
+			int cols = ThePlates[rr].getWells()[0].length;
 			Point point = p1.getPoint();
 			for (int r = 0; r < rows; r++)
 				for (int c = 0; c < cols; c++) {
-					if (ThePlates[rr].getTheWells()[r][c] != null)
-						if (ThePlates[rr].getTheWells()[r][c].outline
+					if (ThePlates[rr].getWells()[r][c] != null)
+						if (ThePlates[rr].getWells()[r][c].getGUI().outline
 								.contains(point)) {
-							Well well = ThePlates[rr].getTheWells()[r][c];
+							Model_Well well = ThePlates[rr].getWells()[r][c];
 							TheParentContainer.setCurrentWell(well);
 							break;
 						}
@@ -824,23 +760,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		CreateNewBox = boo;
 	}
 
-	private int getCellIndex(MouseEvent p) {
-		// float scale = FieldViewer_Frame.getScaling();
-		// Point po = p.getPoint();
-		//
-		// int len = TheCells.length;
-		// for (int i=0; i < len; i++)
-		// {
-		// Rectangle r = TheCells[i].getBoundingBox();
-		// DummyBox.x = (int)(scale*(float)r.x);
-		// DummyBox.y = (int)(scale*(float)r.y);
-		// DummyBox.width = (int)(scale*(float)r.width);
-		// DummyBox.height = (int)(scale*(float)r.height);
-		// if (DummyBox.contains(po))
-		// return i;
-		// }
-		return -1;
-	}
+
 
 	/**
 	 * Retuns the ID for this viewer
@@ -875,7 +795,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	 * 
 	 * @author BLM
 	 */
-	public Well getTheWell() {
+	public Model_Well getTheWell() {
 		return TheWell;
 	}
 
@@ -884,7 +804,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	 * 
 	 * @author BLM
 	 */
-	public Field getTheField() {
+	public Model_Field getTheField() {
 		return TheField;
 	}
 
@@ -1005,7 +925,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 							CellCoordinates coords = cell.getCoordinates();
 							if (coords != null)
 								if (coords.getComSize() > 0) {
-									us.hms.systemsbiology.segmentedobject.Point[] pts = coords
+									us.hms.systemsbiology.idx2coordinates.Point[] pts = coords
 											.getComCoordinates(0);
 									Rectangle bounds = getScaledSelectionBounds(scalingFactor);
 									if (bounds != null && pts != null
@@ -1069,7 +989,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 						Cell cell = cells.get(c);
 						CellCoordinates coords = cell.getCoordinates();
 						if (coords.getComSize() > 0) {
-							us.hms.systemsbiology.segmentedobject.Point[] pts = coords
+							us.hms.systemsbiology.idx2coordinates.Point[] pts = coords
 									.getComCoordinates(0);
 							if (tempOval != null
 									&& tempOval.contains(
@@ -1124,7 +1044,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 							Cell cell = cells.get(c);
 							CellCoordinates coords = cell.getCoordinates();
 							if (coords.getComSize() > 0) {
-								us.hms.systemsbiology.segmentedobject.Point[] pts = coords
+								us.hms.systemsbiology.idx2coordinates.Point[] pts = coords
 										.getComCoordinates(0);
 								if (tempOval != null
 										&& tempOval
@@ -1181,7 +1101,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 							Cell cell = cells.get(c);
 							CellCoordinates coords = cell.getCoordinates();
 							if (coords.getComSize() > 0) {
-								us.hms.systemsbiology.segmentedobject.Point[] pts = coords
+								us.hms.systemsbiology.idx2coordinates.Point[] pts = coords
 										.getComCoordinates(0);
 								bounds = getScaledSelectionBounds(scalingFactor);
 								if (bounds != null && pts != null
@@ -1663,7 +1583,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			int yStart = 0;
 			int yEnd = 0;
 			for (int c = 0; c < 2; c++) {
-				System.out.println("--> Processing Well = " + TheWell.name);
+				System.out.println("--> Processing Model_Well = " + TheWell.name);
 				// First pass we look at whole image
 				if (c == 0) {
 					increment = (int) (raster.getWidth() * 0.05f);
@@ -1737,7 +1657,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			int yEnd = 0;
 
 			for (int c = 0; c < 2; c++) {
-				System.out.println("--> Processing Well = " + TheWell.name);
+				System.out.println("--> Processing Model_Well = " + TheWell.name);
 				// First pass we look at whole image
 				if (c == 0) {
 					increment = (int) (raster.getWidth() * 0.05f);

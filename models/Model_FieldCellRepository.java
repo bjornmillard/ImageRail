@@ -1,12 +1,12 @@
 /**
- * Cells_oneField.java
+ * Model_FieldCellRepository.java
  *
  * @author Created by Omnicore CodeGuide
  */
+package models;
 
-package main;
 
-/** This class is a temporary repository in the RAM for cells of one Field that have been loaded from an HDF cache data file.
+/** This class is a temporary repository in the RAM for cells of one Model_Field that have been loaded from an HDF cache data file.
  * Included here is both the Cell_coords (coordinates) and the float[][] data matrix values
  *
  @author BLM*/
@@ -18,11 +18,12 @@ import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.segmentedobject.Cell;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 import features.Feature;
+import gui.MainGUI;
 
-public class Cells_oneField
+public class Model_FieldCellRepository
 {
-	private Field field;
-	private Well well_parent;
+	private Model_Field field;
+	private Model_Well well_parent;
 	private int plateIndex;
 	private int wellIndex;
 	private ArrayList<Cell> cells;
@@ -30,7 +31,7 @@ public class Cells_oneField
 	private float[][] dataValues;
 	private StringBuffer[] featureNames;
 	
-	public Cells_oneField(Field field_, SegmentationHDFConnector sCon,
+	public Model_FieldCellRepository(Model_Field field_, SegmentationHDFConnector sCon,
 			boolean loadCoords, boolean loadDataVals)
 	{
 		field = field_;
@@ -53,7 +54,7 @@ public class Cells_oneField
 
 			if (cellCoords != null && dataValues != null)
 				System.out.println("Loading ---> Plate: " + plateIndex
-						+ "  Well: " + well_parent.name + "  Field: "
+						+ "  Well: " + well_parent.name + " Field: "
 						+ field.getIndexInWell() + "   ||  cells:"
 						+ cells.size() + "  data_vals: " + dataValues.length
 						+ " coords: " + cellCoords.size());
@@ -69,7 +70,7 @@ public class Cells_oneField
 		}
 		catch (Exception e)
 		{
-			System.out.println("No cells found for Well: "+well_parent.name);
+			System.out.println("No cells found for Model_Well: "+well_parent.name);
 		}
 		
 	}
@@ -98,7 +99,8 @@ public class Cells_oneField
 		// Didnt load the cell coordinates
 		else if (dataValues != null)
 			for (int i = 0; i < num; i++) {
-				cells.add(new Cell(ids.get(i).intValue(), null, dataValues[i]));
+				cells.add(new Cell(ids.get(i).intValue(), null,
+						dataValues[i]));
 			}
 	}
 
@@ -169,7 +171,7 @@ public class Cells_oneField
 	
 	/** Returns the indexed names of the features that this dataset contains
 	 * @author BLM*/
-	public synchronized StringBuffer[] getFeatureNames()
+	public StringBuffer[] getFeatureNames()
 	{
 		return featureNames;
 	}
@@ -185,7 +187,7 @@ public class Cells_oneField
 	 * 
 	 * @author BLM
 	 */
-	public synchronized float[][] getFeatureVals_all() {
+	public float[][] getFeatureVals_all() {
 		return dataValues;
 	}
 	
@@ -194,7 +196,7 @@ public class Cells_oneField
 	 * 
 	 * @author BLM
 	 */
-	public synchronized Cell getCell(int indexOfCell)
+	public Cell getCell(int indexOfCell)
 	{
 		return cells.get(indexOfCell);
 	}
@@ -204,7 +206,7 @@ public class Cells_oneField
 	 * 
 	 * @author BLM
 	 */
-	public synchronized ArrayList<Cell> getCells()
+	public ArrayList<Cell> getCells()
 	{
 		return cells;
 	}
@@ -223,7 +225,8 @@ public class Cells_oneField
 				// can save them out again
 				if (cells.get(0).getCoordinates() == null) {
 					cellCoords = new ArrayList<CellCoordinates>();
-					ArrayList<CellCoordinates> coords = sCon.readCoordinates(
+					ArrayList<CellCoordinates> coords = sCon
+							.readCoordinates(
 							plateIndex, wellIndex, field.getIndexInWell());
 
 					System.out.println("Loading coordinates so we can resave: "
@@ -272,7 +275,7 @@ public class Cells_oneField
 	}
 
 	/** */
-	private synchronized void writeCoordinates(SegmentationHDFConnector sCon)
+	private void writeCoordinates(SegmentationHDFConnector sCon)
 			throws HDFConnectorException {
 		// Assuming all cells in this cell bank are stored with the same
 		// structure

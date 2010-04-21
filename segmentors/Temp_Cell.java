@@ -7,12 +7,13 @@
 package segmentors;
 
 import features.Feature;
+import gui.MainGUI;
+
 import java.util.ArrayList;
 import java.util.Iterator;
-import main.MainGUI;
 import segmentors.Temp_Pixel;
 import tempObjects.Cell_RAM;
-import us.hms.systemsbiology.segmentedobject.Point;
+import us.hms.systemsbiology.idx2coordinates.Point;
 
 public class Temp_Cell
 {
@@ -105,7 +106,7 @@ public class Temp_Cell
 		return SourceImage_Height;
 	}
 	
-	/** Sets the Field number that this cell came from
+	/** Sets the Model_Field number that this cell came from
 	 * @author BLM*/
 	public void setFieldNumber(int field_)
 	{

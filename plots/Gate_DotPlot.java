@@ -6,13 +6,12 @@
 
 package plots;
 
-import features.Feature;
 import java.awt.Color;
 import java.awt.Polygon;
 import java.util.ArrayList;
 
-import tempObjects.Cell_RAM;
 import us.hms.systemsbiology.segmentedobject.Cell;
+import features.Feature;
 
 public class Gate_DotPlot
 {
@@ -32,7 +31,7 @@ public class Gate_DotPlot
 		
 		featureX_index = 0;
 		featureY_index = 0;
-		Feature[] features = main.MainGUI.getGUI().getFeatures();
+		Feature[] features = gui.MainGUI.getGUI().getFeatures();
 		for (int i = 0; i < features.length; i++)
 		{
 			if(features[i].toString().equalsIgnoreCase(featureX.toString()))

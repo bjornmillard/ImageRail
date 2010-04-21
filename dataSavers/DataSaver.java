@@ -7,7 +7,7 @@
 package dataSavers;
 
 import features.Feature;
-import main.MainGUI;
+import gui.MainGUI;
 
 public interface DataSaver
 {

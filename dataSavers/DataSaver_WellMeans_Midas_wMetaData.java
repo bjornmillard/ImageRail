@@ -6,17 +6,19 @@
 
 package dataSavers;
 
-import features.Feature;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+
 import javax.swing.JFileChooser;
-import main.MainGUI;
-import main.Plate;
-import main.Well;
+
 import midasGUI.Measurement;
 import midasGUI.Treatment;
+import models.Model_Plate;
+import models.Model_Well;
+import features.Feature;
+import gui.MainGUI;
 
 public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 {
@@ -84,31 +86,32 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 				ArrayList uniqueT = new ArrayList();
 				ArrayList uniqueM = new ArrayList();
 				int numF = featuresToSave.length;
-				Plate[] thePlates = TheMainGUI.getPlateHoldingPanel().getThePlates();
+				Model_Plate[] thePlates = TheMainGUI.getPlateHoldingPanel()
+						.getModel().getPlates();
 				int numPlates = thePlates.length;
 				for (int p = 0; p < numPlates; p++)
 				{
-					Plate plate = thePlates[p];
+					Model_Plate plate = thePlates[p];
 					int numC = plate.getNumColumns();
 					int numR = plate.getNumRows();
 					
 					for (int r= 0; r < numR; r++)
 						for (int c= 0; c < numC; c++)
 						{
-							if (plate.getTheWells()[r][c].isSelected())
+							if (plate.getWells()[r][c].isSelected())
 							{
-								int numTreat = plate.getTheWells()[r][c].treatments.size();
+								int numTreat = plate.getWells()[r][c].treatments.size();
 								for (int n =0; n < numTreat; n++)
 								{
 									boolean unique = true;
 									len = uniqueT.size();
 									for (int j =0; j < len; j++)
-										if(((Treatment)uniqueT.get(j)).name.equalsIgnoreCase(((Treatment)plate.getTheWells()[r][c].treatments.get(n)).name))
+										if(((Treatment)uniqueT.get(j)).name.equalsIgnoreCase(((Treatment)plate.getWells()[r][c].treatments.get(n)).name))
 											unique = false;
 									if (unique)
 									{
-										headers.add("TR:"+((Treatment)plate.getTheWells()[r][c].treatments.get(n)).name);
-										uniqueT.add(((Treatment)plate.getTheWells()[r][c].treatments.get(n)));
+										headers.add("TR:"+((Treatment)plate.getWells()[r][c].treatments.get(n)).name);
+										uniqueT.add(((Treatment)plate.getWells()[r][c].treatments.get(n)));
 									}
 								}
 							}
@@ -116,7 +119,7 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 				}
 				
 				//Finding the unique measurment headers across all wells - NOTE --> Stealing them all from plate 1
-				Plate plate = thePlates[0];
+				Model_Plate plate = thePlates[0];
 				int numC = plate.getNumColumns();
 				int numR = plate.getNumRows();
 				Measurement[] meas = new Measurement[numF*2];
@@ -157,7 +160,7 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 					for (int r = 0; r < numR; r++)
 						for (int c =0; c < numC; c++)
 						{
-							Well theWell = plate.getTheWells()[r][c];
+							Model_Well theWell = plate.getWells()[r][c];
 							if (theWell.isSelected())
 							{
 								headerValues = new ArrayList();

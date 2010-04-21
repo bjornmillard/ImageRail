@@ -23,15 +23,15 @@ import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 
-import main.Field;
-import main.MainGUI;
-import main.Plate;
-import main.PlateHoldingPanel;
-import main.Well;
+import models.Model_Field;
+import models.Model_Plate;
+import models.Model_PlateRepository;
+import models.Model_Well;
 import us.hms.systemsbiology.data.HDFConnectorException;
 import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.segmentedobject.Cell;
 import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import gui.MainGUI;
 
 public class DotFilterQueue extends JFrame implements Runnable {
 
@@ -283,10 +283,11 @@ public class DotFilterQueue extends JFrame implements Runnable {
 	public void run() {
 
 		System.out.println("Filtering all HDF files");
-		MainGUI gui = main.MainGUI.getGUI();
-		PlateHoldingPanel platePanel = gui.getPlateHoldingPanel();
+		MainGUI theGUI = gui.MainGUI.getGUI();
+		Model_PlateRepository platePanel = theGUI.getPlateHoldingPanel()
+				.getModel();
 		int numPlates = platePanel.getNumPlates();
-		Plate[] plates = platePanel.getThePlates();
+		Model_Plate[] plates = platePanel.getPlates();
 
 		// Converting filters over to array before iterations
 		int numFilters = filtersToRun.size();
@@ -307,20 +308,20 @@ public class DotFilterQueue extends JFrame implements Runnable {
 
 		// for each well:
 		SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-				main.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
+				gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
 		for (int i = 0; i < numPlates; i++) {
-			Plate plate = plates[i];
+			Model_Plate plate = plates[i];
 			int numC = plate.getNumColumns();
 			int numR = plate.getNumRows();
 			for (int r = 0; r < numR; r++)
 				for (int c = 0; c < numC; c++) {
-					Well well = plate.getTheWells()[r][c];
+					Model_Well well = plate.getWells()[r][c];
 					well.processing = true;
-					plate.repaint();
+					plate.getGUI().repaint();
 					if (well.getHDFcount() > 0)// Just the HDF5 files
 					{
 						System.out.println("Processing: " + well.name);
-						Field[] fields = well.getFields();
+						Model_Field[] fields = well.getFields();
 						int numF = fields.length;
 						try {
 							for (int j = 0; j < numF; j++) {
@@ -397,10 +398,10 @@ public class DotFilterQueue extends JFrame implements Runnable {
 						well.loadCells(sCon, loadCoords, loadVals);
 					}
 					well.processing = false;
-					plate.repaint();
+					plate.getGUI().repaint();
 				}
 		}
-		gui.getPlateHoldingPanel().updateMinMaxValues();
-		gui.updateDotPlot();
+		theGUI.getPlateHoldingPanel().getModel().updateMinMaxValues();
+		theGUI.updateDotPlot();
 	}
 }

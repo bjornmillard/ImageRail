@@ -10,7 +10,7 @@ package tempObjects;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import segmentors.Temp_Pixel;
-import us.hms.systemsbiology.segmentedobject.Point;
+import us.hms.systemsbiology.idx2coordinates.Point;
 
 /** Each segmented nucleus will hold its own pixels and properties
  * @author BLM*/

@@ -31,7 +31,7 @@ public class PlateInputDialog extends JDialog implements ActionListener,Property
 		ParentFrame = parentFrame;
 		int width = 330;
 		int height = 300;
-		setTitle("Input Plate Information");
+		setTitle("Input Model_Plate Information");
 		setSize(width,height);
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		setLocation((int)(d.width/2f)-width/2,(int)(d.height/2f)-height/2);
@@ -97,7 +97,7 @@ public class PlateInputDialog extends JDialog implements ActionListener,Property
 		JPanel radioPanel = new JPanel();
 		radioPanel.setLayout(new GridLayout(6,1));
 		radioPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-		radioPanel.add(new JLabel("Wells/Plate:"));
+		radioPanel.add(new JLabel("Wells/Model_Plate:"));
 		radioPanel.add(r0);
 		radioPanel.add(r1);
 		radioPanel.add(r2);
@@ -194,12 +194,12 @@ public class PlateInputDialog extends JDialog implements ActionListener,Property
 				if (tools.MathOps.areNumbers(strings))
 				{
 					int numP = Integer.parseInt(strings[0]);
-					boolean worked = main.MainGUI.getGUI().initNewPlates(numP, numRows, numCols);
+					boolean worked = gui.MainGUI.getGUI().initNewPlates(numP, numRows, numCols);
 					if(worked)
 					{
 						if(ParentFrame!=null)
 						ParentFrame.setVisible(false);
-						main.MainGUI.getGUI().setVisible(true);
+						gui.MainGUI.getGUI().setVisible(true);
 					}
 				}
 				else
