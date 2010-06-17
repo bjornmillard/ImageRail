@@ -102,6 +102,7 @@ public class MainGUI extends JFrame {
 	static public final int HISTOGRAM = 3;
 	static final public Font Font_6 = new Font("Helvetica", Font.PLAIN, 6);
 	static final public Font Font_8 = new Font("Helvetica", Font.PLAIN, 8);
+	static final public Font Font_9 = new Font("Helvetica", Font.PLAIN, 9);
 	static final public Font Font_12 = new Font("Helvetica", Font.BOLD, 12);
 	static final public Font Font_14 = new Font("Helvetica", Font.BOLD, 14);
 	static final public Font Font_16 = new Font("Helvetica", Font.BOLD, 16);

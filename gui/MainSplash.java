@@ -29,8 +29,8 @@ import javax.swing.JWindow;
 public class MainSplash extends JWindow {
 	private Image im;
 	private int duration;
-	private int width = 580;
-	private int height = 160;
+	private int width = 518;
+	private int height = 175;
 	private String TheMessage;
 
 	public MainSplash(int d) {
@@ -51,7 +51,7 @@ public class MainSplash extends JWindow {
 		content.setLayout(new BorderLayout());
 
 		im = Toolkit.getDefaultToolkit().getImage(
-				"doc/Images/ImageRailSplashScreen.png");
+				"icons/ImageRail_splash_newLogo.png");
 
 		// Set the window's bounds, centering the window
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -88,8 +88,9 @@ public class MainSplash extends JWindow {
 			if (im != null)
 				g.drawImage(im, 0, 0, this);
 
-			g2.setFont(MainGUI.Font_12);
-			g2.drawString(TheMessage, 5, getHeight() - 10);
+			g2.setFont(MainGUI.Font_9);
+			g2.setColor(Color.black);
+			g2.drawString(TheMessage, 10, getHeight() - 10);
 		}
 
 	}

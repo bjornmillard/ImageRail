@@ -49,7 +49,8 @@ public class MainStartupDialog extends JFrame
 		content.setBackground(color);
 		content.setLayout(new BorderLayout());
 		
-		im = Toolkit.getDefaultToolkit().getImage("doc/Images/ImageRail_long.png");
+		im = Toolkit.getDefaultToolkit().getImage(
+				"icons/ImageRail_long_newLogo.png");
 		
 		// Set the window's bounds, centering the window
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
