@@ -1,18 +1,24 @@
-/**
- * ColorMap.java
- *
- * @author Created by Omnicore CodeGuide
- */
+/** 
+ * Author: Bjorn L. Millard
+ * (c) Copyright 2010
+ * 
+ * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of 
+ * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+ * more details. You should have received a copy of the GNU General Public License along with this 
+ * program. If not, see http://www.gnu.org/licenses/.  */
 
 package tools;
 
-import java.awt.Color;
 
 public class ColorMaps
 {
 	//ColorMap Types
-	static final public int JET = 0;
-	static final public int FIRE = 1;
+
+	static final public int FIRE = 0;
+	static final public int JET = 1;
 	static final public int RGB = 2;
 	static final public int ACID = 3;
 	static final public int BEACH = 4;
@@ -20,13 +26,19 @@ public class ColorMaps
 	static final public int GREEN = 6;
 	static final public int BLUE = 7;
 	static final public int RED = 8;
-	static final public int SMOKE = 9;
-	static final public int POSNEG = -1;
+	static final public int WHITEPURPLE = 9;
+	static final public int WHITERED = 10;
+	// static final public int SMOKE = 9;
+	// static final public int POSNEG = -1;
+
 	
 //	static final public int ROYGBIV = 6;
 //	static final public int SMOKE = 10;
 	
-	static final public String[] colorMapNames  = {"JET", "FIRE", "RGB", "ACID", "BEACH", "GRAYS", "GREEN", "BLUE", "RED"};//, "SMOKE"};// "ROYGBIV"};
+	static final public String[] colorMapNames = { "FIRE", "JET", "RGB",
+			"ACID", "BEACH", "GRAYS", "GREEN", "BLUE", "RED" };// ,
+																		// "SMOKE"};//
+																		// "ROYGBIV"};
 	
 	static public int getColorMapIndex(String text)
 	{
@@ -204,80 +216,117 @@ public class ColorMaps
 			color[2] = (float)B;
 			color[3] = 1f;
 		}
-		else if (colorMapType==POSNEG)
-		{
-			double R = 0;
-			double G = 0;
-			double B = 0;
-			
-			if (value<0)
-			{
-				B = value/minVal;
+		// else if (colorMapType==POSNEG)
+		// {
+		// double R = 0;
+		// double G = 0;
+		// double B = 0;
+		//			
+		// if (value<0)
+		// {
+		// B = value/minVal;
+		// }
+		//				
+		// else if (value>=0)
+		// {
+		// R = value/maxVal;
+		// }
+		//			
+		// if (maxVal<=0 ) //all values are negative
+		// {
+		// // normalize to [0,1]
+		// double val = Math.abs((value-minVal)/(maxVal-minVal));
+		//				
+		// B = val;
+		// R = 0;
+		// G= 0;
+		//				
+		// }
+		// else if (minVal>=0 ) // all values are positive
+		// {
+		// // normalize to [0,1]
+		// double val = (value-minVal)/(maxVal-minVal);
+		//				
+		// B = 0;
+		// R = val;
+		// G= 0;
+		//				
+		// }
+		// else if (minVal<0 && maxVal>0) // all values are positive
+		// {
+		// if (value<0)
+		// {
+		// System.out.println("val: "+value + "   minVal: "+minVal);
+		// // normalize to [0,1]
+		// double val = value/minVal;
+		// B = val;
+		// R = 0;
+		// G= 0;
+		// }
+		// else
+		// {
+		// // normalize to [0,1]
+		// double val = value/(maxVal);
+		// B = 0;
+		// R = val;
+		// G= 0;
+		//					
+		// }
+		// }
+		// System.out.println("B: "+B);
+		//			
+		//			
+		// color[0] = (float)R;
+		// color[1] = (float)G;
+		// color[2] = (float)B;
+		// color[3] = 1f;
+		// }
+		// else if (colorMapType==SMOKE)
+		// {
+		// // normalize to [0,1]
+		// double val = (value-minVal)/(maxVal-minVal);
+		// val = (1f-val)/2f;
+		// color[0] = (float)val;
+		// color[1] = (float)val;
+		// color[2] = (float)val;
+		// color[3] = 0.5f+(float)(1-val)/2f;
+		// }
+ else if (colorMapType == WHITEPURPLE) {
+			double tMin = (maxVal - minVal) / 1.4f;// 2.7f;
+			if (value < tMin) {
+				color[0] = 1;
+				color[1] = 1;
+				color[2] = 1;
+				return;
 			}
-				
-			else if (value>=0)
-			{
-				R = value/maxVal;
-			}
-			
-			if (maxVal<=0 ) //all values are negative
-			{
-				// normalize to [0,1]
-				double val =  Math.abs((value-minVal)/(maxVal-minVal));
-				
-				B = val;
-				R  = 0;
-				G= 0;
-				
-			}
-			else if (minVal>=0 ) // all values are positive
-			{
-				// normalize to [0,1]
-				double val =  (value-minVal)/(maxVal-minVal);
-				
-				B = 0;
-				R  = val;
-				G= 0;
-				
-			}
-			else if (minVal<0 && maxVal>0) // all values are positive
-			{
-				if (value<0)
-				{
-					System.out.println("val: "+value +  "   minVal: "+minVal);
-					// normalize to [0,1]
-					double val =  value/minVal;
-					B = val;
-					R  = 0;
-					G= 0;
-				}
-				else
-				{
-					// normalize to [0,1]
-					double val =  value/(maxVal);
-					B = 0;
-					R  = val;
-					G= 0;
-					
-				}
-			}
-			System.out.println("B: "+B);
-			
-			
-			color[0]  = (float)R;
-			color[1] = (float)G;
-			color[2] = (float)B;
-			color[3] = 1f;
+
+			double val1 = (value - tMin) / (maxVal - tMin);
+
+			double B = 1;
+			double R = 1 - val1;
+			double G = 1 - val1;
+
+			color[0] = (float) R;
+			color[1] = (float) G;
+			color[2] = (float) B;
 		}
-		else if (colorMapType==SMOKE)
-		{
-			// normalize to [0,1]
-			double val =  (value-minVal)/(maxVal-minVal);
-			val = (1f-val)/2f;
-			color[0]  = (float)val;
-			color[1] = (float)val;
-			color[2] = (float)val;
-			color[3] = 0.5f+(float)(1-val)/2f;
+ else if (colorMapType == WHITERED) {
+			double tMin = (maxVal - minVal) / 2.7f;
+			if (value < tMin) {
+				color[0] = 1;
+				color[1] = 1;
+				color[2] = 1;
+				return;
+			}
+
+			double val1 = (value - tMin) / (maxVal - tMin);
+
+			double B = 1 - val1;
+			double R = 1;
+			double G = 1 - val1;
+			color[0] = (float) R;
+			color[1] = (float) G;
+			color[2] = (float) B;
 		}
 		
 		

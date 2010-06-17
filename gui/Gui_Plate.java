@@ -1,9 +1,22 @@
+/** 
+ * Author: Bjorn L. Millard
+ * (c) Copyright 2010
+ * 
+ * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of 
+ * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+ * more details. You should have received a copy of the GNU General Public License along with this 
+ * program. If not, see http://www.gnu.org/licenses/.  */
+
 package gui;
 
 import features.Feature;
 import imPanels.ImageCapturePanel;
 import imPanels.JPanel_highlightBox;
 import imageViewers.FieldViewer_Frame;
+import imageViewers.ImageMontage;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -67,7 +80,6 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 	/** Depricated - Used to allow modified plate heat maps such as linear slope displays*/
 	private int DisplayType;
 	private static int NORMAL = 0;
-	private static int DISPLAYSLOPES = 1;
 	/** If true, this will place a blocking rectangle on top of the plate*/
 	private boolean Block;
 	private Rectangle TheBlockingRectangle;
@@ -86,11 +98,13 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 	/** */
 	private final JButton MetaButton = new JButton(new ImageIcon(
 			"icons/meta.png"));
+
 	/** */
 	private boolean Dragging;
 	/** The Model_plate for reference*/
 	private Model_Plate TheModel;
 	private Gui_Plate ThisGUI;
+
 
 	// /** Matrix of this plate's Wells */
 	// private Gui_Well[][] TheWells;
@@ -121,6 +135,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 		DisplayMetaData = -1;
 		updatePanel();
 		Dragging = false;
+
 		
 		//Adding the Drag and Drop feature for file loading
 		PanelDropTargetListener drop = new PanelDropTargetListener();
@@ -182,26 +197,36 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 				});
 		TheToolBar.add(titleLabel);
 		titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		titleLabel.setFont(new Font("Helvetca", Font.BOLD, 16));
+		titleLabel.setFont(new Font("Helvetica", Font.BOLD, 16));
 		titleLabel.setEnabled(true);
 		
-		TheToolBar.add(MetaButton);
-		MetaButton.setToolTipText("Display Experimental Metadata Model_Plate Map");
-		MetaButton.addActionListener(new ActionListener()
-									 {
-					public void actionPerformed(ActionEvent ae)
-					{
-						DisplayMetaData ++;
-						if(DisplayMetaData>3)
-							DisplayMetaData = -1;
-						updateMetaDataLegend();
-						
+		final JButton montageButton = new JButton(tools.Icons.Icon_Montage);
+		montageButton.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
 
-				// new Plate_MetaDataDisplay(ThePlate, "MetaData Viewer", 600,
-				// 600, TheMetaDataWriter);
-					}
-				});
+				ImageMontage m = new ImageMontage(TheModel, 0, 0);
+
+			}
+		});
+		TheToolBar.add(montageButton);
 		
+		// TheToolBar.add(MetaButton);
+		// MetaButton.setToolTipText("Display Experimental Metadata Model_Plate Map");
+		// MetaButton.addActionListener(new ActionListener()
+		// {
+		// public void actionPerformed(ActionEvent ae)
+		// {
+		// DisplayMetaData ++;
+		// if(DisplayMetaData>3)
+		// DisplayMetaData = -1;
+		// updateMetaDataLegend();
+		//						
+		//
+		// // new Plate_MetaDataDisplay(ThePlate, "MetaData Viewer", 600,
+		// // 600, TheMetaDataWriter);
+		// }
+		// });
+
 	}
 
 	public void updateMetaDataLegend()
@@ -519,8 +544,19 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 			if (f != null)
 				channel = f.ChannelIndex;
 
-			float[] minMax = TheModel.getMinMaxAcrossPlates(MainGUI.getGUI()
-					.getPlateHoldingPanel().shouldNormalizeAcrossAllPlates());
+			// getting the selected feature index
+			int fIndex = MainGUI.getGUI().getTheSelectedFeature_Index();
+
+			int MeanOrCV = 0;
+			if (shouldDisplayCV())
+				MeanOrCV = 1;
+
+			float[] minMax = TheModel
+					.getMinMaxAcrossPlates(MainGUI.getGUI()
+					.getPlateHoldingPanel()
+.shouldNormalizeAcrossAllPlates(),
+					MeanOrCV);
+
 
 			Model_Well[][] TheWells = getModel().getWells();
 			int NumRows = TheModel.getNumRows();
@@ -533,18 +569,41 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 							&& TheWells[r][c].Feature_Means.length > MainGUI
 									.getGUI().getTheSelectedFeature_Index()) {
 						float val = 0;
-						val = TheWells[r][c].Feature_Means[MainGUI
-								.getGUI()
-								.getTheSelectedFeature_Index()];
+
+						// Option to plot CV vs Mean Value
+						if (!shouldDisplayCV()) // Mean
+							val = TheWells[r][c].Feature_Means[fIndex];
+						else
+							// CV
+							val = TheWells[r][c].Feature_Stdev[fIndex]
+									/ TheWells[r][c].Feature_Means[fIndex];
+
+						if (!shouldDisplayCV())
+ {
 						if (channel == 0)
 							tools.ColorMaps.getColorValue(val, minMax[0],
 									minMax[1], color, tools.ColorMaps.BLUE);
 						else if (channel == 1)
 							tools.ColorMaps.getColorValue(val, minMax[0],
-									minMax[1], color, tools.ColorMaps.GREEN);
+									minMax[1], color,
+												tools.ColorMaps.GREEN);
 						else
 							tools.ColorMaps.getColorValue(val, minMax[0],
-									minMax[1], color, tools.ColorMaps.RED);
+									minMax[1], color,
+ tools.ColorMaps.RED);
+						} else {
+							if (channel == 0)
+							tools.ColorMaps.getColorValue(val, minMax[0],
+									minMax[1], color, tools.ColorMaps.BLUE);
+						else if (channel == 1)
+							tools.ColorMaps.getColorValue(val, minMax[0],
+									minMax[1], color,
+									tools.ColorMaps.WHITEPURPLE);
+						else
+							tools.ColorMaps.getColorValue(val, minMax[0],
+									minMax[1], color,
+									tools.ColorMaps.WHITEPURPLE);
+						}
 
 						TheWells[r][c].getGUI().color = new Color(color[0],
 								color[1],
@@ -552,6 +611,15 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 					}
 		}
 
+	}
+
+	/***
+	 * States whether the plate is displaying CV or Mean
+	 * 
+	 * @author BLM
+	 */
+	public boolean shouldDisplayCV() {
+		return MainGUI.getGUI().getPlateHoldingPanel().shouldDisplayCV();
 	}
 
 	/**
@@ -1019,5 +1087,6 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 			System.out.println("**Error Printing Image**");
 		}
 	}
+
 
 }

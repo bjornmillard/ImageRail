@@ -1,28 +1,46 @@
-/**
- * FilterManager.java
- *
- * @author Bjorn Millard
- */
+/** 
+ * Author: Bjorn L. Millard
+ * (c) Copyright 2010
+ * 
+ * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of 
+ * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+ * more details. You should have received a copy of the GNU General Public License along with this 
+ * program. If not, see http://www.gnu.org/licenses/.  */
 
 package filters;
-
-import java.awt.*;
-import javax.swing.*;
 
 import features.Feature;
 import gui.MainGUI;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import models.Model_Well;
-import models.Model_Plate;
-import models.Model_PlateRepository;
+
 import tempObjects.Cell_RAM;
 
 public class FilterManager extends JFrame

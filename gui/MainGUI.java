@@ -1,9 +1,14 @@
-/**
- *  	The main GUI for the Image processing software
- *
- * @author Bjorn L. Millard
- * @date
- */
+/** 
+ * Author: Bjorn L. Millard
+ * (c) Copyright 2010
+ * 
+ * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of 
+ * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+ * more details. You should have received a copy of the GNU General Public License along with this 
+ * program. If not, see http://www.gnu.org/licenses/.  */
 
 package gui;
 
@@ -95,12 +100,12 @@ public class MainGUI extends JFrame {
 	static public final int LINEGRAPH = 1;
 	static public final int DOTPLOT = 2;
 	static public final int HISTOGRAM = 3;
-	static final public Font Font_6 = new Font("Helvetca", Font.PLAIN, 6);
-	static final public Font Font_8 = new Font("Helvetca", Font.PLAIN, 8);
-	static final public Font Font_12 = new Font("Helvetca", Font.BOLD, 12);
-	static final public Font Font_14 = new Font("Helvetca", Font.BOLD, 14);
-	static final public Font Font_16 = new Font("Helvetca", Font.BOLD, 16);
-	static final public Font Font_18 = new Font("Helvetca", Font.BOLD, 18);
+	static final public Font Font_6 = new Font("Helvetica", Font.PLAIN, 6);
+	static final public Font Font_8 = new Font("Helvetica", Font.PLAIN, 8);
+	static final public Font Font_12 = new Font("Helvetica", Font.BOLD, 12);
+	static final public Font Font_14 = new Font("Helvetica", Font.BOLD, 14);
+	static final public Font Font_16 = new Font("Helvetica", Font.BOLD, 16);
+	static final public Font Font_18 = new Font("Helvetica", Font.BOLD, 18);
 	static public NumberFormat nf = new DecimalFormat("0.##");
 	static public BasicStroke Stroke_1 = new BasicStroke(1);
 	static public BasicStroke Stroke_2 = new BasicStroke(2);

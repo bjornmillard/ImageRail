@@ -1,8 +1,3 @@
-/**
- * BetterTokenizer.java
- *
- * @author Created by Omnicore CodeGuide
- */
 
 package tools;
 

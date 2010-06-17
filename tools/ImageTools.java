@@ -1,8 +1,14 @@
-/**
- * ImageTools.java
- *
- * @author Created by Omnicore CodeGuide
- */
+/** 
+ * Author: Bjorn L. Millard
+ * (c) Copyright 2010
+ * 
+ * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of 
+ * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+ * more details. You should have received a copy of the GNU General Public License along with this 
+ * program. If not, see http://www.gnu.org/licenses/.  */
 
 package tools;
 
@@ -22,6 +28,7 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Hashtable;
 
 import javax.imageio.ImageIO;
 import javax.media.jai.NullOpImage;
@@ -32,9 +39,9 @@ import javax.media.jai.TiledImage;
 import javax.media.jai.widget.ScrollingImagePanel;
 import javax.swing.JFrame;
 
-import models.Model_Well;
 import models.Model_ParameterSet;
 import models.Model_Plate;
+import models.Model_Well;
 import segmentors.Temp_Pixel;
 
 import com.sun.media.jai.codec.FileSeekableStream;
@@ -1428,9 +1435,30 @@ public class ImageTools
 		ImageIO.write(bufferedImage,"png",file);
     }
 	
-	
-	
-	
+	static public BufferedImage convertRenderedImage(RenderedImage img) {
+		if (img instanceof BufferedImage) {
+			return (BufferedImage) img;
+		}
+		ColorModel cm = img.getColorModel();
+		int width = img.getWidth();
+		int height = img.getHeight();
+		WritableRaster raster = cm
+				.createCompatibleWritableRaster(width, height);
+		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+		Hashtable properties = new Hashtable();
+		String[] keys = img.getPropertyNames();
+		if (keys != null) {
+			for (int i = 0; i < keys.length; i++) {
+				properties.put(keys[i], img.getProperty(keys[i]));
+			}
+		}
+		BufferedImage result = new BufferedImage(cm, raster,
+				isAlphaPremultiplied, properties);
+		img.copyData(raster);
+		return result;
+	}
+
+
 	
 	
 }

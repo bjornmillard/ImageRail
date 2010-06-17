@@ -1,8 +1,14 @@
-/**
- * Model_Plate.java
- *
- * @author Bjorn L Millard
- */
+/** 
+ * Author: Bjorn L. Millard
+ * (c) Copyright 2010
+ * 
+ * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of 
+ * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+ * more details. You should have received a copy of the GNU General Public License along with this 
+ * program. If not, see http://www.gnu.org/licenses/.  */
 
 package models;
 
@@ -290,13 +296,17 @@ public class Model_Plate
 			wells[i] = (Model_Well) temp.get(i);
 		return wells;
 	}
-	
-	
-	
-	
-	/** Finds the  min/max value across either allPlates or just this plate depending on the argument
-	 * @author BLM*/
-	public float[] getMinMaxAcrossPlates(boolean normalizeAcrossAllPlates)
+
+	/**
+	 * Finds the min/max value across either allPlates or just this plate
+	 * depending on the argument
+	 * 
+	 * MEAN == 0 CV == 1
+	 * 
+	 * @author BLM
+	 */
+	public float[] getMinMaxAcrossPlates(boolean normalizeAcrossAllPlates,
+			int MeanOrCV)
 	{
 		float[] arr = new float[2];
 		arr[0] = Float.POSITIVE_INFINITY;
@@ -314,6 +324,7 @@ public class Model_Plate
 					for (int c = 0; c < plate.NumCols; c++)
 						if (plate.TheWells[r][c].Feature_Means != null && tools.MathOps.sum(plate.TheWells[r][c].Feature_Means)!=0 && plate.TheWells[r][c].Feature_Means.length > MainGUI.getGUI().getTheSelectedFeature_Index())
 						{
+							if (MeanOrCV == 0) { // MEAN
 							float val = 0;
 							val = plate.TheWells[r][c].Feature_Means[MainGUI.getGUI().getTheSelectedFeature_Index()];
 							
@@ -321,7 +332,22 @@ public class Model_Plate
 								arr[0] = val;
 							if (val > arr[1])
 								arr[1] = val;
+							}
+ else if (MeanOrCV == 1) { // CV
+								float val = 0;
+								val = plate.TheWells[r][c].Feature_Stdev[MainGUI
+										.getGUI().getTheSelectedFeature_Index()]
+										/ plate.TheWells[r][c].Feature_Means[MainGUI
+												.getGUI()
+												.getTheSelectedFeature_Index()];
+
+								if (val < arr[0])
+									arr[0] = val;
+								if (val > arr[1])
+									arr[1] = val;
+							}
 						}
+
 			}
 		}
 		else //Just this plate
@@ -331,6 +357,7 @@ public class Model_Plate
 				for (int c = 0; c < plate.NumCols; c++)
 					if (plate.TheWells[r][c].Feature_Means != null && tools.MathOps.sum(plate.TheWells[r][c].Feature_Means)!=0 && plate.TheWells[r][c].Feature_Means.length > MainGUI.getGUI().getTheSelectedFeature_Index())
 					{
+						if (MeanOrCV == 0) {
 						float val = 0;
 						val = plate.TheWells[r][c].Feature_Means[MainGUI.getGUI().getTheSelectedFeature_Index()];
 						
@@ -338,6 +365,20 @@ public class Model_Plate
 							arr[0] = val;
 						if (val > arr[1])
 							arr[1] = val;
+						} else if (MeanOrCV == 1) { // CV
+							float val = 0;
+
+							val = plate.TheWells[r][c].Feature_Stdev[MainGUI
+									.getGUI().getTheSelectedFeature_Index()]
+									/ plate.TheWells[r][c].Feature_Means[MainGUI
+											.getGUI()
+											.getTheSelectedFeature_Index()];
+
+							if (val < arr[0])
+								arr[0] = val;
+							if (val > arr[1])
+								arr[1] = val;
+						}
 					}
 		}
 		
@@ -926,6 +967,24 @@ public class Model_Plate
 					wells.get(i).loadCells(sCon, loadCoords, loadDataVals);
 		}
 		
+	}
+
+	/**
+	 * Returns the max number of fields across all wells within this plate
+	 * 
+	 * @author BLM
+	 */
+	public int getMaxNumberOfFields() {
+		int max = 0;
+		for (int r = 0; r < NumRows; r++) {
+			for (int c = 0; c < NumCols; c++) {
+				Model_Field[] fields = TheWells[r][c].getFields();
+				if (fields != null)
+					if (max < fields.length)
+						max = fields.length;
+			}
+		}
+		return max;
 	}
 }
 

@@ -1,8 +1,14 @@
-/**
- * GlassPane_Blocker.java
- *
- * @author Created by Omnicore CodeGuide
- */
+/** 
+ * Author: Bjorn L. Millard
+ * (c) Copyright 2010
+ * 
+ * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of 
+ * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+ * more details. You should have received a copy of the GNU General Public License along with this 
+ * program. If not, see http://www.gnu.org/licenses/.  */
 
 package imPanels;
 
@@ -44,13 +50,14 @@ public class ProgressBar_ImageRail extends JPanel implements MouseListener,  Run
 		TheParentPanel = this;
 		TheBounds = new Rectangle(0,0, 100, 20);
 		TheParentPanel = this;
+		stopThread = false;
 		addMouseListener(this);
 		lastProgress = 0;
 		progress = 0;
 		stop = false;
 		color1 = Color.gray;
 		color2 = Color.lightGray;
-		visible = false;
+		visible = true;
 		ValueToPaint = 0;
 	}
 	
@@ -62,7 +69,8 @@ public class ProgressBar_ImageRail extends JPanel implements MouseListener,  Run
 		setColors(Color.gray, Color.white);
 		int scale = 4;
 		//Making a gradient for this whole panel for stylistic purposes
-		GradientPaint gradient = new GradientPaint(0, 0, Color.white, 0, getHeight()/1.2f, Color.lightGray, true);
+		GradientPaint gradient = new GradientPaint(0, 0, Color.white, 0,
+				getHeight() / 1.2f, Color.darkGray, true);
 		g2.setPaint(gradient);
 		g2.fillRect(0, 0, getWidth(), getHeight());
 		

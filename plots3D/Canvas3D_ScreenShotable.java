@@ -1,19 +1,29 @@
-/**
- * Canvas3D_ScreenShotable.java
- *
- * @author BLM
- */
+/** 
+ * Author: Bjorn L. Millard
+ * (c) Copyright 2010
+ * 
+ * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of 
+ * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+ * more details. You should have received a copy of the GNU General Public License along with this 
+ * program. If not, see http://www.gnu.org/licenses/.  */
 
 package plots3D;
 
-import javax.media.j3d.*;
-
-import com.sun.j3d.utils.universe.ViewingPlatform;
 import java.awt.GraphicsConfiguration;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
+
 import javax.imageio.ImageIO;
+import javax.media.j3d.Canvas3D;
+import javax.media.j3d.GraphicsContext3D;
+import javax.media.j3d.ImageComponent;
+import javax.media.j3d.ImageComponent2D;
+import javax.media.j3d.Raster;
+import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3f;
 
 public class Canvas3D_ScreenShotable extends Canvas3D

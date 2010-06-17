@@ -1,3 +1,15 @@
+/** 
+ * Author: Bjorn L. Millard
+ * (c) Copyright 2010
+ * 
+ * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of 
+ * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+ * more details. You should have received a copy of the GNU General Public License along with this 
+ * program. If not, see http://www.gnu.org/licenses/.  */
+
 package gui;
 
 import imageViewers.FieldViewer_Frame;
@@ -7,6 +19,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -35,6 +48,10 @@ public class Gui_PlateRepository extends JPanel {
 	private boolean Grid;
 	/** */
 	private int LastTouched_PlateID;
+	/** */
+	private boolean CVdisplay;
+	/** */
+	private JButton CVbutton;
 
 	public Gui_PlateRepository(Model_PlateRepository model) {
 		TheModel = model;
@@ -42,6 +59,7 @@ public class Gui_PlateRepository extends JPanel {
 		blocked = false;
 		int sqNumPlates = (int) Math.ceil(Math.sqrt(TheModel.getNumPlates()));
 		Grid = true;
+		CVdisplay = false;
 
 		// Adding the grid tab panel
 		LastTouched_PlateID = 1;
@@ -94,6 +112,8 @@ public class Gui_PlateRepository extends JPanel {
 			}
 		});
 
+
+
 		setLayout(new BorderLayout());
 		add(TheMainPanel, BorderLayout.CENTER);
 		updatePanel();
@@ -102,6 +122,15 @@ public class Gui_PlateRepository extends JPanel {
 		add(TheToolBar, BorderLayout.NORTH);
 		addToolbarComponents();
 
+	}
+
+	/***
+	 * States whether the plate is displaying CV or Mean
+	 * 
+	 * @author BLM
+	 */
+	public boolean shouldDisplayCV() {
+		return CVdisplay;
 	}
 
 	/** Returns the Plate repository model that this gui represents */
@@ -220,6 +249,20 @@ public class Gui_PlateRepository extends JPanel {
 			}
 		});
 
+		CVbutton = new JButton(new ImageIcon("icons/CV.png"));
+		TheToolBar.add(CVbutton);
+		CVbutton.setToolTipText("Display CV's in Well Heat Maps");
+		CVbutton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				CVdisplay = !CVdisplay;
+				if (CVdisplay)
+					CVbutton.setIcon(new ImageIcon("icons/CV_selected.png"));
+				else
+					CVbutton.setIcon(new ImageIcon("icons/CV.png"));
+
+				updatePanel();
+			}
+		});
 		// final JButton but = new JButton("Mono");
 		// but.setSelected(false);
 		// but.setToolTipText("Fit Single Gaussian");

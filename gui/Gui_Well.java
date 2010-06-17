@@ -1,3 +1,15 @@
+/** 
+ * Author: Bjorn L. Millard
+ * (c) Copyright 2010
+ * 
+ * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of 
+ * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+ * more details. You should have received a copy of the GNU General Public License along with this 
+ * program. If not, see http://www.gnu.org/licenses/.  */
+
 package gui;
 
 import java.awt.AlphaComposite;
@@ -185,6 +197,7 @@ public class Gui_Well {
 			}
 		}
 
+
 		g2.fillRect(outline.x, outline.y, outline.width, outline.height);
 
 		// 384 well plates get too busy to have a white border
@@ -260,9 +273,26 @@ public class Gui_Well {
 			if (histo != null) {
 				g2.setColor(Color.white);
 				if (plotSVG)
+				{
 					g2.fillPolygon(histo.xpoints, histo.ypoints, histo.npoints);
+					// if (TheModel.getPlate().getGUI().shouldDisplayCV())
+					{
+					g2.setColor(Color.black);
+					g2.drawPolygon(histo.xpoints, histo.ypoints, histo.npoints);
+					}
+				}
 				else
+				{
 					g2.fill(histo);
+					// if (TheModel.getPlate().getGUI().shouldDisplayCV())
+					{
+					g2.setColor(Color.black);
+					g2.draw(histo);
+					}
+				}
+				
+
+
 
 			}
 		}

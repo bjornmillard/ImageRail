@@ -1,9 +1,3 @@
-/**
- * Watershed_Algorithm.java
- *
- * @author
- */
-
 package tools;
 
 
@@ -11,6 +5,7 @@ import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Vector;
+
 import segmentors.Temp_Pixel;
 
 
