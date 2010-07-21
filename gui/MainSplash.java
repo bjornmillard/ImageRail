@@ -29,8 +29,8 @@ import javax.swing.JWindow;
 public class MainSplash extends JWindow {
 	private Image im;
 	private int duration;
-	private int width = 518;
-	private int height = 175;
+	private int width = 388;
+	private int height = 136;
 	private String TheMessage;
 
 	public MainSplash(int d) {
@@ -66,7 +66,7 @@ public class MainSplash extends JWindow {
 			content.setBorder(BorderFactory
 					.createLineBorder(Color.DARK_GRAY, 2));
 			setVisible(true);
-		} else // put it in a closableframe
+		} else // put it in a closable frame
 		{
 			JFrame f = new JFrame();
 			f.setSize(width, height);

@@ -26,9 +26,9 @@ import java.util.ArrayList;
 import javax.swing.JFileChooser;
 
 import midasGUI.Measurement;
-import midasGUI.Treatment;
 import models.Model_Plate;
 import models.Model_Well;
+import us.hms.systemsbiology.metadata.Description;
 import features.Feature;
 import gui.MainGUI;
 
@@ -112,25 +112,27 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 						{
 							if (plate.getWells()[r][c].isSelected())
 							{
-								int numTreat = plate.getWells()[r][c].treatments.size();
-								for (int n =0; n < numTreat; n++)
+								Description[] treats = plate.getWells()[r][c].getMetaDataConnector().readTreatments( plate.getWells()[r][c].getWellIndex());
+								for (int n =0; n < treats.length; n++)
 								{
 									boolean unique = true;
 									len = uniqueT.size();
 									for (int j =0; j < len; j++)
-										if(((Treatment)uniqueT.get(j)).name.equalsIgnoreCase(((Treatment)plate.getWells()[r][c].treatments.get(n)).name))
+										if(((Description)uniqueT.get(j)).getName().equalsIgnoreCase((treats[n].getName())))
 											unique = false;
 									if (unique)
 									{
-										headers.add("TR:"+((Treatment)plate.getWells()[r][c].treatments.get(n)).name);
-										uniqueT.add(((Treatment)plate.getWells()[r][c].treatments.get(n)));
+										headers.add("TR:"+(treats[n].getName()));
+										uniqueT.add(treats[n]);
 									}
 								}
 							}
-						}
+						}				
 				}
+
+
 				
-				//Finding the unique measurment headers across all wells - NOTE --> Stealing them all from plate 1
+				//Finding the unique measurement headers across all wells - NOTE --> Stealing them all from plate 1 since IR requires same features for all plates/wells
 				Model_Plate plate = thePlates[0];
 				int numC = plate.getNumColumns();
 				int numR = plate.getNumRows();
@@ -162,6 +164,8 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 					pw.print(((String)headers.get(i))+",");
 				pw.println((String)headers.get(headers.size()-1));
 				
+				
+				//Printing out the real well data
 				for (int p = 0; p < numPlates; p++)
 				{
 					plate = thePlates[p];
@@ -175,21 +179,35 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 							Model_Well theWell = plate.getWells()[r][c];
 							if (theWell.isSelected())
 							{
+								Description[] treats = theWell.getMetaDataConnector().readTreatments(theWell.getWellIndex());
+								Description date = theWell.getMetaDataConnector().readDate(theWell.getWellIndex());
+								Description desc = theWell.getMetaDataConnector().readDescription(theWell.getWellIndex());
+								Description time = theWell.getMetaDataConnector().readTimePoint(theWell.getWellIndex());
+								
+
 								headerValues = new ArrayList();
 								headerValues.add(theWell.name);
-								headerValues.add((theWell.getPlate().getTitle()+""));
-								headerValues.add(theWell.date);
-								headerValues.add(theWell.description);
+								headerValues
+										.add((theWell.getPlate().getTitle() + ""));
+								if (date != null)
+									headerValues.add(date.getValue());
+								else
+									headerValues.add("");
+								if (desc != null)
+									headerValues.add(desc.getValue());
+								else
+									headerValues.add("");
+
 								//for each treatment & measurement here in this well... determine which column to put it in
 								for (int i= 0; i < uniqueT.size(); i++)
 								{
-									num = theWell.treatments.size();
+									num = treats.length;
 									boolean foundIt = false;
 									for (int n= 0; n < num; n++)
 									{
-										if (((Treatment)uniqueT.get(i)).name.equalsIgnoreCase(((Treatment)theWell.treatments.get(n)).name))
+										if (((Description)uniqueT.get(i)).getName().equalsIgnoreCase((treats[n].getName())))
 										{
-											headerValues.add(""+((Treatment)theWell.treatments.get(n)).value);
+											headerValues.add(""+treats[n].getValue());
 											foundIt = true;
 											break;
 										}
@@ -198,15 +216,17 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 										headerValues.add("");
 								}
 								
+								
 								//adding measurement times (numchannels)*3 <-- numcompartments
 								String st = "";
-								if (theWell.measurementTime!=null)
-									st+=theWell.measurementTime;
+								if (time!=null)
+									st+=time.getValue();
+								
 								for (int j = 0; j < numF*2; j++)
-									if (theWell.measurementTime==null)
+									if (time==null)
 										headerValues.add("");
 									else
-										headerValues.add(""+theWell.measurementTime);
+										headerValues.add(""+st);
 								
 								
 								if (theWell.Feature_Means!=null && theWell.Feature_Stdev!=null)

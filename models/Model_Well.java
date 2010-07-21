@@ -184,12 +184,17 @@ public class Model_Well
 	{
 		ArrayList<Cell> arr = new ArrayList<Cell>();
 		
+		if (TheFields == null || TheFields.length <= 0)
+			return null;
+
 		int numF = TheFields.length;
 		for (int i = 0; i < numF; i++)
 		{
+			if (TheFields[i].getCells() != null) {
 			ArrayList<Cell> cells = TheFields[i].getCells();
 			if (cells!=null)
 				arr.addAll(cells);
+			}
 		}
 		
 		return arr;

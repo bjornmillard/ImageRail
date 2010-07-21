@@ -84,7 +84,9 @@ import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.segmentedobject.Cell;
 import dataSavers.DataSaver_CSV;
 import dataSavers.DataSaver_Cells_Midas;
+import dataSavers.DataSaver_Cells_Midas_wMetaData;
 import dataSavers.DataSaver_WellMeans_Midas;
+import dataSavers.DataSaver_WellMeans_Midas_wMetaData;
 import dialogs.PlateInputDialog;
 import dialogs.SaveFeatures_Dialog;
 import dialogs.ThresholdingBoundsInputDialog_SingleCells;
@@ -313,7 +315,7 @@ public class MainGUI extends JFrame {
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				SaveFeatures_Dialog s = new SaveFeatures_Dialog(
-						new DataSaver_WellMeans_Midas());
+						new DataSaver_WellMeans_Midas_wMetaData());
 			}
 		});
 		menuI.add(item);
@@ -335,7 +337,7 @@ public class MainGUI extends JFrame {
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				SaveFeatures_Dialog s = new SaveFeatures_Dialog(
-						new DataSaver_Cells_Midas());
+						new DataSaver_Cells_Midas_wMetaData());
 			}
 		});
 		menuI.add(item);

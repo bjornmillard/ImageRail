@@ -37,7 +37,7 @@ public class MainStartupDialog extends JFrame
 {
 	private Image im;
 	private int width = 475;
-	private int height = 250;
+	private int height = 200;
 	private JFrame TheStartUpDialog = this;
 	
 	
