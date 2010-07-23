@@ -1,11 +1,11 @@
 Name ImageRail
 
-SetCompressor /SOLID lzma
-#SetCompress off
+#SetCompressor /SOLID lzma
+SetCompress off
 
 # Defines
 !define REGKEY "SOFTWARE\$(^Name)"
-!define VERSION 0.96
+!define VERSION 1.051
 #!define PATCH_LEVEL 01
 !define COMPANY ""
 !define URL ""
@@ -41,7 +41,7 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_LANGUAGE English
 
 # Installer attributes
-OutFile ImageRail-${FULL_VERSION}-win32.exew
+OutFile ImageRail-${FULL_VERSION}-win32.exe
 InstallDir $PROGRAMFILES\ImageRail
 CRCCheck on
 XPStyle on
@@ -59,31 +59,27 @@ ShowUninstDetails show
 Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite on
-    File /r analysisModules
     File /r dataSavers
     File /r dialogs
     File /r doc
     File /r features
     File /r filters
-    File /r hdf
+    File /r gui
     File /r icons
     File /r imageViewers
     File /r imPanels
-    File /r main
+    File /r jars
+    File /r jre6
     File /r midasGUI
+    File /r models
     File /r plots
     File /r plots3D
-    File /r input
-    File /r output
     File /r processors
-    File /r segmentedObjects
+    File /r run
     File /r segmentors
+    File /r tempObjects
     File /r tools
-    File /r jre6
-    File /r xml_metaData
-    File /r idx2coordinates
-    File /r hdf
-    File /r segmentedObj
+    File HDF5XML.jar
 
     File ImageRail_Windows.bat
     CreateDirectory "$SMPROGRAMS\ImageRail"
@@ -119,33 +115,32 @@ done${UNSECTION_ID}:
 
 # Uninstaller sections
 Section /o un.Main UNSEC0000
-    RmDir /r /REBOOTOK $INSTDIR\analysisModules
     RmDir /r /REBOOTOK $INSTDIR\dataSavers
     RmDir /r /REBOOTOK $INSTDIR\dialogs
     RmDir /r /REBOOTOK $INSTDIR\doc
     RmDir /r /REBOOTOK $INSTDIR\features
     RmDir /r /REBOOTOK $INSTDIR\filters
-    RmDir /r /REBOOTOK $INSTDIR\icons
-    RmDir /r /REBOOTOK $INSTDIR\hdf    
+    RmDir /r /REBOOTOK $INSTDIR\gui
+    RmDir /r /REBOOTOK $INSTDIR\icons 
     RmDir /r /REBOOTOK $INSTDIR\imageViewers
     RmDir /r /REBOOTOK $INSTDIR\imPanels
-    RmDir /r /REBOOTOK $INSTDIR\main
+    RmDir /r /REBOOTOK $INSTDIR\jars
+    RmDir /r /REBOOTOK $INSTDIR\jre6
     RmDir /r /REBOOTOK $INSTDIR\midasGUI
+    RmDir /r /REBOOTOK $INSTDIR\models
     RmDir /r /REBOOTOK $INSTDIR\plots
     RmDir /r /REBOOTOK $INSTDIR\plots3D
     RmDir /r /REBOOTOK $INSTDIR\processors
-    RmDir /r /REBOOTOK $INSTDIR\segmentedObjects
+    RmDir /r /REBOOTOK $INSTDIR\run
     RmDir /r /REBOOTOK $INSTDIR\segmentors
+    RmDir /r /REBOOTOK $INSTDIR\tempObjects
     RmDir /r /REBOOTOK $INSTDIR\tools
-    RmDir /r /REBOOTOK $INSTDIR\jre6
-    RmDir /r /REBOOTOK $INSTDIR\input
-    RmDir /r /REBOOTOK $INSTDIR\output
-    RmDir /r xml_metaData
-    RmDir /r idx2coordinates
-    RmDir /r hdf
-    RmDir /r segmentedObj
 
+    Delete  $INSTDIR\HDF5XML.jar
     Delete  $INSTDIR\ImageRail_Windows.bat
+    Delete  $INSTDIR\ImageRail_Mac.command
+    Delete  $INSTDIR\clusterRun.sh
+    Delete  $INSTDIR\setup.nsi
     RmDir /r /REBOOTOK "$SMPROGRAMS\ImageRail"
     DeleteRegValue HKLM "${REGKEY}\Components" Main
 SectionEnd
