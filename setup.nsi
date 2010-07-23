@@ -67,8 +67,16 @@ Section -Main SEC0000
     File /r /x .svn icons
     File /r /x .svn jars
     File /r /x .svn jre6
+
     CreateDirectory $INSTDIR\features
-    CreateDirectory $INSTDIR\segmentors 
+    SetOutPath $INSTDIR\features
+    File src\features\*.java
+    File bin\features\*.class   
+
+    CreateDirectory $INSTDIR\segmentors
+    SetOutPath $INSTDIR\segmentors
+    File src\segmentors\*.java
+    File bin\segmentors\*.class   
 
     CreateDirectory "$SMPROGRAMS\ImageRail"
     CreateShortCut "$SMPROGRAMS\ImageRail\ImageRail.lnk" "$INSTDIR\ImageRail_Windows.bat" "" "$INSTDIR\icons\ImageRail.ico" 0
