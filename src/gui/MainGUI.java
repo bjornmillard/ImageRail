@@ -96,6 +96,8 @@ import dialogs.ThresholdingBoundsInputDialog_WellMeans;
 public class MainGUI extends JFrame {
 	/** The GUI object */
 	private static MainGUI TheMainGUI;
+	
+	private static MainStartupDialog TheStartupDialog;
 
 	static public int MAXPIXELVALUE = 65535;
 	static public final int MIDASINPUT = 0;
@@ -245,7 +247,7 @@ public class MainGUI extends JFrame {
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent event) {
 
-				shutDown();
+				shutDownAndExit();
 			}
 		});
 
@@ -261,25 +263,9 @@ public class MainGUI extends JFrame {
 		item = new JMenuItem("Load Project");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				File dir = getTheDirectory();
-				JFileChooser fc = null;
-				if (dir != null)
-					fc = new JFileChooser(dir);
-				else
-					fc = new JFileChooser();
-
-				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				fc.addChoosableFileFilter(new FileChooserFilter_IR());
-
-				int returnVal = fc.showOpenDialog(null);
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					File file = fc.getSelectedFile();
-
-
-					loadProject(TheProjectDirectory);
-
-				} else
-					System.out.println("Open command cancelled by user.");
+				getGUI().shutDown();
+				getGUI().setVisible(false);
+				TheStartupDialog.setVisible(true);
 			}
 		});
 		FileMenu.add(item);
@@ -368,7 +354,7 @@ public class MainGUI extends JFrame {
 		item = new JMenuItem("Close");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				shutDown();
+				shutDownAndExit();
 			}
 		});
 		FileMenu.add(item);
@@ -2799,15 +2785,22 @@ public class MainGUI extends JFrame {
 					"alert", JOptionPane.YES_NO_OPTION);
 			System.out.println("result: " + result);
 
-			if (result == 1)
-				System.exit(0);
-			else if (result == 0) {
+			if (result == 0) {
 				resaveCells();
 			}
 		}
-		System.exit(0);
 	}
 
+	/**
+	 * Shuts down and exits completely.
+	 * 
+	 * @author JLM
+	 */
+	private void shutDownAndExit() {
+		shutDown();
+		System.exit(0);
+	}
+	
 	/**
 	 * Resaves the current state of the data set by removing those cells from
 	 * the source HDF5 files
@@ -2898,7 +2891,7 @@ public class MainGUI extends JFrame {
 
 				splash.setVisible(false);
 				// init the project with the startupdialog
-				MainStartupDialog startup = new MainStartupDialog();
+				TheStartupDialog = new MainStartupDialog();
 
 			} catch (Exception e) {
 
