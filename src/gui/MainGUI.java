@@ -1177,19 +1177,6 @@ public class MainGUI extends JFrame {
 
 	}
 
-	/**
-	 * Adding all the features you desire to measure
-	 * */
-	public void addFeatures_Single(String name) {
-		TheFeatures = new ArrayList();
-
-		Feature fn = new features.Mean_WholeCell();
-		fn.setChannelIndex(0);
-		fn.setChannelName(name);
-		TheFeatures.add(fn);
-
-	}
-
 	public boolean initNewPlates(int numPlates, int numRows, int numCols) {
 		File dir = getTheDirectory();
 		JFileChooser fc = null;
@@ -2317,8 +2304,12 @@ public class MainGUI extends JFrame {
 			splash.setMessage(message);
 		else
 			System.out.println(message);
+		// get the classpath and make sure to pass it on to the compiler invocation
+		String classPath = System.getProperty("java.class.path");
+		String compileCommand = "javac -cp " + classPath + " " + javaFile;
+		System.out.println("running command: " + compileCommand);
 		// Start up the compiler
-		Process p = Runtime.getRuntime().exec("javac " + javaFile);
+		Process p = Runtime.getRuntime().exec(compileCommand);
 		// Wait for it to finish running
 		try {
 			p.waitFor();
@@ -2327,7 +2318,15 @@ public class MainGUI extends JFrame {
 		}
 		// Check the return code, in case of a compilation error
 		int ret = p.exitValue();
-
+		if (ret != 0) {
+			java.io.BufferedReader errorStream = new java.io.BufferedReader(new java.io.InputStreamReader(p.getErrorStream()));
+			String line;
+			do {
+				line = errorStream.readLine();
+				System.out.println(line);
+			} while (line != null);
+		}
+		
 		// Tell whether the compilation worked
 		return ret == 0;
 	}
@@ -2886,7 +2885,6 @@ public class MainGUI extends JFrame {
 
 				// Loading all new plugin files
 				MainGUI.findAndCompileNewJavaFiles("features", splash);
-				MainGUI.findAndCompileNewJavaFiles("segmentors", splash);
 				// Hiding the splash, now that we have loaded everything
 
 				splash.setVisible(false);
@@ -2896,6 +2894,7 @@ public class MainGUI extends JFrame {
 			} catch (Exception e) {
 
 				e.printStackTrace();
+				System.exit(1);
 			}
 			}
 

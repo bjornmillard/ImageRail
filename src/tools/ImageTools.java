@@ -42,7 +42,7 @@ import javax.swing.JFrame;
 import models.Model_ParameterSet;
 import models.Model_Plate;
 import models.Model_Well;
-import segmentors.Temp_Pixel;
+import segmentors.DefaultSegmentor.Pixel;
 
 import com.sun.media.jai.codec.FileSeekableStream;
 import com.sun.media.jai.codec.ImageCodec;
@@ -275,7 +275,7 @@ public class ImageTools
 		
 	}
 	
-	static public boolean ArrayListContainsPoint(Temp_Pixel p, ArrayList points)
+	static public boolean ArrayListContainsPoint(Pixel p, ArrayList points)
 	{
 		int len = points.size();
 		for (int i=0;i < len; i++)

@@ -70,7 +70,6 @@ public class Segment {
 				theGUI.initFilterManager();
 				// Loading all new plugin files
 				MainGUI.findAndCompileNewJavaFiles("features", null);
-				MainGUI.findAndCompileNewJavaFiles("segmentors", null);
 
 				/** Trying to load the project */
 				try {

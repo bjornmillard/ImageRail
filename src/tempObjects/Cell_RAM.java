@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import segmentors.Temp_Pixel;
+import segmentors.DefaultSegmentor.Pixel;
 
 public class Cell_RAM {
 	static public final int MEAN = 0;
@@ -622,7 +622,7 @@ public class Cell_RAM {
 	 * 
 	 * @author BLM
 	 */
-	public void findAndInitBoundary(ArrayList allPoints, Temp_Pixel[][] pixels) {
+	public void findAndInitBoundary(ArrayList allPoints, Pixel[][] pixels) {
 		// init the cell boundary pixels now
 		ArrayList arr = allPoints;
 		int numPix = arr.size();
@@ -631,12 +631,12 @@ public class Cell_RAM {
 		ArrayList boundaryPixels = new ArrayList();
 		for (int pi = 0; pi < numPix; pi++) {
 			Point po = (Point) arr.get(pi);
-			Temp_Pixel pix = pixels[po.y][po.x];
+			Pixel pix = pixels[po.y][po.x];
 
-			Temp_Pixel[] neighbors = Temp_Pixel.getNeighbors(pix, pixels);
+			Pixel[] neighbors = Pixel.getNeighbors(pix, pixels);
 			int len = neighbors.length;
 			for (int j = 0; j < len; j++) {
-				Temp_Pixel neigh = neighbors[j];
+				Pixel neigh = neighbors[j];
 				if (neigh.getID() != pix.getID()) {
 					boundaryPixels.add(po);
 					break;

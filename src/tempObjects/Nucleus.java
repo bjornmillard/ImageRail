@@ -16,7 +16,7 @@ package tempObjects;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-import segmentors.Temp_Pixel;
+import segmentors.DefaultSegmentor.Pixel;
 import us.hms.systemsbiology.idx2coordinates.Point;
 
 /** Each segmented nucleus will hold its own pixels and properties
@@ -41,7 +41,7 @@ public class Nucleus
 		numPixels = pixels_.size();
 		pixelCoordinates = new Point[numPixels];
 		for (int i = 0; i < numPixels; i++)
-			pixelCoordinates[i] = new Point(((Temp_Pixel)pixels_.get(i)).getColumn(), ((Temp_Pixel)pixels_.get(i)).getRow());
+			pixelCoordinates[i] = new Point(((Pixel)pixels_.get(i)).getColumn(), ((Pixel)pixels_.get(i)).getRow());
 		Centroid = getCentroid();
 	}
 	
@@ -142,7 +142,7 @@ public class Nucleus
 	}
 	
 	
-	public void initBoundaryPoints(Temp_Pixel[][] pixels)
+	public void initBoundaryPoints(Pixel[][] pixels)
 	{
 		if (pixelCoordinates==null || pixelCoordinates.length==0)
 			return;
@@ -152,8 +152,8 @@ public class Nucleus
 		for (int i = 0; i < len; i++)
 		{
 			Point po = pixelCoordinates[i];
-			Temp_Pixel p = pixels[po.y][po.x];
-			Temp_Pixel[] ne = Temp_Pixel.getNeighbors(p, pixels);
+			Pixel p = pixels[po.y][po.x];
+			Pixel[] ne = Pixel.getNeighbors(p, pixels);
 			int num = ne.length;
 			for (int j = 0; j < num; j++)
 			{

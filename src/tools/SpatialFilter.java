@@ -15,7 +15,7 @@ package tools;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import segmentors.Temp_Pixel;
+import segmentors.DefaultSegmentor.Pixel;
 
 public class SpatialFilter
 {
@@ -93,7 +93,7 @@ public class SpatialFilter
 		return temp;
 	}
 	
-	static public float[][][] erode(float[][][] inputRaster, Temp_Pixel[][] pixels, int index)
+	static public float[][][] erode(float[][][] inputRaster, Pixel[][] pixels, int index)
 	{
 		final int MARKER = 10;
 		int nRows = inputRaster.length;
@@ -124,7 +124,7 @@ public class SpatialFilter
 						//resetting the path IDs
 						int size = path.size();
 						for (int i = 0; i < size; i++)
-								((Temp_Pixel)path.get(i)).setID(-1);
+								((Pixel)path.get(i)).setID(-1);
 					}
 				}
 			}
@@ -133,7 +133,7 @@ public class SpatialFilter
 		return temp;
 	}
 	
-	static public void hasAtLeastOneNeighborLandlocked(Temp_Pixel pix, Temp_Pixel[][] pixels, float[][][] raster,int index, float threshold, ArrayList path)
+	static public void hasAtLeastOneNeighborLandlocked(Pixel pix, Pixel[][] pixels, float[][][] raster,int index, float threshold, ArrayList path)
 	{
 		if (pix.getID()!=-1)
 			return;
@@ -144,7 +144,7 @@ public class SpatialFilter
 		pix.setID(1);
 		
 		
-		Temp_Pixel[] neighs = Temp_Pixel.getNeighbors(pix, pixels);
+		Pixel[] neighs = Pixel.getNeighbors(pix, pixels);
 		int len = neighs.length;
 		if (len!=8)
 			return;
@@ -194,7 +194,7 @@ public class SpatialFilter
 		return counter;
 	}
 	
-	static public float[][][] findUltimateErodedPoints(float[][][] inputRaster, Temp_Pixel[][] pixels, int index)
+	static public float[][][] findUltimateErodedPoints(float[][][] inputRaster, Pixel[][] pixels, int index)
 	{
 		
 		//TODO - make copy of raster in temp, that is 2x high, then alternate between the two instead of making new raster each erosion

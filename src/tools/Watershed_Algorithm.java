@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Vector;
 
-import segmentors.Temp_Pixel;
+import segmentors.DefaultSegmentor.Pixel;
 
 
 public class Watershed_Algorithm
@@ -17,7 +17,7 @@ public class Watershed_Algorithm
 	
 	public void run(float[][][] iraster, int[][][] raster, int nucleusThreshold, int index)
 	{
-		byte[] pixels = Temp_Pixel.convertToByteArray(iraster);
+		byte[] pixels = Pixel.convertToByteArray(iraster);
 		
 		/** First step : the pixels are sorted according to increasing grey values **/
 		WatershedStructure watershedStructure = new WatershedStructure(pixels, raster[0].length  ,raster.length );
@@ -171,7 +171,7 @@ public class Watershed_Algorithm
 	
 	public void run(int[][][] raster)
 	{
-		byte[] pixels = Temp_Pixel.convertToByteArray(raster);
+		byte[] pixels = Pixel.convertToByteArray(raster);
 		
 		/** First step : the pixels are sorted according to increasing grey values **/
 		WatershedStructure watershedStructure = new WatershedStructure(pixels, raster[0].length  ,raster.length );
