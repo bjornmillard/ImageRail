@@ -63,20 +63,11 @@ Section -Main SEC0000
     File ImageRail.jar
     File HDF5XML.jar
     File ImageRail_Windows.bat
+    File /r /x .svn features
     File /r /x .svn doc
     File /r /x .svn icons
     File /r /x .svn jars
     File /r /x .svn jre6
-
-    CreateDirectory $INSTDIR\features
-    SetOutPath $INSTDIR\features
-    File src\features\*.java
-    File bin\features\*.class   
-
-    CreateDirectory $INSTDIR\segmentors
-    SetOutPath $INSTDIR\segmentors
-    File src\segmentors\*.java
-    File bin\segmentors\*.class   
 
     CreateDirectory "$SMPROGRAMS\ImageRail"
     CreateShortCut "$SMPROGRAMS\ImageRail\ImageRail.lnk" "$INSTDIR\ImageRail_Windows.bat" "" "$INSTDIR\icons\ImageRail.ico" 0
@@ -114,13 +105,11 @@ Section /o un.Main UNSEC0000
     Delete $INSTDIR\ImageRail.jar
     Delete $INSTDIR\HDF5XML.jar
     Delete $INSTDIR\ImageRail_Windows.bat
+    RmDir /r /REBOOTOK $INSTDIR\features
     RmDir /r /REBOOTOK $INSTDIR\doc
     RmDir /r /REBOOTOK $INSTDIR\icons 
     RmDir /r /REBOOTOK $INSTDIR\jars
     RmDir /r /REBOOTOK $INSTDIR\jre6
-
-    RmDir $INSTDIR\features
-    RmDir $INSTDIR\segmentors
 
     RmDir /r "$SMPROGRAMS\ImageRail"
     DeleteRegValue HKLM "${REGKEY}\Components" Main
