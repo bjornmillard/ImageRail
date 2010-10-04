@@ -83,9 +83,7 @@ import us.hms.systemsbiology.data.ProjectHDFConnector;
 import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import us.hms.systemsbiology.segmentedobject.Cell;
 import dataSavers.DataSaver_CSV;
-import dataSavers.DataSaver_Cells_Midas;
 import dataSavers.DataSaver_Cells_Midas_wMetaData;
-import dataSavers.DataSaver_WellMeans_Midas;
 import dataSavers.DataSaver_WellMeans_Midas_wMetaData;
 import dialogs.PlateInputDialog;
 import dialogs.SaveFeatures_Dialog;
@@ -1126,11 +1124,9 @@ public class MainGUI extends JFrame {
 
 		ArrayList<Feature> arr = new ArrayList<Feature>();
 		try {
-
-			File f = new File(TheProjectDirectory.getAbsolutePath()
-					+ "/Data/temp/featuresUsed");
-			if (!f.exists()) // If the loaded project doesn't come with its own
-				// features, then load the local features
+            // Try to load features from src tree, otherwise try deployed location 
+			File f = new File("./src/features");
+			if (!f.exists())
 				f = new File("./features");
 			File[] fs = f.listFiles();
 
@@ -1918,7 +1914,11 @@ public class MainGUI extends JFrame {
 			temp.mkdirs();
 			// copy over current features to temp/featuresUsed folder
 			try {
-				File f = new File("./features");
+				// Try to load features from src tree, otherwise try deployed
+				// location
+				File f = new File("./src/features");
+				if (!f.exists())
+					f = new File("./features");
 				File[] fs = f.listFiles();
 				int len = fs.length;
 
@@ -2884,7 +2884,7 @@ public class MainGUI extends JFrame {
 				gui.initFilterManager();
 
 				// Loading all new plugin files
-				MainGUI.findAndCompileNewJavaFiles("features", splash);
+				// MainGUI.findAndCompileNewJavaFiles("features", splash);
 				// Hiding the splash, now that we have loaded everything
 
 				splash.setVisible(false);
