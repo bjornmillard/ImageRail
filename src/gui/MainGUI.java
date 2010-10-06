@@ -1903,7 +1903,11 @@ public class MainGUI extends JFrame {
 		{
 			File newFile = new File(Images.getAbsolutePath() + File.separator
 					+ "plate_" + (plate.getID() - 1));
-			dir.renameTo(newFile);
+			boolean result = dir.renameTo(newFile);
+			if (!result) {
+				System.out.println("Error moving images into project.");
+				return;
+			}
 			dir = newFile;
 
 		}
