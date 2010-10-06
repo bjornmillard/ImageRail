@@ -13,6 +13,7 @@
 package gui;
 
 import features.Feature;
+import features.FeatureSorter;
 import filters.DotFilterQueue;
 import filters.FilterManager;
 import imageViewers.FieldViewer;
@@ -39,7 +40,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -96,7 +100,7 @@ public class MainGUI extends JFrame {
 	private static MainGUI TheMainGUI;
 	
 	private static MainStartupDialog TheStartupDialog;
-
+	public static final String DATE_FORMAT_NOW = "yyyyMMdd_HHmmss";
 	static public int MAXPIXELVALUE = 65535;
 	static public final int MIDASINPUT = 0;
 	static public final int LINEGRAPH = 1;
@@ -123,8 +127,11 @@ public class MainGUI extends JFrame {
 	private String[] ChannelNames;
 	private JCheckBoxMenuItem WellMeanOrIntegratedIntensityCheckBox;
 	private JCheckBoxMenuItem StoreCytoAndNuclearWellMeans;
+	private final JCheckBoxMenuItem SelectAllCheckBox = new JCheckBoxMenuItem(
+			"Select All Wells");
 	private JCheckBoxMenuItem WatershedNucleiCheckBox;
 	private JCheckBoxMenuItem LoadCellsImmediatelyCheckBox;
+	private JCheckBoxMenuItem MultithreadCheckBox;
 	private JCheckBoxMenuItem CytoplasmAnnulusCheckBox;
 	private JRadioButtonMenuItem[] TheImageScalings;
 	private boolean SubtractBackground;
@@ -269,6 +276,8 @@ public class MainGUI extends JFrame {
 		FileMenu.add(item);
 		FileMenu.addSeparator();
 
+
+
 		// item = new JMenuItem("Save Project");
 		// item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK));
 		// item.addActionListener(new ActionListener()
@@ -363,7 +372,7 @@ public class MainGUI extends JFrame {
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				// Horiz ordering
-				ArrayList wells = new ArrayList();
+				ArrayList<Model_Well> wells = new ArrayList<Model_Well>();
 				Model_Plate[] plates = getThePlateHoldingPanel().getPlates();
 				int numPlates = plates.length;
 				for (int p = 0; p < numPlates; p++)
@@ -372,7 +381,7 @@ public class MainGUI extends JFrame {
 				int len = wells.size();
 				if (len == 0)
 					return;
-				ArrayList temp = new ArrayList();
+				ArrayList<FieldViewer> temp = new ArrayList<FieldViewer>();
 
 				FieldViewer_Frame imageViewerFrame = new FieldViewer_Frame();
 				for (int i = 0; i < len; i++) {
@@ -581,6 +590,10 @@ public class MainGUI extends JFrame {
 		LoadCellsImmediatelyCheckBox = new JCheckBoxMenuItem(
 		"Load cells into RAM after segmentation");
 		LoadCellsImmediatelyCheckBox.setSelected(false);
+
+		MultithreadCheckBox = new JCheckBoxMenuItem(
+				"Multi-thread (splits work evenly):");
+		MultithreadCheckBox.setSelected(false);
 		// StoreNeighborsCheckBox = new JCheckBoxMenuItem("Store Neighbors");
 		// StoreNeighborsCheckBox.setSelected(false);
 
@@ -647,6 +660,19 @@ public class MainGUI extends JFrame {
 			}
 		});
 		loadMenu.add(item);
+
+		SelectAllCheckBox.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A,
+				ActionEvent.CTRL_MASK));
+		SelectAllCheckBox.setSelected(false);
+		SelectAllCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				if (SelectAllCheckBox.isSelected())
+					ThePlatePanel.selectAllWells(true);
+				else
+					ThePlatePanel.selectAllWells(false);
+			}
+		});
+		OptionsMenu.add(SelectAllCheckBox);
 
 		item = new JMenuItem("Clear memory");
 		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K,
@@ -1120,7 +1146,7 @@ public class MainGUI extends JFrame {
 	/**
 	 * Adding all the features you desire to measure
 	 * */
-	public void addFeatures_HTM(String[] channelNames) {
+	public void initFeatures(String[] channelNames) {
 
 		ArrayList<Feature> arr = new ArrayList<Feature>();
 		try {
@@ -1150,7 +1176,7 @@ public class MainGUI extends JFrame {
 		}
 
 		int len = arr.size();
-		TheFeatures = new ArrayList();
+		TheFeatures = new ArrayList<Feature>();
 		// System.out.println("Found "+len +" Features");
 		for (int i = 0; i < len; i++) {
 			Feature f = (arr.get(i));
@@ -1170,6 +1196,16 @@ public class MainGUI extends JFrame {
 			} else
 				TheFeatures.add(f);
 		}
+
+		FeatureSorter sorter = new FeatureSorter();
+		Collections.sort(TheFeatures, sorter);
+
+		// len = TheFeatures.size();
+		// ArrayList<Feature> arrL = new ArrayList<Feature>();
+		// for (int i = 0; i < len; i++) {
+		// arrL.add(TheFeatures.get(len - i - 1));
+		// }
+		// TheFeatures = arrL;
 
 	}
 
@@ -1892,7 +1928,7 @@ public class MainGUI extends JFrame {
 				// Organizing the images into sets of File[] in a an arraylist
 				// where each element of the arrList is a File[] of each
 				// wavelength for each field
-				ArrayList allSets = tools.ImageTools
+				ArrayList<File[]> allSets = tools.ImageTools
 				.getAllSetsOfCorresponsdingChanneledImageFiles(allFiles);
 				int numFields = allSets.size();
 
@@ -1950,7 +1986,8 @@ public class MainGUI extends JFrame {
 				e.printStackTrace();
 			}
 		}
-		addFeatures_HTM(ChannelNames);
+
+		initFeatures(ChannelNames);
 
 		if (LeftPanelDisplayed == DOTPLOT) {
 			TheDotPlot = null;
@@ -2109,7 +2146,7 @@ public class MainGUI extends JFrame {
 			// +
 			// "to create new, self-consistant HDF5 data files.","Project Loading Error",JOptionPane.ERROR_MESSAGE);
 			// }
-			addFeatures_HTM(ChannelNames);
+			initFeatures(ChannelNames);
 
 			initHDFprojectConnectorAndPlates(plates);
 			updateFeatures();
@@ -2669,6 +2706,15 @@ public class MainGUI extends JFrame {
 	}
 
 	/**
+	 * Returns check box
+	 * 
+	 * @author BLM
+	 * */
+	public JCheckBoxMenuItem getMultithreadCheckBox() {
+		return MultithreadCheckBox;
+	}
+
+	/**
 	 * Sets check box
 	 * 
 	 * @author BLM
@@ -2899,6 +2945,13 @@ public class MainGUI extends JFrame {
 			}
 
 
+	}
+
+	/** Gets the current time/date stamp to for unique sample IDs */
+	public String getTimestamp() {
+		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
+		return sdf.format(cal.getTime());
 	}
 
 	class FileChooserFilter_IR extends javax.swing.filechooser.FileFilter {

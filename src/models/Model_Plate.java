@@ -227,9 +227,9 @@ public class Model_Plate
 	
 	/** Returns an ArrayList of selected Wells ordered from left to right, top to bottom
 	 * @author BLM*/
-	public ArrayList getSelectedWells_horizOrder()
+	public ArrayList<Model_Well> getSelectedWells_horizOrder()
 	{
-		ArrayList arr = new ArrayList();
+		ArrayList<Model_Well> arr = new ArrayList<Model_Well>();
 		for (int r = 0; r < NumRows; r++)
 			for (int c = 0; c < NumCols; c++)
 				if (TheWells[r][c].isSelected())

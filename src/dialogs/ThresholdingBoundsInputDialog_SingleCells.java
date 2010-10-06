@@ -31,6 +31,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -103,17 +106,17 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 		textField[0] = new JTextField(6); // Nuc bound
 		textField[1] = new JTextField(6); // Cell bound
 		textField[2] = new JTextField(6); // Back bound
-		textField[3] = new JTextField(6); // Annulus Only
+		textField[3] = new JTextField(6); // Multi-thread
 
 		// Setting up the RaidioButtons for pixel saving selections
 		JRadioButton r0 = new JRadioButton("Bounding Box");
-		r0.setSelected(true);
 		r0.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				CoordsToSave = 0;
 			}
 		});
 		JRadioButton r1 = new JRadioButton("Centroid");
+		r1.setSelected(true);
 		r1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				CoordsToSave = 1;
@@ -133,18 +136,18 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 		});
 		// Group the radio buttons.
 		ButtonGroup group = new ButtonGroup();
-		group.add(r0);
 		group.add(r1);
+		group.add(r0);
 		group.add(r2);
 		group.add(r3);
-		CoordsToSave = 0;
+		CoordsToSave = 1;
 		JPanel radioPanel = new JPanel();
 		radioPanel.setLayout(new GridLayout(5, 1));
 		radioPanel.setBorder(BorderFactory
 				.createBevelBorder(BevelBorder.LOWERED));
 		radioPanel.add(new JLabel("Coordinates for HDF Storage:"));
-		radioPanel.add(r0);
 		radioPanel.add(r1);
+		radioPanel.add(r0);
 		radioPanel.add(r2);
 		radioPanel.add(r3);
 
@@ -152,17 +155,17 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 				new JCheckBoxMenuItem("Watershed Nuclei"));
 		MainGUI.getGUI().getWatershedNucleiCheckBox().setSelected(true);
 
-		MainGUI.getGUI().setCytoplasmAnnulusCheckBox(
-				new JCheckBoxMenuItem("Annulus Only"));
-		MainGUI.getGUI().getCytoplasmAnnulusCheckBox().addActionListener(
+		// MainGUI.getGUI().setCytoplasmAnnulusCheckBox(
+		// new JCheckBoxMenuItem("Annulus Only"));
+		MainGUI.getGUI().getMultithreadCheckBox().addActionListener(
 				new ActionListener() {
 					public void actionPerformed(ActionEvent ae) {
-						if (MainGUI.getGUI().getCytoplasmAnnulusCheckBox()
+						if (MainGUI.getGUI().getMultithreadCheckBox()
 								.isSelected()) {
-							textField[3].setText("5");
+							textField[3].setText("1");
 							textField[3].setEnabled(true);
 						} else {
-							textField[3].setText("Expand to Bounds");
+							textField[3].setText("1");
 							textField[3].setEnabled(false);
 						}
 
@@ -174,11 +177,10 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 		//
 		// Loading parameters if common (pset!=null)
 		//
-		MainGUI.getGUI().getCytoplasmAnnulusCheckBox().setSelected(false);
+		// MainGUI.getGUI().getCytoplasmAnnulusCheckBox().setSelected(false);
 		MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
 		textField[2].setText("0");
-
-		textField[3].setText("Expand to Bounds");
+		textField[3].setText("1");
 		textField[3].setEnabled(false);
 
 		MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
@@ -206,14 +208,14 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 			textField[1].setText("" + pset.getThreshold_Cell());
 			textField[2].setText("" + pset.getThreshold_Background());
 
-			if (pset.getAnnulusSize() != Model_ParameterSet.NOVALUE) {
-				MainGUI.getGUI().getCytoplasmAnnulusCheckBox()
-						.setSelected(true);
-				textField[3].setText("" + pset.getAnnulusSize());
-				textField[3].setEnabled(true);
-			} else
-				MainGUI.getGUI().getCytoplasmAnnulusCheckBox().setSelected(
-						false);
+			// if (pset.getAnnulusSize() != Model_ParameterSet.NOVALUE) {
+			// MainGUI.getGUI().getCytoplasmAnnulusCheckBox()
+			// .setSelected(true);
+			// textField[3].setText("" + pset.getAnnulusSize());
+			// textField[3].setEnabled(true);
+			// } else
+			// MainGUI.getGUI().getCytoplasmAnnulusCheckBox().setSelected(
+			// false);
 		}
 		//
 
@@ -224,15 +226,17 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 		mess[2] = "Cytoplasm Thresholding Channel";
 		mess[3] = "Cytoplasm Boundary Threshold";
 		mess[4] = "Background Threshold";
-		mess[5] = "Annulus Size:";
+		mess[5] = "Number of Threads:";
 
 		Object[] array = { mess[0], channelBox_nuc, mess[1], textField[0],
 				mess[2], channelBox_cyto, mess[3], textField[1], mess[4],
 				textField[2],
 				MainGUI.getGUI().getLoadCellsImmediatelyCheckBox(),
 				new JLabel("   "), radioPanel, new JLabel("   "),
-				MainGUI.getGUI().getCytoplasmAnnulusCheckBox(), mess[5],
+				MainGUI.getGUI().getMultithreadCheckBox(), mess[5],
 				textField[3] };
+		// MainGUI.getGUI().getCytoplasmAnnulusCheckBox(), mess[5],
+		// textField[3] };
 		// Object[] array = {mess[0], channelBox_nuc ,mess[1], textField[0],
 		// mess[2], channelBox_cyto , mess[3], textField[1], mess[4],
 		// textField[2],
@@ -304,12 +308,12 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 			if (btnString1.equals(value)) {
 				String[] strings = null;
 
-				if (MainGUI.getGUI().getCytoplasmAnnulusCheckBox().isSelected()) {
+				if (MainGUI.getGUI().getMultithreadCheckBox().isSelected()) {
 					strings = new String[4];
 					strings[0] = textField[0].getText(); // Nuc thresh
 					strings[1] = textField[1].getText(); // Cyt Thresh
 					strings[2] = textField[2].getText(); // Bkgd thresh
-					strings[3] = textField[3].getText(); // Annulus
+					strings[3] = textField[3].getText(); // Multithread
 				} else {
 					strings = new String[3];
 					strings[0] = textField[0].getText();
@@ -325,10 +329,10 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 					float Threshold_Nucleus = Float.parseFloat(strings[0]);
 					float Threshold_CellBoundary = Float.parseFloat(strings[1]);
 					float Threshold_Background = Float.parseFloat(strings[2]);
-					float AnnulusDiameter = -1;
-					if (MainGUI.getGUI().getCytoplasmAnnulusCheckBox()
+					float NumThreads = -1;
+					if (MainGUI.getGUI().getMultithreadCheckBox()
 							.isSelected())
-						AnnulusDiameter = Float.parseFloat(strings[3]);
+						NumThreads = Float.parseFloat(strings[3]);
 
 					// Storing the Parameters for each Model_Well
 					int len = TheWells.length;
@@ -361,9 +365,9 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 							pset.setCoordsToSaveToHDF("Everything");
 
 						// Annulus size
-						if (AnnulusDiameter > 0)
+						if (NumThreads > 0)
 							well.TheParameterSet
-									.setAnnulusSize((int) AnnulusDiameter);
+									.setNumThreads((int) NumThreads);
 
 						well.TheParameterSet.setMeanOrIntegrated(well.TheParameterSet.MEAN);
 
@@ -383,9 +387,84 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 					if (Threshold_Background > 0)
 						MainGUI.getGUI().setBackgroundSubtract(true);
 
+					// Only getting wells with Images that we can process
+					int numWells = TheWells.length;
+					ArrayList<Model_Well> wellsWIm = new ArrayList<Model_Well>();
+					for (int i = 0; i < numWells; i++)
+						if (TheWells[i].getFields() != null
+								&& TheWells[i].getFields().length > 0)
+							wellsWIm.add(TheWells[i]);
+					int numW = wellsWIm.size();
+					Model_Well[] wellsWithImages = new Model_Well[numW];
+					for (int i = 0; i < numW; i++)
+						wellsWithImages[i] = wellsWIm.get(i);
+
+					// Single thread run
+					if (wellsWithImages[0].TheParameterSet.getNumThreads() == 1) {
 					Processor_SingleCells tasker = new Processor_SingleCells(
-							TheWells, new DefaultSegmentor());
+								wellsWithImages, new DefaultSegmentor());
 					tasker.start();
+					} else // Multi-thread run
+					{
+						numWells = wellsWithImages.length;
+						int numThreads = wellsWithImages[0].TheParameterSet
+								.getNumThreads();
+						int numWellsPerProcess = (int) (numWells / numThreads);
+						int numOddNumWells = numWells % numThreads;
+						int counter = 0;
+						Model_Well[] arr = null; // new Model_Well[
+						for (int i = 0; i < numThreads; i++) {
+
+							if (i == numThreads - 1)
+								arr = new Model_Well[numWellsPerProcess
+										+ numOddNumWells];
+
+							else
+								arr = new Model_Well[numWellsPerProcess];
+
+							for (int j = 0; j < arr.length; j++) {
+								arr[j] = wellsWithImages[counter];
+								counter++;
+							}
+							Processor_SingleCells tasker = new Processor_SingleCells(
+									arr, new DefaultSegmentor());
+							tasker.start();
+
+						}
+
+					}
+
+					// Finally, printing out the segmentation parameters to a
+					// CSV file for record keeping
+					// TODO - this will change soon once we program the
+					// Universal SDCube to be stored in HDF5
+
+					PrintWriter pw = null;
+					try {
+						pw = new PrintWriter(new File(
+MainGUI.getGUI()
+								.getProjectDirectory().getAbsolutePath()
+								+ "/Data/temp/SegmentationParameters_"
+								+ MainGUI.getGUI().getTimestamp() + ".csv"));
+						String st = "Plate, Well, Nuc_Threshold, Cyto_Threshold, Bkgd_Threshold,";
+						pw.println(st);
+						for (int i = 0; i < numW; i++) {
+							st = "";
+							Model_ParameterSet pset = wellsWithImages[i].TheParameterSet;
+							st += wellsWithImages[i].getPlate().getID() + ",";
+							st += wellsWithImages[i].name + ",";
+							st += pset.getThreshold_Nucleus() + ",";
+							st += pset.getThreshold_Cell() + ",";
+							st += pset.getThreshold_Background() + ",";
+							pw.println(st);
+						}
+						pw.flush();
+						pw.close();
+
+					} catch (FileNotFoundException e1) {
+						e1.printStackTrace();
+					}
+
 				} else {
 					JOptionPane
 							.showMessageDialog(

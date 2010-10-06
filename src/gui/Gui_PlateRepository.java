@@ -18,6 +18,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -29,6 +30,7 @@ import javax.swing.event.ChangeListener;
 
 import models.Model_Plate;
 import models.Model_PlateRepository;
+import models.Model_Well;
 
 public class Gui_PlateRepository extends JPanel {
 	private Model_PlateRepository TheModel;
@@ -345,4 +347,12 @@ public class Gui_PlateRepository extends JPanel {
 		updatePanel();
 	}
 
+	/** Sets all wells in the project to be either highlighted or unhighlighted */
+	public void selectAllWells(boolean boo) {
+		ArrayList<Model_Well> all = TheModel.getAllWells();
+		int len = all.size();
+		for (int i = 0; i < len; i++)
+			all.get(i).setSelected(boo);
+		repaint();
+	}
 }

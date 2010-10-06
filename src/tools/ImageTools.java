@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 
@@ -48,7 +49,6 @@ import com.sun.media.jai.codec.FileSeekableStream;
 import com.sun.media.jai.codec.ImageCodec;
 import com.sun.media.jai.codec.ImageDecoder;
 import com.sun.media.jai.codec.SeekableStream;
-
 
 public class ImageTools
 {
@@ -74,9 +74,14 @@ public class ImageTools
 	}
 	
 	
-	static public ArrayList getAllSetsOfCorresponsdingChanneledImageFiles(File[] channelImageFiles)
+	/**
+	 * Takes a set of TIff image files and organizes them into collections of
+	 * fields that go together
+	 */
+	static public ArrayList<File[]> getAllSetsOfCorresponsdingChanneledImageFiles(
+			File[] channelImageFiles)
 	{
-		ArrayList arr = new ArrayList();
+		ArrayList<File[]> arr = new ArrayList<File[]>();
 		int num = channelImageFiles.length;
 		
 		if (num==0)
@@ -90,7 +95,7 @@ public class ImageTools
 		{
 			if (flags[i]==0)
 			{
-				ArrayList temp = new ArrayList();
+				ArrayList<File> temp = new ArrayList<File>();
 				File currFile = (File)channelImageFiles[i];
 				temp.add(currFile);
 				flags[i] = 1;
@@ -106,15 +111,13 @@ public class ImageTools
 						}
 					}
 					
-					
-					
-					Collections.sort(temp);
+
 					int len = temp.size();
 					File[] files = new File[len];
 					for (int j=0; j < len; j++)
-					{
 						files[j] = (File)temp.get(j);
-					}
+						// Sort by image channel
+						Arrays.sort(files, new tools.ImageFileChannelSorter());
 					arr.add(files);
 				}
 			}
@@ -812,9 +815,9 @@ public class ImageTools
 		
 		String[] arr = new String[len];
 		for (int i=0; i < uniques.size(); i++)
-		{
 			arr[i]= ("w"+(String)uniques.get(i));
-		}
+		// Trying to sort alphanumerically
+		Arrays.sort(arr);
 		return arr;
 	}
 	

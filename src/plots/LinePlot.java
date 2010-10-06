@@ -1356,6 +1356,8 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 	}
 	public Series.DataPoint getDataPointClicked_histoBox(Point p, Series[] series )
 	{
+		if (series == null)
+			return null;
 		int len = series.length;
 		for (int i = 0; i < len; i++)
 		{

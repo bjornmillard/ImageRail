@@ -16,18 +16,26 @@
  * @author Bjorn Millard
  */
 
-package features;
+package tools;
 
+import java.io.File;
 import java.util.Comparator;
 
-public class FeatureSorter implements Comparator
-{
-	public int compare(Object p1, Object p2)
-	{
-		Feature f1 = (Feature) p1;
-		Feature f2 = (Feature) p2;
-		
-		return f1.toString().compareTo(f2.toString());
+public class ImageFileChannelSorter implements Comparator {
+	public int compare(Object p1, Object p2) {
+		File f1 = (File) p1;
+		File f2 = (File) p2;
+
+		String f1n = f1.getName();
+		String f2n = f2.getName();
+
+		int indx1_w = f1n.indexOf("_w");
+		int indx2_w = f2n.indexOf("_w");
+
+		String f1w = f1n.substring(indx1_w, f1n.length());
+		String f2w = f2n.substring(indx2_w, f2n.length());
+
+		return f1w.compareTo(f2w);
 
 	}
 }

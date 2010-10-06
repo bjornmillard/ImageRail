@@ -28,6 +28,7 @@ public class Model_ParameterSet {
 	private boolean Modified;
 	private String ProcessType;
 	private String CoordsToSaveToHDF;
+	private int NumThreads;
 
 	static public String MEAN = "MEAN";
 	static public String INTEGRATED = "INTEGRATED";
@@ -47,6 +48,7 @@ public class Model_ParameterSet {
 		Threshold_Background = NOVALUE;
 		AnnulusSize = NOVALUE;
 		CoordsToSaveToHDF = "BoundingBox"; // Default
+		NumThreads = 1;
 		MeanOrIntegrated = null;
 	}
 
@@ -261,5 +263,14 @@ public class Model_ParameterSet {
 
 	public void setCoordsToSaveToHDF(String coordsToSaveToHDF) {
 		CoordsToSaveToHDF = coordsToSaveToHDF;
+	}
+
+	/** */
+	public void setNumThreads(int nThreads) {
+		NumThreads = nThreads;
+	}
+
+	public int getNumThreads() {
+		return NumThreads;
 	}
 }

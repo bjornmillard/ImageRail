@@ -53,6 +53,7 @@ public class Model_Well
 	public float[] Feature_Integrated;
 	/** */
 	public float[] Feature_Stdev;
+
 	/** */
 	public DotSelectionListener TheDotSelectionListener;
 	/** */
@@ -146,6 +147,8 @@ public class Model_Well
 			MainGUI.getGUI().setCellsModified(true);
 
 	}
+	
+
 
 	public Model_ParameterSet getParameterSet() {
 		return TheParameterSet;

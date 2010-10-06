@@ -35,9 +35,9 @@ public class Model_Field {
 	public Model_Field(File[] imageFiles, int index, Model_Well parentWell_) {
 		parentWell = parentWell_;
 		indexInWell = index;
-		ImageFiles = imageFiles;
 		ROIs = new ArrayList<Shape>();
 		ROIs_selected = new ArrayList<Boolean>();
+		ImageFiles = imageFiles;
 	}
 
 	public int getIndexInWell() {

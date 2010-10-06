@@ -44,6 +44,21 @@ public class Model_PlateRepository
 		return ThisGUI;
 	}
 
+	/** Returns all wells in this project */
+	public ArrayList<Model_Well> getAllWells() {
+		ArrayList<Model_Well> arrAll = new ArrayList<Model_Well>();
+		for (int p = 0; p < getNumPlates(); p++) {
+			Model_Plate plate = ThePlates[p];
+			ArrayList<Model_Well> arr = new ArrayList<Model_Well>();
+			for (int r = 0; r < plate.getNumRows(); r++)
+				for (int c = 0; c < plate.getNumColumns(); c++)
+					arr.add(plate.getWells()[r][c]);
+			arrAll.addAll(arr);
+		}
+
+		return arrAll;
+	}
+
 	public ArrayList<Model_Well> getSelectedWells_horizOrder()
 	{
 		ArrayList<Model_Well> arrAll = new ArrayList<Model_Well>();
