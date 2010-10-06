@@ -414,14 +414,7 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 						int counter = 0;
 						Model_Well[] arr = null; // new Model_Well[
 						for (int i = 0; i < numThreads; i++) {
-
-							if (i == numThreads - 1)
-								arr = new Model_Well[numWellsPerProcess
-										+ numOddNumWells];
-
-							else
-								arr = new Model_Well[numWellsPerProcess];
-
+							arr = new Model_Well[numWellsPerProcess + (i < numOddNumWells ? 1 : 0)];
 							for (int j = 0; j < arr.length; j++) {
 								arr[j] = wellsWithImages[counter];
 								counter++;
