@@ -50,9 +50,9 @@ import javax.swing.JToolBar;
 import javax.swing.border.BevelBorder;
 
 import models.Model_Well;
+import segmentedobject.Cell;
 import tempObjects.Cell_RAM;
 import tools.SVG_writer;
-import us.hms.systemsbiology.segmentedobject.Cell;
 import dialogs.CaptureImage_Dialog;
 
 public class HistogramPlot extends JPanel implements ImageCapturePanel

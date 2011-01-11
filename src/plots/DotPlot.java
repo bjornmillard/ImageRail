@@ -75,10 +75,11 @@ import javax.swing.event.ChangeListener;
 import models.Model_Plate;
 import models.Model_PlateRepository;
 import models.Model_Well;
+import sdcubeio.H5IO_Exception;
+import segmentedobject.Cell;
+import segmentedobject.CellCoordinates;
 import tools.ColorRama;
 import tools.SVG_writer;
-import us.hms.systemsbiology.segmentedobject.Cell;
-import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 import dialogs.AxisBoundsInputDialog;
 import dialogs.CaptureImage_Dialog;
 
@@ -1570,10 +1571,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		Bounds_Y.Upper = Double.NEGATIVE_INFINITY;
 
 		// init the cells
-		if (wells != null && wells.length > 0) // Changed it from
-												// (wells==null||wells.length>0)
-												// - dont konw why this was
-												// there...
+		if (wells != null && wells.length > 0)
 		{
 			// If one of the wells has no data, then we want to recompile all
 			// the data
@@ -1596,7 +1594,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 					for (int p = 0; p < numPlots; p++) {
 						ArrayList<Cell> cells = wells[p].getCells();
 						float[][] values = wells[p].getCell_values();
-						if (cells.size() != 0) {
+						if (cells != null && cells.size() != 0) {
 							TheDataValues.add(values);
 							TheCells.add(cells);
 						}
@@ -2933,9 +2931,15 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 						break;
 					}
 					else if (df.shouldExecute_allHDF(p)) {
-						df.execute_allHDF();
-						df.kill();
-						TheDotFilters.remove(i);
+						try {
+							df.execute_allHDF();
+							df.kill();
+							TheDotFilters.remove(i);
+						} catch (H5IO_Exception e) {
+							System.out.println("***ERROR filtering Dots***");
+							e.printStackTrace();
+						}
+
 						break;
 					}
 					else if (df.shouldAddToFilterQueue(p)) {

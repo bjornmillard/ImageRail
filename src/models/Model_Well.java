@@ -15,6 +15,7 @@ package models;
 import features.Feature;
 import gui.Gui_Well;
 import gui.MainGUI;
+import imagerailio.ImageRail_SDCube;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -23,10 +24,8 @@ import midasGUI.Measurement;
 import midasGUI.Treatment;
 import plots.DotSelectionListener;
 import plots.Gate_DotPlot;
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
-import us.hms.systemsbiology.metadata.MetaDataConnector;
-import us.hms.systemsbiology.segmentedobject.Cell;
-import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import segmentedobject.Cell;
+import segmentedobject.CellCoordinates;
 
 
 public class Model_Well
@@ -38,7 +37,7 @@ public class Model_Well
 	/** */
 	public int Column;
 	/** */
-	public int ID;
+	public String ID;
 
 	/** */
 	private boolean selected;
@@ -174,11 +173,12 @@ public class Model_Well
 		return loading;
 	}
 	
-	/** */
-	public MetaDataConnector getMetaDataConnector()
-	{
-		return ThePlate.getMetaDataConnector();
-	}
+
+	// /** */
+	// public MetaDataConnector getMetaDataConnector()
+	// {
+	// return ThePlate.getMetaDataConnector();
+	// }
 	
 
 	/** Returns all the cells from all the fields in this well
@@ -249,6 +249,16 @@ public class Model_Well
 		return (getPlate().getNumRows()*Column)+Row;
 	}
 	
+	/**
+	 * Returns the string Identifier for this well/sample
+	 * 
+	 * @author Bjorn Millard
+	 * @return String ID
+	 */
+	public String getID() {
+		return ID.trim();
+	}
+
 	/** Finds all cells that have a NULL value, purges them and recomputes the mean values of the well. Called after cells have been
 	 * deleted via dot plot or filtering
 	 * @author BLM*/
@@ -416,16 +426,19 @@ public class Model_Well
 		
 		int len = TheFields.length;
 		for (int i = 0; i < len; i++)
-			if(TheFields[i].doesHDFexist(gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath(), "Data"))
+			if (TheFields[i].doesDataExist(gui.MainGUI.getGUI()
+					.getProjectDirectory().getAbsolutePath()
+					+ "/Data.h5"))
+ {
 				count++;
-		
+			}
 		return count;
 	}
 	
 	
 	/** Loads the cells from the HDF files if they exist for each field
 	 * @author BLM*/
-	public void loadCells(SegmentationHDFConnector sCon, boolean loadCoords,
+	public void loadCells(ImageRail_SDCube io, boolean loadCoords,
 			boolean loadDataVals)
 	{
 		Model_Field[] fields = getFields();
@@ -433,7 +446,7 @@ public class Model_Well
 		setLoading(true);
 		System.out.println();
 		for (int z = 0; z < numF; z++)
-			fields[z].loadCells(sCon, loadCoords, loadDataVals);
+			fields[z].loadCells(io, loadCoords, loadDataVals);
 		setLoading(false);
 		updateDataValues();
 		getPlate().getGUI().repaint();
@@ -649,7 +662,8 @@ public class Model_Well
 		
 	}
 	
-	
+	/** Takes in a bunch of cell float values, computes and sets the means and stdevs of the distributions across all features for all fields given
+	 * @author BLM*/
 	public void setDataValues(ArrayList<float[][]> allData)
 	{
 		float[][] data = getCellMeansAndStdev_allFeatures(allData);
@@ -660,54 +674,21 @@ public class Model_Well
 		Feature_Stdev = data[1];
 		
 		//updating the min/max of plate date
-		MainGUI.getGUI().getPlateHoldingPanel().getModel().updateMinMaxValues();
+		MainGUI.getGUI().getPlateHoldingPanel().getModel().updateMinMaxValues();	
+	}
+	
+	/** Sets this wells means and stdevs with the given float arrays
+	 * @author BLM*/
+	public void setWellMeansAndStdevs(float[] means, float[] stdevs)
+	{
+		Feature_Means = means;
+		Feature_Stdev = stdevs;
 		
+		//updating the min/max of plate date
+		MainGUI.getGUI().getPlateHoldingPanel().getModel().updateMinMaxValues();
 	}
 	
 	
-//	public void setDataValues(Cell_RAM[] cells)
-//	{
-//		TheCells = cells;
-//		System.out.println("	>> NumCells in Model_Well: "+cells.length);
-//
-//		float[][] data = Cell_RAM.getCellMeansAndStdev_allFeatures(cells);
-//		if (data==null)
-//			return;
-//
-//		Feature_Means = data[0];
-//		Feature_Stdev = data[1];
-//
-//
-//		//updating the min/max of plate date
-//		MainGUI.getGUI().getPlateHoldingPanel().updateMinMaxValues();
-//
-//
-//		if (!MainGUI.getGUI().getStoreCellsCheckBox().isSelected())
-//		{
-//			if (TheCells!=null)
-//			{
-//				System.out.println("killing cells");
-//				int len = TheCells.length;
-//				for (int i=0; i < len; i++)
-//					TheCells[i].kill();
-//				TheCells = null;
-//			}
-//		}
-//
-//
-//
-////		float[][] data2 = Cell.getCellMinMaxValues_allFeatures(cells);
-////		if (ThePlate.MinMaxFeatureValues==null)
-////			ThePlate.initMinMaxFeatureValues();
-////		int numF = data[0].length;
-////		for (int i = 0; i < numF; i++)
-////		{
-////			if(data2[0][i]<ThePlate.MinMaxFeatureValues[0][i])
-////				ThePlate.MinMaxFeatureValues[0][i]=data2[0][i];
-////			if(data2[1][i]>ThePlate.MinMaxFeatureValues[1][i])
-////				ThePlate.MinMaxFeatureValues[1][i]=data2[1][i];
-////		}
-//	}
 	
 	/** Set the Mean/std values of the well directly
 	 * @author BLM*/
@@ -717,9 +698,7 @@ public class Model_Well
 		int numChannels = val.length;
 		Feature_Stdev = new float[numChannels];
 		for (int i =0; i < numChannels; i++)
-		{
 			Feature_Stdev[i] = 0;
-		}
 	}
 	
 	/** Determines if there are any images in this well

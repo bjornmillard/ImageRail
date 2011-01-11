@@ -17,15 +17,15 @@ package models;
  * Included here is both the Cell_coords (coordinates) and the float[][] data matrix values
  *
  @author BLM*/
-import java.util.ArrayList;
-
-import us.hms.systemsbiology.data.Data2D;
-import us.hms.systemsbiology.data.HDFConnectorException;
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
-import us.hms.systemsbiology.segmentedobject.Cell;
-import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 import features.Feature;
 import gui.MainGUI;
+import imagerailio.ImageRail_SDCube;
+
+import java.util.ArrayList;
+
+import sdcubeio.H5IO_Exception;
+import segmentedobject.Cell;
+import segmentedobject.CellCoordinates;
 
 public class Model_FieldCellRepository
 {
@@ -38,25 +38,23 @@ public class Model_FieldCellRepository
 	private float[][] dataValues;
 	private StringBuffer[] featureNames;
 	
-	public Model_FieldCellRepository(Model_Field field_, SegmentationHDFConnector sCon,
+	public Model_FieldCellRepository(Model_Field field_, ImageRail_SDCube io,
 			boolean loadCoords, boolean loadDataVals)
 	{
 		field = field_;
 		well_parent = field.getParentWell();
 		plateIndex = well_parent.getPlate().getPlateIndex();
 		wellIndex = well_parent.getWellIndex();
-//		projectPath = projectPath_;
-//		algorithmNameUsed = algorithmNameUsed_;
+		
 		try
 		{
-			// Parameters to write: plateIdx, wellIdx, fieldIdx
-			if (loadCoords)
-				cellCoords = sCon.readCoordinates(plateIndex, wellIndex, field
-						.getIndexInWell());
 			if (loadDataVals)
-				dataValues = tools.MathOps.convertTofloatMatrix(sCon
-						.readFeature(plateIndex,
-						wellIndex, field.getIndexInWell()));
+				dataValues = io.readFeatures(plateIndex, wellIndex, field
+						.getIndexInWell());
+			if (loadCoords)
+				cellCoords = io.readCoordinates(plateIndex, wellIndex, field
+						.getIndexInWell());
+					
 			initCells(cellCoords, dataValues);
 
 			if (cellCoords != null && dataValues != null)
@@ -72,12 +70,16 @@ public class Model_FieldCellRepository
 						+ cells.size() + "  data_vals: " + dataValues.length
 						+ " coords:  null");
 			// Read feature names.
-			featureNames = sCon.readFeatureNames(plateIndex, wellIndex, field.getIndexInWell());
+			if (cells != null)
+				featureNames = io.readFeatureNames(plateIndex, wellIndex, field
+						.getIndexInWell());
 
 		}
 		catch (Exception e)
 		{
-			System.out.println("No cells found for Model_Well: "+well_parent.name);
+			System.out.println("No cells found for Model_Well: "
+					+ well_parent.name);
+			e.printStackTrace();
 		}
 		
 	}
@@ -220,7 +222,7 @@ public class Model_FieldCellRepository
 	
 	/** Overwrites the current cells in RAM for this field in the master HDF5 file
 	 * @author BLM*/
-	public void resaveCells(SegmentationHDFConnector sCon)
+	public void resaveCells(ImageRail_SDCube io)
 	{
 		try
 		{
@@ -232,7 +234,7 @@ public class Model_FieldCellRepository
 				// can save them out again
 				if (cells.get(0).getCoordinates() == null) {
 					cellCoords = new ArrayList<CellCoordinates>();
-					ArrayList<CellCoordinates> coords = sCon
+					ArrayList<CellCoordinates> coords = io
 							.readCoordinates(
 							plateIndex, wellIndex, field.getIndexInWell());
 
@@ -246,26 +248,26 @@ public class Model_FieldCellRepository
 				}
 				// Now all cells should have both data and coordinates
 				// Project name
-				sCon.createField(plateIndex, wellIndex, field.getIndexInWell());
-				writeCoordinates(sCon);
+				io.createField(field.getParentWell().getID(), plateIndex,
+						wellIndex, field.getIndexInWell(),
+						io.getFieldDimensions(plateIndex, wellIndex, field
+								.getIndexInWell()), gui.MainGUI.getGUI()
+								.getExpDesignConnector());
+				writeCoordinates(io);
 			}
 
 			//Writing the feature values
 			if (dataValues != null && dataValues.length > 0) {
-				Float[][] feature = new Float[dataValues.length][dataValues[0].length];
-				for (int i = 0; i < dataValues.length; i++)
-					for (int j = 0; j < dataValues[0].length; j++)
-						feature[i][j] = new Float(dataValues[i][j]);
-				Data2D<Float> cellFeature = new Data2D<Float>(feature);
-				sCon.writeFeature(plateIndex, wellIndex,
-						field.getIndexInWell(), cellFeature);
+				io.writeFeatures(plateIndex, wellIndex,
+ field.getIndexInWell(),
+						dataValues);
 
 				// Writing the feature names to file
 				Feature[] features = MainGUI.getGUI().getFeatures();
-				StringBuffer[] fNames = new StringBuffer[features.length];
+				String[] fNames = new String[features.length];
 				for (int i = 0; i < features.length; i++)
-					fNames[i] = new StringBuffer(features[i].toString());
-				sCon.writeFeatureNames(plateIndex, wellIndex, field
+					fNames[i] = features[i].toString();
+				io.writeFeatureNames(plateIndex, wellIndex, field
 						.getIndexInWell(), fNames);
 			} else {
 				System.out
@@ -278,12 +280,12 @@ public class Model_FieldCellRepository
 
 			}
 		}
-		catch (HDFConnectorException e) {e.printStackTrace();}
+		catch (H5IO_Exception e) {e.printStackTrace();}
 	}
 
 	/** */
-	private void writeCoordinates(SegmentationHDFConnector sCon)
-			throws HDFConnectorException {
+	private void writeCoordinates(ImageRail_SDCube io)
+			throws H5IO_Exception {
 		// Assuming all cells in this cell bank are stored with the same
 		// structure
 		CellCoordinates cell = cellCoords.get(0);
@@ -295,15 +297,15 @@ public class Model_FieldCellRepository
 			comName = cell.getComNames()[0];
 			if (comName.trim().equalsIgnoreCase("BoundingBox")) {
 				// System.out.println("___Saving BoundingBoxes");
-				sCon.writeCellBoundingBoxes(plateIndex, wellIndex, field
+				io.writeCellBoundingBoxes(plateIndex, wellIndex, field
 						.getIndexInWell(), cellCoords);
 			} else if (comName.trim().equalsIgnoreCase("Centroid")) {
 				// System.out.println("___Saving Centroids");
-				sCon.writeCellCentroids(plateIndex, wellIndex, field
+				io.writeCellCentroids(plateIndex, wellIndex, field
 						.getIndexInWell(), cellCoords);
 			} else if (comName.trim().equalsIgnoreCase("Outline")) {
 				// System.out.println("___Saving All Outlines");
-				sCon.writeWholeCells(plateIndex, wellIndex, field
+				io.writeWholeCells(plateIndex, wellIndex, field
 						.getIndexInWell(), cellCoords);
 			}
 		} else // Each cell has more than 1 compartment: ex: Nucleus, cytoplasm
@@ -311,7 +313,7 @@ public class Model_FieldCellRepository
 		{
 
 			// System.out.println("___Saving All Coordinates");
-			sCon.writeWholeCells(plateIndex, wellIndex, field.getIndexInWell(),
+			io.writeWholeCells(plateIndex, wellIndex, field.getIndexInWell(),
 					cellCoords);
 		}
 	}

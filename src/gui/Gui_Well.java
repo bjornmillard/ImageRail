@@ -18,11 +18,8 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.Hashtable;
 
 import models.Model_Well;
-import us.hms.systemsbiology.metadata.Description;
 
 public class Gui_Well {
 
@@ -152,50 +149,51 @@ public class Gui_Well {
 			g2.setColor(color);
 
 		// Seeing if we want to plot well according to metadata
-		if (TheModel.getPlate().getGUI().shouldDisplayMetaData() > -1) {
-			int Type = TheModel.getPlate().getGUI().shouldDisplayMetaData();
-			ArrayList<String> arr = new ArrayList<String>();
-			if (Type == 0) // Treatments
-				arr = TheModel.getPlate().getMetaDataConnector().getAllTreatmentNames(
-								TheModel.getPlate().getPlateIndex(),
-								TheModel.getWellIndex());
-			else if (Type == 1) // Measurements
-				arr = TheModel.getPlate().getMetaDataConnector()
-						.getAllMeasurementNames(
-								TheModel.getPlate().getPlateIndex(),
-								TheModel.getWellIndex());
-			else if (Type == 2) // Descriptions
-			{
-				Description des = ((Description) TheModel.getPlate()
-						.getMetaDataConnector().readDescription(
-								TheModel.getWellIndex()));
-				if (des == null || des.getValue() == null)
-					arr = null;
-				else
-					arr.add(des.getValue());
-			} else if (Type == 3) {
-				Description des = ((Description) TheModel.getPlate()
-						.getMetaDataConnector().readTimePoint(
-								TheModel.getWellIndex()));
-				if (des == null || des.getValue() == null)
-					arr = null;
-				else
-					arr.add(des.getValue());
-			}
-
-			if (arr != null && arr.size() > 0) {
-				Hashtable hash = TheModel.getPlate().getMetaDataHashtable();
-				// Now adding it to the hastable
-				String treatsCat = "";
-				for (int i = 0; i < arr.size() - 1; i++)
-					treatsCat += arr.get(i) + " + ";
-				treatsCat += arr.get(arr.size() - 1);
-
-				Color color2 = (Color) hash.get(treatsCat);
-				if (color2 != null)
-					g2.setColor(color2);
-			}
-		}
+		// if (TheModel.getPlate().getGUI().shouldDisplayMetaData() > -1) {
+		// int Type = TheModel.getPlate().getGUI().shouldDisplayMetaData();
+		// ArrayList<String> arr = new ArrayList<String>();
+		// if (Type == 0) // Treatments
+		// arr =
+		// TheModel.getPlate().getMetaDataConnector().getAllTreatmentNames(
+		// TheModel.getPlate().getPlateIndex(),
+		// TheModel.getWellIndex());
+		// else if (Type == 1) // Measurements
+		// arr = TheModel.getPlate().getMetaDataConnector()
+		// .getAllMeasurementNames(
+		// TheModel.getPlate().getPlateIndex(),
+		// TheModel.getWellIndex());
+		// else if (Type == 2) // Descriptions
+		// {
+		// Description des = ((Description) TheModel.getPlate()
+		// .getMetaDataConnector().readDescription(
+		// TheModel.getWellIndex()));
+		// if (des == null || des.getValue() == null)
+		// arr = null;
+		// else
+		// arr.add(des.getValue());
+		// } else if (Type == 3) {
+		// Description des = ((Description) TheModel.getPlate()
+		// .getMetaDataConnector().readTimePoint(
+		// TheModel.getWellIndex()));
+		// if (des == null || des.getValue() == null)
+		// arr = null;
+		// else
+		// arr.add(des.getValue());
+		// }
+		//
+		// if (arr != null && arr.size() > 0) {
+		// Hashtable hash = TheModel.getPlate().getMetaDataHashtable();
+		// // Now adding it to the hastable
+		// String treatsCat = "";
+		// for (int i = 0; i < arr.size() - 1; i++)
+		// treatsCat += arr.get(i) + " + ";
+		// treatsCat += arr.get(arr.size() - 1);
+		//
+		// Color color2 = (Color) hash.get(treatsCat);
+		// if (color2 != null)
+		// g2.setColor(color2);
+		// }
+		// }
 
 
 		g2.fillRect(outline.x, outline.y, outline.width, outline.height);
@@ -229,6 +227,8 @@ public class Gui_Well {
 		// Checking to see if any HDF files are available for this well
 		if (MainGUI.getGUI().shouldDisplayHDFicons()) {
 			int numHDF = TheModel.getHDFcount();
+			// int numHDF = 0;
+
 			if (numHDF > 0) {
 				int xS = outline.x + 5;
 				int yS = outline.y + 5;

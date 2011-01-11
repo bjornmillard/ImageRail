@@ -186,8 +186,7 @@ public class MainStartupDialog extends JFrame
 									File f = fc.getSelectedFile();
 									if (f!=null && f.isDirectory())
 									{
-								if (theGUI.containsFile(f, "project.h5")
-										|| f.getName().indexOf(".ir") > 0)
+								if (f.getName().indexOf(".sdc") > 0)
 										{
 											TheStartUpDialog.setVisible(false);
 									theGUI.loadProject(f);

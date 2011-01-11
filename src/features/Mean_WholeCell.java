@@ -18,8 +18,8 @@
 
 package features;
 
-import us.hms.systemsbiology.idx2coordinates.Point;
-import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import imagerailio.Point;
+import segmentedobject.CellCoordinates;
 
 public class Mean_WholeCell extends Feature
 {

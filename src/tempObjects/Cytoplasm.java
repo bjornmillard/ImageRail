@@ -16,7 +16,7 @@ package tempObjects;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import us.hms.systemsbiology.idx2coordinates.Point;
+import imagerailio.Point;
 
 public class Cytoplasm
 {

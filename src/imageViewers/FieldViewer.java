@@ -50,8 +50,8 @@ import models.Model_FieldCellRepository;
 import models.Model_Plate;
 import models.Model_Well;
 import plots.DotSelectionListener;
-import us.hms.systemsbiology.segmentedobject.Cell;
-import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import segmentedobject.Cell;
+import segmentedobject.CellCoordinates;
 
 import com.sun.media.jai.widget.DisplayJAI;
 
@@ -207,8 +207,9 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				int cols = ThePlates[p].getWells()[0].length;
 				for (int i = 0; i < rows; i++)
 					for (int c = 0; c < cols; c++) {
-						Model_Well w = MainGUI.getGUI().getThePlateHoldingPanel()
-								.getPlates()[p].getWells()[i][c];
+						Model_Well w = MainGUI.getGUI()
+								.getThePlateHoldingPanel().getPlates()[p]
+								.getWells()[i][c];
 						Model_Well w2 = ThePlates[p].getWells()[i][c];
 						if (!w.isSelected())
 							w2.getGUI().color_outline = Color.darkGray;
@@ -217,13 +218,12 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					}
 			}
 
-			TheWell = null;
+			 TheWell = null;
 			for (int p = 0; p < numP; p++)
 				if (ThePlates[p].getID() == well.getPlate().getID()) {
 					TheWell = ThePlates[p].getWell(well.name);
 					break;
 				}
-
 			ThePanel.repaint();
 		}
 	}
@@ -288,8 +288,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					// If there is 1 compartment we assume its either a Centroid
 					// (1 point) or a Bounding box (2 points)
 					String comName = one.getComNames()[0];
-					// System.out.println("comName: "+comName);
-					us.hms.systemsbiology.idx2coordinates.Point[] pts = one.getComCoordinates(0);
+					imagerailio.Point[] pts = one.getComCoordinates(0);
 					int ptsLen = pts.length;
 
 					if (comName.trim().equalsIgnoreCase("Centroid")) // Draw a
@@ -298,10 +297,13 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 																		// the
 																		// single
 																		// point
+					{
 						for (int z = 0; z < ptsLen; z++)
 							g2.fillOval((int) (scalingFactor * pts[z].x),
 									(int) (scalingFactor * pts[z].y), radius,
 									radius);
+						// System.out.println();
+					}
 					else if (comName.trim().equalsIgnoreCase("BoundingBox")) // Draw
 																				// a
 																				// bounding
@@ -324,10 +326,9 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 								(int) (scalingFactor * (pts[1].y - pts[0].y)));
 					else if (comName.trim().equalsIgnoreCase("Outline")) {
 						ptsLen = pts.length;
-						// System.out.println("pts: "+pts.length);
 						for (int z = 0; z < ptsLen; z++) {
 							if (z % factor == 0) {
-								us.hms.systemsbiology.idx2coordinates.Point p = pts[z];
+								imagerailio.Point p = pts[z];
 								g2.drawLine((int) (scalingFactor * p.x),
 										(int) (scalingFactor * p.y),
 										(int) (scalingFactor * p.x),
@@ -930,8 +931,10 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 							Cell cell = cells.get(c);
 							CellCoordinates coords = cell.getCoordinates();
 							if (coords != null)
+ {
 								if (coords.getComSize() > 0) {
-									us.hms.systemsbiology.idx2coordinates.Point[] pts = coords
+
+									imagerailio.Point[] pts = coords
 											.getComCoordinates(0);
 									Rectangle bounds = getScaledSelectionBounds(scalingFactor);
 									if (bounds != null && pts != null
@@ -940,14 +943,24 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 												.contains(
 														(int) (scalingFactor * pts[0].x),
 														(int) (scalingFactor * pts[0].y)))
+ {
 											cell.setSelected(true);
+										}
 										else
+ {
 											cell.setSelected(false);
+										}
 								}
+
+
+							}
 
 						}
 					}
+
+
 				}
+
 
 				// scaling
 				SelectedROI = new Rectangle((int) (tempRect.x / scalingFactor),
@@ -990,12 +1003,13 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				if (TheCellBank != null) {
 					ArrayList<Cell> cells = TheCellBank.getCells();
 					int len = cells.size();
+
 					for (int c = 0; c < len; c++) {
 
 						Cell cell = cells.get(c);
 						CellCoordinates coords = cell.getCoordinates();
 						if (coords.getComSize() > 0) {
-							us.hms.systemsbiology.idx2coordinates.Point[] pts = coords
+							imagerailio.Point[] pts = coords
 									.getComCoordinates(0);
 							if (tempOval != null
 									&& tempOval.contains(
@@ -1050,7 +1064,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 							Cell cell = cells.get(c);
 							CellCoordinates coords = cell.getCoordinates();
 							if (coords.getComSize() > 0) {
-								us.hms.systemsbiology.idx2coordinates.Point[] pts = coords
+								imagerailio.Point[] pts = coords
 										.getComCoordinates(0);
 								if (tempOval != null
 										&& tempOval
@@ -1106,8 +1120,8 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 							Cell cell = cells.get(c);
 							CellCoordinates coords = cell.getCoordinates();
-							if (coords.getComSize() > 0) {
-								us.hms.systemsbiology.idx2coordinates.Point[] pts = coords
+							if (coords != null && coords.getComSize() > 0) {
+								imagerailio.Point[] pts = coords
 										.getComCoordinates(0);
 								bounds = getScaledSelectionBounds(scalingFactor);
 								if (bounds != null && pts != null

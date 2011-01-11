@@ -13,15 +13,14 @@
 package processors;
 import features.Feature;
 import gui.MainGUI;
+import imagerailio.ImageRail_SDCube;
 
 import java.io.File;
 
 import models.Model_Plate;
 import models.Model_Well;
+import sdcubeio.H5IO_Exception;
 import segmentors.DefaultSegmentor;
-import us.hms.systemsbiology.data.HDFConnectorException;
-import us.hms.systemsbiology.data.ProjectHDFConnector;
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
 import dataSavers.DataSaver_CSV;
 
 public class Processor_WellAverage extends Thread implements Processor
@@ -50,22 +49,27 @@ public class Processor_WellAverage extends Thread implements Processor
 		MainGUI.getGUI().setProcessing(true);
 		
 		
-		SegmentationHDFConnector sCon = null;
-		try
-		{
-			String projPath = gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
-			ProjectHDFConnector con = new ProjectHDFConnector(projPath);
-			con.createProject();
-			sCon = new SegmentationHDFConnector(projPath);
-			//creating a HDF plate for each plate needed, since the wells could come from different plates
-			int[][] idsAndWells = Processor_SingleCells.getAllUniquePlateIDsAndNumWells(WellsToProcess);
-			for (int i = 0; i < idsAndWells[0].length; i++)
-			{
-//				System.out.println("ids: "+(idsAndWells[0][i]-1) +"   wells: "+idsAndWells[1][i]);
-				con.writePlateSize(idsAndWells[0][i]-1, idsAndWells[1][i]);
-			}
-		}
-		catch (HDFConnectorException e) {e.printStackTrace();}
+		ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
+
+		// try
+		// {
+		// String projPath =
+		// gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
+		// // ProjectHDFConnector con = new ProjectHDFConnector(projPath);
+		// // con.createProject();
+		// io = gui.MainGUI.getGUI().getH5IO();
+		// //creating a HDF plate for each plate needed, since the wells could
+		// come from different plates
+		// int[][] idsAndWells =
+		// Processor_SingleCells.getAllUniquePlateIDsAndNumWells(WellsToProcess);
+		// for (int i = 0; i < idsAndWells[0].length; i++)
+		// {
+		// // System.out.println("ids: "+(idsAndWells[0][i]-1)
+		// +"   wells: "+idsAndWells[1][i]);
+		// con.writePlateSize(idsAndWells[0][i]-1, idsAndWells[1][i]);
+		// }
+		// }
+		// catch (H5IO_Exception e) {e.printStackTrace();}
 		
 		
 		
@@ -90,8 +94,20 @@ public class Processor_WellAverage extends Thread implements Processor
 			int totalPix=0;
 			for (int f = 0; f < numFields; f++)
 			{
+
 				File[] images_oneField = well.getFields()[f].getImageFiles();
 				int[][][] Raster_Channels = tools.ImageTools.getImageRaster_FromFiles_copy(images_oneField);
+				int[] fieldDimensions = { Raster_Channels.length,
+						Raster_Channels[0].length, Raster_Channels[0][0].length };
+				try {
+					io.createField(well.getID(), well.getPlate().getID(), well
+							.getWellIndex(), f, fieldDimensions, gui.MainGUI
+							.getGUI().getExpDesignConnector());
+				} catch (H5IO_Exception e) {
+					System.out
+							.println("** Error creating field in HDF5 file **");
+					e.printStackTrace();
+				}
 				//Getting integrated values of the images for each channel
 				float[][] tempIntegration = DefaultSegmentor.findTotalIntegrationAndTotalPixUsed(Raster_Channels, well.TheParameterSet);
 				//storing this data
@@ -147,7 +163,7 @@ public class Processor_WellAverage extends Thread implements Processor
 			{
 				//Trying to write mean value data to file
 				int wellIndex = (well.getPlate().getNumRows()*well.Column)+well.Row;
-				int plateIndex = well.getPlate().getID()-1;
+				int plateIndex = well.getPlate().getID();
 				Feature[] features = gui.MainGUI.getGUI().getFeatures();
 				StringBuffer[] featureNames = null;
 				if(features!=null && features.length>0)
@@ -157,14 +173,25 @@ public class Processor_WellAverage extends Thread implements Processor
 						featureNames[i] = new StringBuffer(features[i].toString());
 				}
 				
-				if(well.Feature_Means!=null && sCon!=null)
+				if(well.Feature_Means!=null && io!=null)
 				{
-					sCon.writeWellMeanValues(plateIndex, wellIndex, well.Feature_Means);
-					if(featureNames!=null)
-						sCon.writeMeanFeatureNames(plateIndex, featureNames);
+					io
+							.writeWellMeans(plateIndex, wellIndex,
+									well.Feature_Means);
+					// if(featureNames!=null)
+					// io.writeMeanFeatureNames(plateIndex, featureNames);
 				}
-				if(well.Feature_Stdev!=null && sCon!=null)
-					sCon.writeWellStdDevValues(plateIndex, wellIndex, well.Feature_Stdev);
+				if(well.Feature_Stdev!=null && io!=null)
+					io.writeWellStdDevs(plateIndex, wellIndex,
+							well.Feature_Stdev);
+				// Writing HDF5 well sample metadata
+				int totNumWells = well.getPlate().getNumRows()
+						* well.getPlate().getNumColumns();
+				io.writeParentPlateInfo(plateIndex, wellIndex, totNumWells);
+				io.writeSegmentationParameters(plateIndex, wellIndex,
+						(int) well.getParameterSet().getThreshold_Nucleus(),
+						(int) well.getParameterSet().getThreshold_Cell(),
+						(int) well.getParameterSet().getThreshold_Background());
 				
 			}
 			catch (Exception e)

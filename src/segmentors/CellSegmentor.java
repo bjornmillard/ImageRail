@@ -14,7 +14,7 @@ package segmentors;
 import java.util.ArrayList;
 
 import models.Model_ParameterSet;
-import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import segmentedobject.CellCoordinates;
 
 public interface CellSegmentor
 {

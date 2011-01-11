@@ -13,6 +13,8 @@
 package filters;
 
 
+import imagerailio.ImageRail_SDCube;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -39,10 +41,9 @@ import models.Model_Field;
 import models.Model_Plate;
 import models.Model_PlateRepository;
 import models.Model_Well;
-import us.hms.systemsbiology.data.HDFConnectorException;
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
-import us.hms.systemsbiology.segmentedobject.Cell;
-import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import sdcubeio.H5IO_Exception;
+import segmentedobject.Cell;
+import segmentedobject.CellCoordinates;
 import gui.MainGUI;
 
 public class DotFilterQueue extends JFrame implements Runnable {
@@ -319,8 +320,8 @@ public class DotFilterQueue extends JFrame implements Runnable {
 		}
 
 		// for each well:
-		SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-				gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
+		ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
+
 		for (int i = 0; i < numPlates; i++) {
 			Model_Plate plate = plates[i];
 			int numC = plate.getNumColumns();
@@ -340,8 +341,8 @@ public class DotFilterQueue extends JFrame implements Runnable {
 
 								// Load this well's cells, filter them,
 								// then write them back to the HDF files
-								ArrayList<Cell> arr = sCon.readCells(plate
-										.getID() - 1, well.getWellIndex(),
+								ArrayList<Cell> arr = io.readCells(plate
+										.getID(), well.getWellIndex(),
 										fields[j].getIndexInWell());
 
 								// Selecting all cells above or below the
@@ -380,9 +381,9 @@ public class DotFilterQueue extends JFrame implements Runnable {
 								}
 
 								// Resaving just the unselected cells
-								DotFilter.resaveCells(sCon, keepers_coords,
-										keepers_vals,
-										plate.getID() - 1, well.getWellIndex(),
+								DotFilter.resaveCells(io, keepers_coords,
+										keepers_vals, well.getID(),
+										plate.getID(), well.getWellIndex(),
 										fields[j].getIndexInWell());
 
 								// Killing temp loaded cells
@@ -392,7 +393,7 @@ public class DotFilterQueue extends JFrame implements Runnable {
 								keepers_coords = null;
 								keepers_vals = null;
 							}
-						} catch (HDFConnectorException e) {
+						} catch (H5IO_Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -407,7 +408,7 @@ public class DotFilterQueue extends JFrame implements Runnable {
 							loadCoords = true;
 						if (cells.get(0).getFeatureValues() != null)
 							loadVals = true;
-						well.loadCells(sCon, loadCoords, loadVals);
+						well.loadCells(io, loadCoords, loadVals);
 					}
 					well.processing = false;
 					plate.getGUI().repaint();

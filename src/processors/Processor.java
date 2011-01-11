@@ -18,6 +18,5 @@ public interface Processor
 {
 	public void runProcess();
 	public Model_Well getWellForGivenImage(String fileName);
-	public void setClusterRun(boolean boo);
 }
 

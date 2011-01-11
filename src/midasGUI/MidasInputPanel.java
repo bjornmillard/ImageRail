@@ -24,7 +24,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -43,8 +42,8 @@ import javax.swing.event.DocumentListener;
 
 import models.Model_Plate;
 import models.Model_Well;
-import us.hms.systemsbiology.metadata.Description;
-import us.hms.systemsbiology.metadata.MetaDataConnector;
+import sdcubeio.ExpDesign_Description;
+import sdcubeio.ExpDesign_Model;
 
 
 
@@ -56,7 +55,6 @@ public class MidasInputPanel extends JPanel
     private JOptionPane optionPane;
 	
 	private Model_Plate thePlate;
-	private ArrayList TreatmentsToAdd;
 	private JComboBox treatmentComboBox;
 	private JComboBox measurementComboBox;
 	private JButton addTreatmentButton;
@@ -68,15 +66,13 @@ public class MidasInputPanel extends JPanel
 	private JCheckBox[] checkBoxes;
 	private Model_Well[] theWells;
 	private JPanel TheInputContainerPanel;
-	private MetaDataConnector TheMetaDataWriter;
-	private File CurrentProjectDirectory;
+	private ExpDesign_Model TheExpDesign_Model;
 	
-	public MidasInputPanel(Model_Plate plate)
+	public MidasInputPanel(Model_Plate plate, ExpDesign_Model expDesign_model)
 	{
 		setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-		
 		thePlate = plate;
-		TreatmentsToAdd = new ArrayList();
+		TheExpDesign_Model = expDesign_model;
 		setLayout(new BorderLayout());
 		setVisible(true);
 		int width = 330;
@@ -84,7 +80,8 @@ public class MidasInputPanel extends JPanel
 		setSize(width,height);
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		setLocation((int)(d.width/2f)-width/2,(int)(d.height/2f)-height/2);
-		
+		theWells = thePlate.getAllSelectedWells();
+
 		textField = new JTextField[5];
 		for (int i=0; i < textField.length; i ++)
 			textField[i] = new JTextField(6);
@@ -98,50 +95,76 @@ public class MidasInputPanel extends JPanel
 					{
 						//getting the text
 						String string = textField[1].getText();
+				// date
+				if (checkBoxes[0].isSelected()) {
 						for (int i =0; i < theWells.length; i++)
 						{
-							//date
-							if (checkBoxes[0].isSelected())
-							{
-								theWells[i].date = string;
-								TheMetaDataWriter.writeDate(theWells[i].getWellIndex(), string);
-								TheMetaDataWriter.writeMetaDataXML();
-						thePlate.getGUI().updateMetaDataLegend();
-							}
-						}
+
+						if (!string.equalsIgnoreCase("")) {
+							ExpDesign_Description desc = new ExpDesign_Description(
+									"Date", null, string, null, null, null);
+
+								TheExpDesign_Model.replaceDescription(theWells[i]
+									.getID(), desc);
+						} else
+							// remove it completely if there is no value
+							TheExpDesign_Model.removeDescriptionOfType(
+									theWells[i].getID(), "Date");
+
+					}
+
+					TheExpDesign_Model.write();
+				}
 					}
 					public void removeUpdate(DocumentEvent e)
 					{
 						//getting the text
 						String string = textField[1].getText();
+				// date
+				if (checkBoxes[0].isSelected()) {
 						for (int i =0; i < theWells.length; i++)
 						{
-							//date
-							if (checkBoxes[0].isSelected())
-							{
-								theWells[i].date = string;
-								TheMetaDataWriter.writeDate(theWells[i].getWellIndex(), string);
-								TheMetaDataWriter.writeMetaDataXML();
-						thePlate.getGUI().updateMetaDataLegend();
-							}
-						}
+
+						if (!string.equalsIgnoreCase("")) {
+							ExpDesign_Description desc = new ExpDesign_Description(
+									"Date", null, string, null, null, null);
+
+							TheExpDesign_Model.replaceDescription(theWells[i]
+									.getID(), desc);
+						} else
+							// remove it completely if there is no value
+							TheExpDesign_Model.removeDescriptionOfType(
+									theWells[i].getID(), "Date");
+
+					}
+
+					TheExpDesign_Model.write();
+				}
 					}
 					public void insertUpdate(DocumentEvent e)
 					{
 						//getting the text
-						String string = textField[1].getText();
-
+				String string = textField[1].getText();
+				// date
+				if (checkBoxes[0].isSelected()) {
 						for (int i =0; i < theWells.length; i++)
 						{
-							//date
-							if (checkBoxes[0].isSelected())
-							{
-								theWells[i].date = string;
-								TheMetaDataWriter.writeDate(theWells[i].getWellIndex(), string);
-								TheMetaDataWriter.writeMetaDataXML();
-						thePlate.getGUI().updateMetaDataLegend();
-							}
-						}
+
+						if (!string.equalsIgnoreCase("")) {
+							ExpDesign_Description desc = new ExpDesign_Description(
+									"Date", null, string, null, null, null);
+
+							TheExpDesign_Model.replaceDescription(theWells[i]
+									.getID(), desc);
+						} else
+							// remove it completely if there is no value
+							TheExpDesign_Model.removeDescriptionOfType(
+									theWells[i].getID(), "Date");
+
+					}
+
+					TheExpDesign_Model.write();
+				}
 					}
 				});
 		
@@ -153,48 +176,75 @@ public class MidasInputPanel extends JPanel
 					{
 						//getting the text
 						String string = textField[2].getText();
+				if (checkBoxes[1].isSelected()) {
 						for (int i =0; i < theWells.length; i++)
 						{
-							//description
-							if (checkBoxes[1].isSelected())
-							{
-								theWells[i].description = string;
-								TheMetaDataWriter.writeDescription(theWells[i].getWellIndex(), string);
-								TheMetaDataWriter.writeMetaDataXML();
-						thePlate.getGUI().updateMetaDataLegend();
-							}
+
+							if (!string.equalsIgnoreCase("")) {
+						theWells[i].description = string;
+
+						
+						ExpDesign_Description desc = new ExpDesign_Description();
+						desc.setType("Description");
+						desc.setValue(string);
+						TheExpDesign_Model.replaceDescription(theWells[i]
+								.getID(), desc);
+						} else
+							// remove it completely if there is no value
+							TheExpDesign_Model.removeDescriptionOfType(
+									theWells[i].getID(), "Description");
 						}
+						TheExpDesign_Model.write();
+				}
 					}
 					public void removeUpdate(DocumentEvent e)
 					{
 						//getting the text
 						String string = textField[2].getText();
+				if (checkBoxes[1].isSelected()) {
 						for (int i =0; i < theWells.length; i++)
 						{
-							//description
-							if (checkBoxes[1].isSelected())
-							{
-								theWells[i].description = string;
-								TheMetaDataWriter.writeDescription( theWells[i].getWellIndex(), string);
-								TheMetaDataWriter.writeMetaDataXML();
-						thePlate.getGUI().updateMetaDataLegend();
-							}
+
+						if (!string.equalsIgnoreCase("")) {
+						theWells[i].description = string;
+
+
+						ExpDesign_Description desc = new ExpDesign_Description();
+						desc.setType("Description");
+						desc.setValue(string);
+						TheExpDesign_Model.replaceDescription(theWells[i]
+								.getID(), desc);
+						} else
+							// remove it completely if there is no value
+							TheExpDesign_Model.removeDescriptionOfType(
+									theWells[i].getID(), "Description");
+					}
+						TheExpDesign_Model.write();
 						}
 					}
 					public void insertUpdate(DocumentEvent e)
 					{
 						//getting the text
 						String string = textField[2].getText();
+				if (checkBoxes[1].isSelected()) {
 						for (int i =0; i < theWells.length; i++)
 						{
-							//description
-							if (checkBoxes[1].isSelected())
-							{
-								theWells[i].description = string;
-								TheMetaDataWriter.writeDescription(theWells[i].getWellIndex(), string);
-								TheMetaDataWriter.writeMetaDataXML();
-						thePlate.getGUI().updateMetaDataLegend();
-							}
+
+						if (!string.equalsIgnoreCase("")) {
+						theWells[i].description = string;
+
+
+						ExpDesign_Description desc = new ExpDesign_Description();
+						desc.setType("Description");
+						desc.setValue(string);
+						TheExpDesign_Model.replaceDescription(theWells[i]
+								.getID(), desc);
+						} else
+							// remove it completely if there is no value
+							TheExpDesign_Model.removeDescriptionOfType(
+									theWells[i].getID(), "Description");
+					}
+						TheExpDesign_Model.write();
 						}
 					}
 				});
@@ -208,6 +258,7 @@ public class MidasInputPanel extends JPanel
 						//getting the text
 				String string = textField[3].getText().trim();
 
+
 				String time = string;
 				String time_units = "";
 
@@ -217,78 +268,105 @@ public class MidasInputPanel extends JPanel
 					time_units = string.substring(ind + 1, string.length());
 				}
 						
-						for (int i =0; i < theWells.length; i++)
-						{
-							//date
-							if (checkBoxes[4].isSelected())
-							{
-								theWells[i].measurementTime = string;
-								
-						TheMetaDataWriter.writeMeasurementTime(theWells[i]
-								.getWellIndex(), time, time_units);
-								TheMetaDataWriter.writeMetaDataXML();
-						thePlate.getGUI().updateMetaDataLegend();
-							}
-							
-						}
+				// date
+				if (checkBoxes[4].isSelected()) {
+					for (int i = 0; i < theWells.length; i++) {
+
+						if (!string.equalsIgnoreCase("")) {
+
+						theWells[i].measurementTime = string;
+
+					ExpDesign_Description desc = new ExpDesign_Description(
+								"Measurement_Time", null, null, null, time,
+								time_units);
+
+					TheExpDesign_Model.replaceDescription(theWells[i]
+								.getID(), desc);
+						} else
+							// remove it completely if there is no value
+							TheExpDesign_Model.removeDescriptionOfType(
+									theWells[i].getID(), "Measurement_Time");
+
+				}
+					TheExpDesign_Model.write();
+					}
 						
 					}
 					public void removeUpdate(DocumentEvent e)
 					{
 						//getting the text
 				String string = textField[3].getText().trim();
-				String time = string;
+
+						
+				
+						String time = string;
 				String time_units = "";
 
-				int ind = string.indexOf(" ");
+						int ind = string.indexOf(" ");
 				if (ind > 0) {
 					time = string.substring(0, ind);
 					time_units = string.substring(ind + 1, string.length());
 				}
-						
-						for (int i =0; i < theWells.length; i++)
-						{
-							//date
-							if (checkBoxes[4].isSelected())
-							{
-								theWells[i].measurementTime = string;
-								
-						TheMetaDataWriter.writeMeasurementTime(theWells[i]
-								.getWellIndex(), time, time_units);
-								TheMetaDataWriter.writeMetaDataXML();
-						thePlate.getGUI().updateMetaDataLegend();
-							}
-							
-						}
+
+				// date
+				if (checkBoxes[4].isSelected()) {
+					for (int i = 0; i < theWells.length; i++) {
+
+								if (!string.equalsIgnoreCase("")) {
+
+							theWells[i].measurementTime = string;
+
+							ExpDesign_Description desc = new ExpDesign_Description(
+									"Measurement_Time", null, null, null, time,
+									time_units);
+
+							TheExpDesign_Model.replaceDescription(theWells[i]
+									.getID(), desc);
+						} else
+							// remove it completely if there is no value
+							TheExpDesign_Model.removeDescriptionOfType(
+									theWells[i].getID(), "Measurement_Time");
+
 					}
+					TheExpDesign_Model.write();
+				}
+			}
 					public void insertUpdate(DocumentEvent e)
 					{
 						//getting the text
 				String string = textField[3].getText().trim();
-				String time = string;
+						String time = string;
 				String time_units = "";
 
-				int ind = string.indexOf(" ");
+						int ind = string.indexOf(" ");
 				if (ind > 0) {
 					time = string.substring(0, ind);
 					time_units = string.substring(ind + 1, string.length());
 				}
-						
-						for (int i =0; i < theWells.length; i++)
-						{
-							//date
-							if (checkBoxes[4].isSelected())
-							{
-								theWells[i].measurementTime = string;
-								
-						TheMetaDataWriter.writeMeasurementTime(theWells[i]
-								.getWellIndex(), time, time_units);
-								TheMetaDataWriter.writeMetaDataXML();
-						thePlate.getGUI().updateMetaDataLegend();
-							}
-							
-						}
+
+				// date
+				if (checkBoxes[4].isSelected()) {
+					for (int i = 0; i < theWells.length; i++) {
+
+								if (!string.equalsIgnoreCase("")) {
+
+							theWells[i].measurementTime = string;
+
+							ExpDesign_Description desc = new ExpDesign_Description(
+									"Measurement_Time", null, null, null, time,
+									time_units);
+
+							TheExpDesign_Model.replaceDescription(theWells[i]
+									.getID(), desc);
+						} else
+							// remove it completely if there is no value
+							TheExpDesign_Model.removeDescriptionOfType(
+									theWells[i].getID(), "Measurement_Time");
+
 					}
+					TheExpDesign_Model.write();
+				}
+			}
 				});
 		
 		
@@ -307,9 +385,8 @@ public class MidasInputPanel extends JPanel
 					public void actionPerformed(ActionEvent ae)
 					{
 						NewTreatmentInputDialog n = new NewTreatmentInputDialog();
-						TheMetaDataWriter.writeMetaDataXML();
-				thePlate.getGUI().updateMetaDataLegend();
-						updateInputPanel(thePlate);
+				// thePlate.getGUI().updateMetaDataLegend();
+				updateInputPanel();
 					}
 					
 					
@@ -322,16 +399,19 @@ public class MidasInputPanel extends JPanel
 					{
 						if (treatmentComboBox.getItemCount()>0)
 						{
-							Description treat = (Description)treatmentComboBox.getSelectedItem();
+					ExpDesign_Description treat = (ExpDesign_Description) treatmentComboBox
+							.getSelectedItem();
 							int len = theWells.length;
 							for (int i = 0; i < len; i++)
-								TheMetaDataWriter.dropTreatmentOrMeasurement(thePlate.getPlateIndex(), theWells[i].getWellIndex(), treat);
+						TheExpDesign_Model.removeDescription(theWells[i]
+								.getID(), treat);
 							
-							TheMetaDataWriter.writeMetaDataXML();
+
 							treatmentComboBox.removeItemAt(treatmentComboBox.getSelectedIndex());
 							treatmentComboBox.repaint();
 							
-					thePlate.getGUI().updateMetaDataLegend();
+					TheExpDesign_Model.write();
+					// thePlate.getGUI().updateMetaDataLegend();
 						}
 					}
 				});
@@ -343,7 +423,8 @@ public class MidasInputPanel extends JPanel
 					{
 						if (treatmentComboBox.getItemCount()>0)
 						{
-							Description treat = (Description)treatmentComboBox.getSelectedItem();
+					ExpDesign_Description treat = (ExpDesign_Description) treatmentComboBox
+							.getSelectedItem();
 							//open the edit dialog
 							NewTreatmentInputDialog n = new NewTreatmentInputDialog(treat);
 							
@@ -378,15 +459,18 @@ public class MidasInputPanel extends JPanel
 					{
 						if (measurementComboBox.getItemCount()>0)
 						{
-							Description meas = (Description)measurementComboBox.getSelectedItem();
+					ExpDesign_Description meas = (ExpDesign_Description) measurementComboBox
+							.getSelectedItem();
 							int len = theWells.length;
 							for (int i = 0; i < len; i++)
-								TheMetaDataWriter.dropTreatmentOrMeasurement(thePlate.getPlateIndex(), theWells[i].getWellIndex(), meas);
+						TheExpDesign_Model.removeDescription(
+								theWells[i].getID(), meas);
 							
-							TheMetaDataWriter.writeMetaDataXML();
 							measurementComboBox.removeItemAt(measurementComboBox.getSelectedIndex());
 							measurementComboBox.repaint();
-					thePlate.getGUI().updateMetaDataLegend();
+					TheExpDesign_Model.write();
+
+					// thePlate.getGUI().updateMetaDataLegend();
 						}
 					}
 				});
@@ -398,11 +482,13 @@ public class MidasInputPanel extends JPanel
 					{
 						if (measurementComboBox.getItemCount()>0)
 						{
-							Description meas = (Description)measurementComboBox.getSelectedItem();
+					ExpDesign_Description meas = (ExpDesign_Description) measurementComboBox
+							.getSelectedItem();
 							//open the edit dialog
 							NewMeasurmentInputDialog n = new NewMeasurmentInputDialog(meas);
 							
-							TheMetaDataWriter.writeMetaDataXML();
+
+					// TheExpDesign_Model.write();
 							measurementComboBox.repaint();
 					thePlate.getGUI().updateMetaDataLegend();
 						}
@@ -467,9 +553,6 @@ public class MidasInputPanel extends JPanel
 			checkBoxes[i].setSelected(true);
 			checkBoxes[i].doClick();
 		}
-		
-		
-		
 		BufferPanel buffer1 = new BufferPanel(BorderLayout.EAST);
 		add(buffer1, BorderLayout.EAST);
 		BufferPanel buffer = new BufferPanel(BorderLayout.WEST);
@@ -507,23 +590,15 @@ public class MidasInputPanel extends JPanel
 		buffP2.setPreferredSize(new Dimension(125,100));
 		add(buffP, BorderLayout.EAST);
 		add(buffP2, BorderLayout.WEST);
-		TheMetaDataWriter = null;
-		CurrentProjectDirectory = null;
-		
-		updateInputPanel(thePlate);
+		updateInputPanel();
 	}
-	
-	
-	
-	
+
 	/**
 	 *
 	 * */
-	public void updateInputPanel(Model_Plate plate)
-	{
-		TheMetaDataWriter = plate.getMetaDataConnector();
+	public void updateInputPanel() {
+
 		enableComponents(false);
-		thePlate = plate;
 		theWells = thePlate.getAllSelectedWells();
 		
 		int numWells = theWells.length;
@@ -543,21 +618,24 @@ public class MidasInputPanel extends JPanel
 			else
 				wellTitleLabel.setText("Wells: "+str1+ "-"+str2);
 			
-			
 			//inserting appropriate info into each component
 			
 			//date:
 			boolean same = true;
-			Description val0 = TheMetaDataWriter.readDate(theWells[0].getWellIndex());
+
+			ExpDesign_Description val0 = TheExpDesign_Model.getDate(theWells[0]
+					.getID());
 			for (int i=1; i < numWells; i++)
 			{
-				Description val_i = TheMetaDataWriter.readDate(theWells[i].getWellIndex());
-				if(val_i==null)
+				ExpDesign_Description date_i = TheExpDesign_Model
+						.getDate(theWells[i].getID());
+				if (date_i == null)
 				{
 					same = false;
 					break;
 				}
-				if (val0!=null&&!val0.getValue().equalsIgnoreCase(val_i.getValue()))
+				if (val0 != null
+						&& !val0.getValue().equalsIgnoreCase(date_i.getValue()))
 				{
 					same = false;
 					break;
@@ -570,16 +648,22 @@ public class MidasInputPanel extends JPanel
 			
 			//description:
 			same = true;
-			val0 = TheMetaDataWriter.readDescription(theWells[0].getWellIndex());
+			val0 = TheExpDesign_Model.getDescription(theWells[0]
+.getID(),
+					"Description");
 			for (int i=1; i < numWells; i++)
 			{
-				Description val_i = TheMetaDataWriter.readDescription(theWells[i].getWellIndex());
+				ExpDesign_Description val_i = TheExpDesign_Model
+						.getDescription(theWells[i].getID(), "Description");
 				if(val_i==null)
 				{
 					same = false;
 					break;
 				}
-				if (val0!=null&& val0.getValue()!=null && !val0.getValue().equalsIgnoreCase(val_i.getValue()))
+				if (val0 != null
+						&& val0.getValue() != null
+						&& !val0.getValue().equalsIgnoreCase(
+val_i.getValue()))
 				{
 					same = false;
 					break;
@@ -591,7 +675,9 @@ public class MidasInputPanel extends JPanel
 				textField[2].setText("");
 			
 			//Treatments
-			Description[] arr0  = TheMetaDataWriter.readTreatments(theWells[0].getWellIndex());
+			ExpDesign_Description[] arr0 = TheExpDesign_Model
+					.getTreatments(theWells[0].getID());
+			if (arr0 != null) {
 			int len = arr0.length;
 			treatmentComboBox.removeAllItems();
 			for (int i=0; i < len; i++)
@@ -600,7 +686,9 @@ public class MidasInputPanel extends JPanel
 				for (int j=1; j < numWells; j++)
 				{
 					boolean foundIt = false;
-					Description[] arrj  = TheMetaDataWriter.readTreatments(theWells[j].getWellIndex());
+						ExpDesign_Description[] arrj = TheExpDesign_Model
+								.getTreatments(theWells[j].getID()
+										);
 					for (int z = 0; z < arrj.length; z++)
 					{
 						if(arrj[z].isSame(arr0[i]))
@@ -619,13 +707,13 @@ public class MidasInputPanel extends JPanel
 				if(containsIt)
 					treatmentComboBox.addItem(arr0[i]);
 			}
-			
+			}
 
 			
 			//Measurements
-			arr0  = TheMetaDataWriter.readMeasurements( theWells[0].getWellIndex());
-			
-			len = arr0.length;
+			arr0 = TheExpDesign_Model.getMeasurements(theWells[0].getID());
+			if (arr0 != null) {
+				int len = arr0.length;
 			measurementComboBox.removeAllItems();
 			for (int i=0; i < len; i++)
 			{
@@ -633,7 +721,8 @@ public class MidasInputPanel extends JPanel
 				for (int j=1; j < numWells; j++)
 				{
 					boolean foundIt = false;
-					Description[] arrj  = TheMetaDataWriter.readMeasurements(theWells[j].getWellIndex());
+						ExpDesign_Description[] arrj = TheExpDesign_Model
+								.getMeasurements(theWells[j].getID());
 					for (int z = 0; z < arrj.length; z++)
 					{
 						if(arrj[z].isSame(arr0[i]))
@@ -652,14 +741,19 @@ public class MidasInputPanel extends JPanel
 				if(containsIt)
 					measurementComboBox.addItem(arr0[i]);
 			}
-
+			}
 			
 			//Measurement Time Point:
 			same = true;
-			val0 = TheMetaDataWriter.readTimePoint(theWells[0].getWellIndex());
+			val0 = TheExpDesign_Model.getTimePoint(theWells[0]
+.getID());
+
+
 			for (int i=1; i < numWells; i++)
 			{
-				Description val_i = TheMetaDataWriter.readTimePoint( theWells[i].getWellIndex());
+				ExpDesign_Description val_i = TheExpDesign_Model
+						.getTimePoint(theWells[i].getID());
+
 				if(val_i==null)
 				{
 					same = false;
@@ -682,56 +776,60 @@ public class MidasInputPanel extends JPanel
 		for (int i =0; i < checkBoxes.length; i++)
 			checkBoxes[i].setSelected(false);
 		enableComponents();
+
 	}
 	
-	/**
-	 *
-	 * */
-	private boolean containSameMeasurements(Description[] arr1, Description[] arr2)
-	{
-		int len1 = arr1.length;
-		int len2 = arr2.length;
-		for (int i =0; i < len1; i++)
-		{
-			Description meas = arr1[i];
-			boolean foundIt = false;
-			for (int j =0 ; j < len2; j++)
-			{
-				if((arr2[j]).isSame(meas))
-				{
-					foundIt = true;
-					break;
-				}
-			}
-			if (!foundIt)
-				return false;
-		}
-		
-		return true;
-	}
-	
-	private boolean containSameTreatments(Description[] arr1, Description[] arr2)
-	{
-		int len1 = arr1.length;
-		int len2 = arr2.length;
-		for (int i =0; i < len1; i++)
-		{
-			Description treat = (Description)arr1[i];
-			boolean foundIt = false;
-			for (int j =0 ; j < len2; j++)
-			{
-				if(arr2[j].isSame(treat))
-				{
-					foundIt = true;
-					break;
-				}
-			}
-			if (!foundIt)
-				return false;
-		}
-		
-		return true;
-	}
+
+	// /**
+	// *
+	// * */
+	// private boolean containSameMeasurements(Description[] arr1, Description[]
+	// arr2)
+	// {
+	// int len1 = arr1.length;
+	// int len2 = arr2.length;
+	// for (int i =0; i < len1; i++)
+	// {
+	// Description meas = arr1[i];
+	// boolean foundIt = false;
+	// for (int j =0 ; j < len2; j++)
+	// {
+	// if((arr2[j]).isSame(meas))
+	// {
+	// foundIt = true;
+	// break;
+	// }
+	// }
+	// if (!foundIt)
+	// return false;
+	// }
+	//		
+	// return true;
+	// }
+	//	
+	// private boolean containSameTreatments(Description[] arr1, Description[]
+	// arr2)
+	// {
+	// int len1 = arr1.length;
+	// int len2 = arr2.length;
+	// for (int i =0; i < len1; i++)
+	// {
+	// Description treat = (Description)arr1[i];
+	// boolean foundIt = false;
+	// for (int j =0 ; j < len2; j++)
+	// {
+	// if(arr2[j].isSame(treat))
+	// {
+	// foundIt = true;
+	// break;
+	// }
+	// }
+	// if (!foundIt)
+	// return false;
+	// }
+	//		
+	// return true;
+	// }
 	
 	private void enableComponents(boolean boo)
 	{
@@ -815,15 +913,18 @@ public class MidasInputPanel extends JPanel
 	
 	/** Looks at all the wells in this plate and returns a list of all unique treatments
 	 * @author BLM*/
-	private ArrayList<Description> getAllUniqueTreatments(Model_Plate plate)
+	private ArrayList<ExpDesign_Description> getAllUniqueTreatments(
+			Model_Plate plate)
 	{
-		ArrayList<Description> arr = new ArrayList<Description>();
+		ArrayList<ExpDesign_Description> arr = new ArrayList<ExpDesign_Description>();
 		
 		for (int i = 0; i < plate.getNumRows(); i++)
 		{
 			for (int j = 0; j < plate.getNumColumns(); j++)
 			{
-				Description[] des = TheMetaDataWriter.readTreatments(plate.getWells()[i][j].getWellIndex());
+				ExpDesign_Description[] des = TheExpDesign_Model
+						.getTreatments(plate
+						.getWells()[i][j].getID());
 				if (des!=null)
 				{
 					int len = des.length;
@@ -856,7 +957,7 @@ public class MidasInputPanel extends JPanel
 		private String btnString1 = "Enter";
 		private String btnString2 = "Cancel";
 		private JComboBox CurrentTreatments;
-		private Description TreatmentToEdit;
+		private ExpDesign_Description TreatmentToEdit;
 		
 		
 		/** Creates the reusable dialog. */
@@ -872,7 +973,7 @@ public class MidasInputPanel extends JPanel
 			setModal(true);
 			
 			//adding currently used treatments
-			ArrayList<Description> allUniqueTreatments = getAllUniqueTreatments(thePlate);
+			ArrayList<ExpDesign_Description> allUniqueTreatments = getAllUniqueTreatments(thePlate);
 			int numT =	allUniqueTreatments.size();
 			Object[] treats = new Object[numT];
 			for (int i =0; i < numT; i++)
@@ -937,7 +1038,7 @@ public class MidasInputPanel extends JPanel
 		}
 		
 		/** This constructor lets you edit an existing treatment */
-		public NewTreatmentInputDialog(Description treatmentToEdit)
+		public NewTreatmentInputDialog(ExpDesign_Description treatmentToEdit)
 		{
 			TreatmentToEdit = treatmentToEdit;
 			int width = 330;
@@ -949,7 +1050,7 @@ public class MidasInputPanel extends JPanel
 			setModal(true);
 			
 			//adding currently used treatments
-			ArrayList<Description> allUniqueTreatments = getAllUniqueTreatments(thePlate);
+			ArrayList<ExpDesign_Description> allUniqueTreatments = getAllUniqueTreatments(thePlate);
 			int numT =	allUniqueTreatments.size();
 			Object[] treats = new Object[numT];
 			for (int i =0; i < numT; i++)
@@ -1050,7 +1151,7 @@ public class MidasInputPanel extends JPanel
 				
 				if (btnString1.equals(value))
 				{
-					Description theTreatment = null;
+					ExpDesign_Description theTreatment = null;
 					
 					String name = textField[0].getText().trim();
 					String val = textField[1].getText().trim();
@@ -1058,7 +1159,9 @@ public class MidasInputPanel extends JPanel
 					String timeValue = textField[3].getText().trim();
 					String timeUnits = textField[4].getText().trim();
 					
-					theTreatment = new Description("treatment" ,name, ""+val, units, timeValue, timeUnits);
+					theTreatment = new ExpDesign_Description("Treatment", name,
+							"" + val,
+							units, timeValue, timeUnits);
 					
 					treatmentComboBox.addItem(theTreatment);
 					treatmentComboBox.repaint();
@@ -1066,31 +1169,10 @@ public class MidasInputPanel extends JPanel
 					
 					// setting it automatically now
 					for (int i =0; i < theWells.length; i++)
-					{
-						//treatments
-						{
-							int numItems = treatmentComboBox.getItemCount();
-							if (numItems>0)
-							{
-								int num = treatmentComboBox.getItemCount();
-								for (int n = 0; n < num; n++)
-								{
-									Description treat = (Description)treatmentComboBox.getItemAt(n);
-									//XML
-									TheMetaDataWriter.writeTreatment(
-											theWells[i].getWellIndex(), treat
-													.getName(), treat
-													.getValue(), treat
-													.getUnits(), treat
-													.getTimeValue(), treat
-													.getTimeUnits());
-									TheMetaDataWriter.writeMetaDataXML();
-									
-								}
-							}
-						}
-					}
-					
+							TheExpDesign_Model.addDescription(theWells[i]
+									.getID(), theTreatment.getCopy());
+
+
 					//If we were editing an old treatment, delete old one now
 					//then delete the old one
 					if(TreatmentToEdit!=null)
@@ -1098,10 +1180,11 @@ public class MidasInputPanel extends JPanel
 						treatmentComboBox.removeItemAt(treatmentComboBox.getSelectedIndex());
 						int len = theWells.length;
 						for (int i = 0; i < len; i++)
-							TheMetaDataWriter.dropTreatmentOrMeasurement(thePlate.getPlateIndex(), theWells[i].getWellIndex(), TreatmentToEdit);
-						TheMetaDataWriter.writeMetaDataXML();
+							TheExpDesign_Model.removeDescription(
+									theWells[i].getID(), TreatmentToEdit);
 					}
 					
+					TheExpDesign_Model.write();
 					clearAndHide();
 					
 				}
@@ -1110,7 +1193,8 @@ public class MidasInputPanel extends JPanel
 				}
 			}
 			
-			thePlate.getGUI().updateMetaDataLegend();
+
+			// thePlate.getGUI().updateMetaDataLegend();
 		}
 		
 		/** This method clears the dialog and hides it. */
@@ -1128,11 +1212,11 @@ public class MidasInputPanel extends JPanel
 		private String btnString1 = "Enter";
 		private String btnString2 = "Cancel";
 		private JComboBox CurrentMeasurments;
-		private Description MeasurementToEdit;
+		private ExpDesign_Description MeasurementToEdit;
 		
 		
 		/** Creates the reusable dialog. */
-		public NewMeasurmentInputDialog(Description measurementToEdit)
+		public NewMeasurmentInputDialog(ExpDesign_Description measurementToEdit)
 		{
 			MeasurementToEdit = measurementToEdit;
 			int width = 330;
@@ -1300,9 +1384,10 @@ public class MidasInputPanel extends JPanel
 				
 				if (btnString1.equals(value))
 				{
-					Description theMeasurement = null;
+					ExpDesign_Description theMeasurement = null;
 					String name = textField[0].getText();
-					theMeasurement = new Description("measurement", name, null,
+					theMeasurement = new ExpDesign_Description("Measurement",
+							name, null,
 							null, null, null);
 
 					
@@ -1311,20 +1396,9 @@ public class MidasInputPanel extends JPanel
 					
 					//measurements
 					for (int i =0; i < theWells.length; i++)
-					{
-						if (measurementComboBox.getSelectedItem()!=null)
-						{
-							int num = measurementComboBox.getItemCount();
-							for (int n = 0; n < num; n++)
-							{
-								Description meas = (Description)measurementComboBox.getItemAt(n);
-								//XML
-								TheMetaDataWriter.writeMeasurement(theWells[i].getWellIndex(), meas.getName());
-								TheMetaDataWriter.writeMetaDataXML();
-								//									
-							}
-						}
-					}
+						TheExpDesign_Model.addDescription(theWells[i].getID(),
+								theMeasurement.getCopy());
+
 					
 					//If we were editing an old treatment, delete old one now
 					//then delete the old one
@@ -1333,9 +1407,10 @@ public class MidasInputPanel extends JPanel
 						measurementComboBox.removeItemAt(measurementComboBox.getSelectedIndex());
 						int len = theWells.length;
 						for (int i = 0; i < len; i++)
-							TheMetaDataWriter.dropTreatmentOrMeasurement(thePlate.getPlateIndex(), theWells[i].getWellIndex(), MeasurementToEdit);
-						TheMetaDataWriter.writeMetaDataXML();
+							TheExpDesign_Model.removeDescription(
+									theWells[i].getID(), MeasurementToEdit);
 					}
+					TheExpDesign_Model.write();
 					clearAndHide();
 					
 				}

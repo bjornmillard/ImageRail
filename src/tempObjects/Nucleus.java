@@ -17,7 +17,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 import segmentors.DefaultSegmentor.Pixel;
-import us.hms.systemsbiology.idx2coordinates.Point;
+import imagerailio.Point;
 
 /** Each segmented nucleus will hold its own pixels and properties
  * @author BLM*/

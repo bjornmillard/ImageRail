@@ -64,7 +64,7 @@ public class Gui_PlateRepository extends JPanel {
 		CVdisplay = false;
 
 		// Adding the grid tab panel
-		LastTouched_PlateID = 1;
+		LastTouched_PlateID = 0;
 		TheMainPanel = new JTabbedPane();
 		final JPanel GridPanel = new JPanel();
 		GridPanel.setLayout(new GridLayout(sqNumPlates, sqNumPlates));

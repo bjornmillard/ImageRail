@@ -15,16 +15,15 @@ package models;
 import features.Feature;
 import gui.Gui_Plate;
 import gui.MainGUI;
+import imagerailio.ImageRail_SDCube;
 
 import java.awt.Color;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import us.hms.systemsbiology.data.HDFConnectorException;
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
-import us.hms.systemsbiology.metadata.Description;
-import us.hms.systemsbiology.metadata.MetaDataConnector;
+import sdcubeio.ExpDesign_Description;
+import sdcubeio.ExpDesign_IO;
+import sdcubeio.H5IO_Exception;
 
 
 /**
@@ -52,14 +51,14 @@ public class Model_Plate
 	private float[][] MinMaxFeatureValues_log;
 	/** Number of Gaussians to fit to each mini-histogram*/
 	private int FitGaussian;
-	/** List of all MIDAS treatments*/
-	private ArrayList AllTreatments;
-	/** List of all MIDAS measurements*/
-	private ArrayList AllMeasurements;
+	/** List of all MIDAS treatments */
+	private ArrayList<ExpDesign_Description> AllTreatments;
+	/** List of all MIDAS measurements */
+	private ArrayList<ExpDesign_Description> AllMeasurements;
 	/** */
 	public Hashtable TheMetaDataHashtable;
 	/** */
-	public MetaDataConnector TheMetaDataWriter;
+	public ExpDesign_IO TheMetaDataWriter;
 	/** String Title for the plate that will be displayed above if desired */
 	private String Title;
 	/** */
@@ -67,17 +66,17 @@ public class Model_Plate
 	
 	/** Main Model_Plate Constructor
 	 * @author BLM*/
-	public Model_Plate(int numRows_, int numCols_, int ID_)
+	public Model_Plate(int numRows_, int numCols_, int ID_,
+			boolean seekSampleIDsFromFiles)
 	{
 		ID = ID_;
 		ThePlate = this;
-		AllTreatments = new ArrayList();
-		AllMeasurements = new ArrayList();
+		AllTreatments = new ArrayList<ExpDesign_Description>();
+		AllMeasurements = new ArrayList<ExpDesign_Description>();
 		NumRows = numRows_;
 		NumCols = numCols_;
-		initWells();
+		initWells(seekSampleIDsFromFiles);
 		FitGaussian = 0;
-		initMetaDataConnector();
 	}
 	
 	public void initGUI() {
@@ -89,64 +88,73 @@ public class Model_Plate
 		ThisGUI = theGUI;
 	}
 	
-	/** Looks for all the unique treatment combinations across all the wells and adds them to a hashtable linked with a color for that treatment combo.
-	 * Note it doesnt compare quantitative amounts of treatment, just if that treatment exists in the well. For example, if a well is treated with
-	 * EGF and Iressa, the key to the hashtable would be "EGF+Iressa" and the table would get a colore for that combination
-	 * @author BLM*/
-	public Hashtable initMetaDataHashtable(Model_Plate plate,
-			MetaDataConnector meta)
-	{
-		TheMetaDataHashtable = null;
-		int colorCounter = 0;
-		Hashtable hash = new Hashtable();
-		ArrayList<String> uniques = new ArrayList<String>();
-		//Getting treatments
-		for (int r = 0; r < plate.NumRows; r++)
-			for (int c = 0; c < plate.NumCols; c++)
-			{
-				int Type = getGUI().shouldDisplayMetaData();
-				ArrayList<String> arr = new ArrayList<String>();
-				if(Type == 0)
-					arr = meta.getAllTreatmentNames(plate.getPlateIndex(), plate.TheWells[r][c].getWellIndex());
-				else if(Type == 1)
-					arr = meta.getAllMeasurementNames(plate.getPlateIndex(), plate.TheWells[r][c].getWellIndex());
-				else if(Type == 2)
-				{
-					Description des = ((Description)meta.readDescription( plate.TheWells[r][c].getWellIndex()));
-					if (des == null || des.getValue()== null)
-						arr= null;
-					else
-						arr.add(des.getValue());
-				}
-				else if(Type == 3)
-				{
-					Description des = ((Description)meta.readTimePoint( plate.TheWells[r][c].getWellIndex()));
-					if (des == null || des.getValue()== null)
-						arr= null;
-					else
-						arr.add(des.getValue());
-				}
-				
-				
-				if (arr!=null && arr.size()>0)
-				{
-					//Now adding it to the hastable
-					String stringCat = "";
-					for (int i = 0; i < arr.size()-1; i++)
-						stringCat+=arr.get(i)+" + ";
-					stringCat+=arr.get(arr.size()-1);
-					
-					if(hash.get(stringCat)==null)
-					{
-						hash.put(stringCat, tools.ColorRama.getColor(colorCounter));
-						colorCounter++;
-					}
-				}
-			}
-		
-		
-		return hash;
-	}
+
+	// /** Looks for all the unique treatment combinations across all the wells
+	// and adds them to a hashtable linked with a color for that treatment
+	// combo.
+	// * Note it doesnt compare quantitative amounts of treatment, just if that
+	// treatment exists in the well. For example, if a well is treated with
+	// * EGF and Iressa, the key to the hashtable would be "EGF+Iressa" and the
+	// table would get a colore for that combination
+	// * @author BLM*/
+	// public Hashtable initMetaDataHashtable(Model_Plate plate,
+	// ExpDesign_IO meta)
+	// {
+	// TheMetaDataHashtable = null;
+	// int colorCounter = 0;
+	// Hashtable hash = new Hashtable();
+	// ArrayList<String> uniques = new ArrayList<String>();
+	// //Getting treatments
+	// for (int r = 0; r < plate.NumRows; r++)
+	// for (int c = 0; c < plate.NumCols; c++)
+	// {
+	// int Type = getGUI().shouldDisplayMetaData();
+	// ArrayList<String> arr = new ArrayList<String>();
+	// if(Type == 0)
+	// arr = meta.getAllTreatmentNames(plate.getPlateIndex(),
+	// plate.TheWells[r][c].getWellIndex());
+	// else if(Type == 1)
+	// arr = meta.getAllMeasurementNames(plate.getPlateIndex(),
+	// plate.TheWells[r][c].getWellIndex());
+	// else if(Type == 2)
+	// {
+	// Description des = ((Description)meta.readDescription(
+	// plate.TheWells[r][c].getWellIndex()));
+	// if (des == null || des.getValue()== null)
+	// arr= null;
+	// else
+	// arr.add(des.getValue());
+	// }
+	// else if(Type == 3)
+	// {
+	// Description des = ((Description)meta.readTimePoint(
+	// plate.TheWells[r][c].getWellIndex()));
+	// if (des == null || des.getValue()== null)
+	// arr= null;
+	// else
+	// arr.add(des.getValue());
+	// }
+	//				
+	//				
+	// if (arr!=null && arr.size()>0)
+	// {
+	// //Now adding it to the hastable
+	// String stringCat = "";
+	// for (int i = 0; i < arr.size()-1; i++)
+	// stringCat+=arr.get(i)+" + ";
+	// stringCat+=arr.get(arr.size()-1);
+	//					
+	// if(hash.get(stringCat)==null)
+	// {
+	// hash.put(stringCat, tools.ColorRama.getColor(colorCounter));
+	// colorCounter++;
+	// }
+	// }
+	// }
+	//		
+	//		
+	// return hash;
+	// }
 	
 	/** If an HDF file of cell data exists for this plate and each well within, this method trys to load it into the RAM
 	 * @author BLM*/
@@ -165,24 +173,28 @@ public class Model_Plate
 		loader.start();
 	}
 	
-	/** Each plate will have a single metadata connector to represent its meta data.  This method creates it
-	 * @author BLM*/
-	private void initMetaDataConnector()
-	{
-		if(gui.MainGUI.getGUI().getProjectDirectory()!=null)
-		{
-			String projPath = gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
-			TheMetaDataWriter = null;
-			try
-			{
-				TheMetaDataWriter = new MetaDataConnector(projPath, getPlateIndex());
-			}
-			catch(Exception e)
-			{
-				System.out.println("------* Error creating MetaData XML writer *------");
-			}
-		}
-	}
+
+	// /** Each plate will have a single metadata connector to represent its
+	// meta data. This method creates it
+	// * @author BLM*/
+	// private void initMetaDataConnector()
+	// {
+	// if(gui.MainGUI.getGUI().getProjectDirectory()!=null)
+	// {
+	// String projPath =
+	// gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
+	// TheMetaDataWriter = null;
+	// try
+	// {
+	// System.out.println("METAcon Path: " + projPath);
+	// TheMetaDataWriter = new MetaDataConnector(projPath);
+	// }
+	// catch(Exception e)
+	// {
+	// System.out.println("------* Error creating MetaData XML writer *------");
+	// }
+	// }
+	// }
 	
 	/** Clears the RAM of all cell data across all plates in the program
 	 * @author BLM*/
@@ -210,21 +222,75 @@ public class Model_Plate
 	
 	/** Initialize the wells
 	 * @author BLM*/
-	public void initWells()
+	public void initWells(boolean seekSampleIDsFromFiles)
 	{
+		// Creating hash's of all samples in both the hdf and xml files to help
+		// speed extant sampleID search
+
+		// Hashtable xmlHassh = new Hashtable();
+		// Hashtable hdfHash = null;
+		// if (gui.MainGUI.getGUI().getImageRailio() != null) {
+		// hdfHash = gui.MainGUI.getGUI().getImageRailio()
+		// .getHashtable();
+		// }
+
+		// sampleID = gui.MainGUI.getGUI().getImageRailio()
+		// .readSampleID_fromHDF5(ID, counter);
+		//		
+		// sampleID = gui.MainGUI.getGUI().getImageRailio()
+		// .readSampleID_fromXML(ID, counter);
+		//		
+		// long hdfTime = 0;
+		// long xmlTime = 0;
 		TheWells = new Model_Well[NumRows][NumCols];
 		int counter = 0;
+		for (int c = 0; c < NumCols; c++)
 		for (int r = 0; r < NumRows; r++)
-			for (int c = 0; c < NumCols; c++)
 			{
 				Model_Well well = new Model_Well(this, r, c);
-				well.ID = counter;
+				
+				//Need to check if the HDF5 or XML files already have these wells such that we need to 
+				//get the sampleID from them rather than create new ones
+				String sampleID = null;
+
+				if (seekSampleIDsFromFiles
+						&& gui.MainGUI.getGUI().getImageRailio() != null) {
+
+					// long sTime = System.currentTimeMillis();
+				sampleID = gui.MainGUI.getGUI().getImageRailio()
+						.readSampleID_fromHDF5(ID, counter);
+
+					// String path = (String)hdfHash.get("p"+ID+"w"+counter);
+					// if(path!=null)
+					// {
+					// sampleID =
+					// }
+
+					// hdfTime += (System.currentTimeMillis() - sTime);
+					// sTime = System.currentTimeMillis();
+					// System.out.println("hdfDone");
+				if(sampleID==null) //Trying to get from XML if not in HDF5
+					sampleID = gui.MainGUI.getGUI().getImageRailio()
+							.readSampleID_fromXML(ID, counter);
+					// System.out.println("xmlDone");
+					// xmlTime += (System.currentTimeMillis() - sTime);
+				}
+
+				if (sampleID == null)
+					sampleID = "p" + ID + "w" + counter + "_t"
+							+ imagerailio.ImageRail_SDCube.getTimeStamp();
+
+				well.ID = sampleID;
 				
 				TheWells[r][c] = well;
 				counter++;
 			}
+		// System.out.println("hdf: " + hdfTime + " xml: " + xmlTime);
+
 	}
 	
+	/** */
+
 	/** Returns an ArrayList of selected Wells ordered from left to right, top to bottom
 	 * @author BLM*/
 	public ArrayList<Model_Well> getSelectedWells_horizOrder()
@@ -391,7 +457,7 @@ public class Model_Plate
 	 * @author BLM*/
 	public int getPlateIndex()
 	{
-		return (getID()-1);
+		return (getID());
 	}
 	
 	
@@ -498,10 +564,8 @@ public class Model_Plate
 	 * @author BLM*/
 	public Model_Plate copy()
 	{
-		Model_Plate plate = new Model_Plate(NumRows, NumCols, ID);
+		Model_Plate plate = new Model_Plate(NumRows, NumCols, ID, false);
 		plate.initGUI();
-		// plate.Ystart = Ystart;
-		// plate.Xstart = Xstart;
 		for (int r = 0; r < NumRows; r++)
 			for (int c = 0; c < NumCols; c++)
 				plate.TheWells[r][c] = TheWells[r][c].copy(plate);
@@ -554,48 +618,47 @@ public class Model_Plate
 	
 	
 	
-
-	public void loadWellMeanAndStdevData()
+	/** Looks for HDF5 data containing the well means and stdevs for all wells in this plate and tries to laod it into the GUI 
+	 * @throws H5IO_Exception */
+	public void loadWellMeanAndStdevData() throws H5IO_Exception
 	{
+		System.out.println("Loading means and stdevs for plate: " + getID());
+		ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
 		//Trying to write mean value data to file
-		String projPath = gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
 		
-		File f = new File(projPath+File.separator+"Data"+File.separator+"plate_"+(getID()-1)+File.separator+"wellMeans.h5");
-//		System.out.println("f: "+f.getAbsolutePath());
-		if (!f.exists())
-			return;
-		
-		int plateIndex = getID()-1;
-		SegmentationHDFConnector sCon = new SegmentationHDFConnector(projPath);
-		try
+		int numRows = TheWells.length;
+		int numCols = TheWells[0].length;
+		int wellIndex =0;
+		for (int  c = 0;  c < numCols;  c++) 
+		for (int r = 0; r < numRows; r++) 
 		{
-			for (int i = 0; i < NumRows; i++)
-			{
-				for (int j = 0; j < NumCols; j++)
-				{
-					int wellIndex = (TheWells[i][j].getPlate().getNumRows()*TheWells[i][j].Column)+TheWells[i][j].Row;
-					float[] arr = sCon.readWellMeanValues(plateIndex, wellIndex);
-					if (arr!=null)
-						TheWells[i][j].Feature_Means = arr;
-					arr = sCon.readWellStdDevValues(plateIndex, wellIndex);
-					if (arr!=null)
-						TheWells[i][j].Feature_Stdev = arr;
-				}
+			String pathToSample = io.getHashtable().get(io.getIndexKey(getID(), wellIndex));
+			if (pathToSample != null) {
+
+				float[] means = io.readWellMeans(getID(), wellIndex);
+				float[] stdevs = io.readWellStdevs(getID(), wellIndex);
+				if(means!=null & stdevs!=null)
+					TheWells[r][c].setWellMeansAndStdevs(means, stdevs);
+				else
+					System.out.println("**Error: found data for path: "+pathToSample + "  r,c: "+r +","+c +"  but could not load it properly");
+
 			}
+			 wellIndex++;
 		}
-		catch (HDFConnectorException e) {System.out.println("ERROR: reading HDF well mean/stdev file");}
+
 		ThisGUI.repaint();
 	}
 	
 	
 
 
-	/** */
-	public MetaDataConnector getMetaDataConnector()
-	{
-		initMetaDataConnector();
-		return TheMetaDataWriter;
-	}
+
+	// /** */
+	// public MetaDataConnector getMetaDataConnector()
+	// {
+	// initMetaDataConnector();
+	// return TheMetaDataWriter;
+	// }
 	/** */
 	public Hashtable getMetaDataHashtable()
 	{
@@ -959,12 +1022,12 @@ public class Model_Plate
 		public void run()
 		{
 			// Project name
-			String projectPath =  gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
-			SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-					projectPath);
+			// String projectPath =
+			// gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
+			ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
 			if(wells!=null && wells.size()>0)
 				for (int i = 0; i < wells.size(); i++)
-					wells.get(i).loadCells(sCon, loadCoords, loadDataVals);
+					wells.get(i).loadCells(io, loadCoords, loadDataVals);
 		}
 		
 	}

@@ -360,7 +360,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 						}
 					}
 				});
-		SelectionMenu.add(item);
+		// SelectionMenu.add(item);
 		
 		
 		

@@ -38,7 +38,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Enumeration;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -61,7 +60,6 @@ import plots.Legend;
 import plots.LinePlot;
 import tools.PanelDropTargetListener;
 import tools.SVG_writer;
-import us.hms.systemsbiology.metadata.MetaDataConnector;
 import dialogs.CaptureImage_Dialog;
 
 public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel {
@@ -175,7 +173,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 					{
 						
 				MainGUI.getGUI().getPlateHoldingPanel()
-						.setTab(TheModel.getID());
+						.setTab(TheModel.getID()+1);
 						if(e.getClickCount()>1)
 						{
 							String response = JOptionPane.showInputDialog(null,
@@ -236,53 +234,56 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 		//Trying to create a metaDataconnector to pass metadata to the linegraph
 		// so we can have axis labeling and the such
 		
-		if (getModel().TheMetaDataWriter == null)
-		{
-			String projPath = gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
-			try
-			{
-				getModel().TheMetaDataWriter = new MetaDataConnector(projPath,
-						getModel().getPlateIndex());
-			}
-			catch(Exception e)
-			{
-				System.out.println("------* Error creating MetaData XML writer *------");
-			}
-		}
+
+		// if (getModel().TheMetaDataWriter == null)
+		// {
+		// String projPath =
+		// gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
+		// try
+		// {
+		// getModel().TheMetaDataWriter = new MetaDataConnector(projPath);
+		// }
+		// catch(Exception e)
+		// {
+		// System.out.println("------* Error creating MetaData XML writer *------");
+		// }
+		// }
 		
-		if(DisplayMetaData>-1)
-		{
-			MetaButton.setIcon(new ImageIcon("icons/meta_selected.png"));
-			
-			//Getting all unique meta data treatment combinations
-			getModel().TheMetaDataHashtable = getModel().initMetaDataHashtable(
-					getModel(),
-					getModel().TheMetaDataWriter);
-			String[] names = new String[getModel().TheMetaDataHashtable.size()];
-			Color[] colors = new Color[getModel().TheMetaDataHashtable.size()];
-			int counter = 0;
-			//First Legend entry will be the Title:
-			String title = "";
-			if(DisplayMetaData==0)
-				title = "Treatments:";
-			else if(DisplayMetaData==1)
-				title = "Measurements:";
-			else if(DisplayMetaData==2)
-				title = "Descriptions:";
-			else if(DisplayMetaData==3)
-				title = "Time Points:";
-			
-			for (Enumeration e = getModel().TheMetaDataHashtable.keys(); e
-					.hasMoreElements();)
-			{
-				names[counter] = (String)(e.nextElement());
-				colors[counter] = (Color) getModel().TheMetaDataHashtable
-						.get(names[counter]);
-				counter++;
-			}
-			
-			TheLegend = new Legend(title, names, colors, Legend_xy.x, Legend_xy.y);
-		}
+
+		// if(DisplayMetaData>-1)
+		// {
+		// MetaButton.setIcon(new ImageIcon("icons/meta_selected.png"));
+		//			
+		// //Getting all unique meta data treatment combinations
+		// getModel().TheMetaDataHashtable = getModel().initMetaDataHashtable(
+		// getModel(),
+		// getModel().TheMetaDataWriter);
+		// String[] names = new String[getModel().TheMetaDataHashtable.size()];
+		// Color[] colors = new Color[getModel().TheMetaDataHashtable.size()];
+		// int counter = 0;
+		// //First Legend entry will be the Title:
+		// String title = "";
+		// if(DisplayMetaData==0)
+		// title = "Treatments:";
+		// else if(DisplayMetaData==1)
+		// title = "Measurements:";
+		// else if(DisplayMetaData==2)
+		// title = "Descriptions:";
+		// else if(DisplayMetaData==3)
+		// title = "Time Points:";
+		//			
+		// for (Enumeration e = getModel().TheMetaDataHashtable.keys(); e
+		// .hasMoreElements();)
+		// {
+		// names[counter] = (String)(e.nextElement());
+		// colors[counter] = (Color) getModel().TheMetaDataHashtable
+		// .get(names[counter]);
+		// counter++;
+		// }
+		//			
+		// TheLegend = new Legend(title, names, colors, Legend_xy.x,
+		// Legend_xy.y);
+		// }
 		else
 		{
 			getModel().TheMetaDataHashtable = null;

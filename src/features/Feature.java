@@ -20,7 +20,7 @@ package features;
 
 import java.util.ArrayList;
 
-import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import segmentedobject.CellCoordinates;
 import gui.MainGUI;
 
 public abstract class Feature

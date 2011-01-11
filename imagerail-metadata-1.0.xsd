@@ -1,53 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema elementFormDefault="qualified" targetNamespace="http://pipeline.med.harvard.edu/imagerail-metadata-1.0" xmlns="http://pipeline.med.harvard.edu/imagerail-metadata-1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://pipeline.med.harvard.edu/imagerail-metadata-1.0"
+	xmlns="http://pipeline.med.harvard.edu/imagerail-metadata-1.0"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 	<xsd:element name="plate">
 		<xsd:complexType>
 			<xsd:sequence minOccurs="0" maxOccurs="unbounded">
-				<xsd:element ref="well"/>
+				<xsd:element ref="well" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:element name="well">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element ref="date" minOccurs="0" maxOccurs="1"/>
-				<xsd:element ref="measurement" minOccurs="0" maxOccurs="unbounded"/>
-				<xsd:element ref="measurement_time" minOccurs="0" maxOccurs="1"/>
-				<xsd:element ref="treatment" minOccurs="0" maxOccurs="unbounded"/>
-				<xsd:element ref="description" minOccurs="0" maxOccurs="1"/>
+				<xsd:element ref="date" minOccurs="0" maxOccurs="1" />
+				<xsd:element ref="measurement" minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element ref="measurement_time" minOccurs="0"
+					maxOccurs="1" />
+				<xsd:element ref="treatment" minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element ref="description" minOccurs="0" maxOccurs="1" />
 			</xsd:sequence>
-			<xsd:attribute name="id" type="xsd:string" use="required"/>
+			<xsd:attribute name="id" type="xsd:string" use="required" />
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:element name="date">
 		<xsd:complexType>
 			<!--FIXME: should be xsd:date but code needs updating first-->
-			<xsd:attribute name="value" type="xsd:string" use="required"/>
+			<xsd:attribute name="value" type="xsd:string" use="required" />
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:element name="description">
 		<xsd:complexType>
-			<xsd:attribute name="value" type="xsd:string" use="required"/>
+			<xsd:attribute name="value" type="xsd:string" use="required" />
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:element name="treatment">
 		<xsd:complexType>
-			<xsd:attribute name="name" type="xsd:string" use="required"/>
-			<xsd:attribute name="value" type="xsd:double" use="required"/>
-			<xsd:attribute name="units" type="xsd:string" use="required"/>
-			<xsd:attribute name="time" type="xsd:double" use="required"/>
-			<xsd:attribute name="time_units" type="xsd:string" use="required"/>
+			<xsd:attribute name="name" type="xsd:string" use="required" />
+			<xsd:attribute name="value" type="xsd:double" use="required" />
+			<xsd:attribute name="units" type="xsd:string" use="required" />
+			<xsd:attribute name="time" type="xsd:double" use="required" />
+			<xsd:attribute name="time_units" type="xsd:string" use="required" />
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:element name="measurement">
 		<xsd:complexType>
-			<xsd:attribute name="name" type="xsd:string" use="required"/>
+			<xsd:attribute name="name" type="xsd:string" use="required" />
 		</xsd:complexType>
 	</xsd:element>
 	<xsd:element name="measurement_time">
 		<xsd:complexType>
-			<xsd:attribute name="time" type="xsd:double" use="required"/>
-			<xsd:attribute name="time_units" type="xsd:string" use="required"/>
+			<xsd:attribute name="time" type="xsd:double" use="required" />
+			<xsd:attribute name="time_units" type="xsd:string" use="required" />
 		</xsd:complexType>
 	</xsd:element>
 </xsd:schema>

@@ -13,6 +13,8 @@
 package filters;
 
 
+import imagerailio.ImageRail_SDCube;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
@@ -27,11 +29,9 @@ import models.Model_Plate;
 import models.Model_PlateRepository;
 import models.Model_Well;
 import plots.DotPlot;
-import us.hms.systemsbiology.data.Data2D;
-import us.hms.systemsbiology.data.HDFConnectorException;
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
-import us.hms.systemsbiology.segmentedobject.Cell;
-import us.hms.systemsbiology.segmentedobject.CellCoordinates;
+import sdcubeio.H5IO_Exception;
+import segmentedobject.Cell;
+import segmentedobject.CellCoordinates;
 import features.Feature;
 import gui.MainGUI;
 
@@ -340,15 +340,14 @@ public class DotFilter {
 		TheMainGUI.updateDotPlot();
 	}
 
-	public void execute_allHDF() {
+	public void execute_allHDF() throws H5IO_Exception {
 		System.out.println("Filtering all HDF files");
 		Model_PlateRepository platePanel = TheMainGUI.getPlateHoldingPanel()
 				.getModel();
 		int numPlates = platePanel.getNumPlates();
 		Model_Plate[] plates = platePanel.getPlates();
 		// for each well:
-		SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-				gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
+		ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
 		for (int i = 0; i < numPlates; i++) {
 			Model_Plate plate = plates[i];
 			int numC = plate.getNumColumns();
@@ -367,8 +366,8 @@ public class DotFilter {
 
 								// Load this well's cells, filter them,
 								// then write them back to the HDF files
-								ArrayList<Cell> arr = sCon.readCells(plate
-										.getID() - 1, well.getWellIndex(),
+								ArrayList<Cell> arr = io.readCells(plate
+										.getID(), well.getWellIndex(),
 										fields[j].getIndexInWell());
 
 								// Selecting all cells above or below the
@@ -403,8 +402,9 @@ public class DotFilter {
 								}
 
 								// Resaving just the unselected cells
-								resaveCells(sCon, keepers_coords, keepers_vals,
-										plate.getID() - 1, well.getWellIndex(),
+								resaveCells(io, keepers_coords, keepers_vals,
+										well.getID(),
+										plate.getID(), well.getWellIndex(),
 										fields[j].getIndexInWell());
 
 								// Killing temp loaded cells
@@ -414,7 +414,7 @@ public class DotFilter {
 								keepers_coords = null;
 								keepers_vals = null;
 							}
-						} catch (HDFConnectorException e) {
+						} catch (H5IO_Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -429,7 +429,7 @@ public class DotFilter {
 							loadCoords = true;
 						if (cells.get(0).getFeatureValues() != null)
 							loadVals = true;
-						well.loadCells(sCon, loadCoords, loadVals);
+						well.loadCells(io, loadCoords, loadVals);
 					}
 				}
 		}
@@ -438,47 +438,51 @@ public class DotFilter {
 	}
 
 	/**
-	 * Overwrites the current cells in RAM for this field in the master HDF5
-	 * file
+	 * Overwrites the the master HDF5 cells with those currently in RAM 
 	 * 
 	 * @author BLM
 	 */
-	static public void resaveCells(SegmentationHDFConnector sCon,
+	static public void resaveCells(ImageRail_SDCube io,
 			ArrayList<CellCoordinates> coords, ArrayList<float[]> vals,
+			String sampleID,
 			int plateIndex, int wellIndex, int fieldIndex) {
 		try {
 
 			if (coords != null && coords.size() > 0) {
-				sCon.createField(plateIndex, wellIndex, fieldIndex);
-				writeCoordinates(sCon, coords, plateIndex, wellIndex,
+				io.createField(sampleID, plateIndex, wellIndex, fieldIndex,
+ io
+						.getFieldDimensions(plateIndex, wellIndex, fieldIndex),
+						gui.MainGUI.getGUI().getExpDesignConnector());
+
+				writeCoordinates(io, coords, plateIndex, wellIndex,
 						fieldIndex);
 			}
 
 			// Writing the feature values
-			Float[][] feature = new Float[vals.size()][vals.get(0).length];
-			int numC = feature.length;
-			int numF = feature[0].length;
+			float[][] data = new float[vals.size()][vals.get(0).length];
+			int numC = data.length;
+			int numF = data[0].length;
 			for (int i = 0; i < numC; i++)
 				for (int j = 0; j < numF; j++)
-					feature[i][j] = new Float(vals.get(i)[j]);
-			Data2D<Float> cellFeature = new Data2D<Float>(feature);
-			sCon.writeFeature(plateIndex, wellIndex, fieldIndex, cellFeature);
+					data[i][j] = vals.get(i)[j];
+
+			io.writeFeatures(plateIndex, wellIndex, fieldIndex, data);
 
 			// Writing the feature names to file
 			Feature[] features = MainGUI.getGUI().getFeatures();
-			StringBuffer[] fNames = new StringBuffer[features.length];
+			String[] fNames = new String[features.length];
 			for (int i = 0; i < features.length; i++)
-				fNames[i] = new StringBuffer(features[i].toString());
-			sCon.writeFeatureNames(plateIndex, wellIndex, fieldIndex, fNames);
+				fNames[i] = features[i].toString();
+			io.writeFeatureNames(plateIndex, wellIndex, fieldIndex, fNames);
 
-		} catch (HDFConnectorException e) {
+		} catch (H5IO_Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	static public void writeCoordinates(SegmentationHDFConnector sCon,
+	static public void writeCoordinates(ImageRail_SDCube io,
 			ArrayList<CellCoordinates> cellCoords, int plateIndex,
-			int wellIndex, int fieldIndex) throws HDFConnectorException {
+			int wellIndex, int fieldIndex) throws H5IO_Exception {
 		// Assuming all cells in this cell bank are stored with the same
 		// structure
 		CellCoordinates cell = cellCoords.get(0);
@@ -490,15 +494,15 @@ public class DotFilter {
 			comName = cell.getComNames()[0];
 			if (comName.trim().equalsIgnoreCase("BoundingBox")) {
 				// System.out.println("___Saving BoundingBoxes");
-				sCon.writeCellBoundingBoxes(plateIndex, wellIndex, fieldIndex,
+				io.writeCellBoundingBoxes(plateIndex, wellIndex, fieldIndex,
 						cellCoords);
 			} else if (comName.trim().equalsIgnoreCase("Centroid")) {
 				// System.out.println("___Saving Centroids");
-				sCon.writeCellCentroids(plateIndex, wellIndex, fieldIndex,
+				io.writeCellCentroids(plateIndex, wellIndex, fieldIndex,
 						cellCoords);
 			} else if (comName.trim().equalsIgnoreCase("Outline")) {
 				// System.out.println("___Saving All Outlines");
-				sCon.writeWholeCells(plateIndex, wellIndex, fieldIndex,
+				io.writeWholeCells(plateIndex, wellIndex, fieldIndex,
 						cellCoords);
 			}
 		} else // Each cell has more than 1 compartment: ex: Nucleus,
@@ -507,7 +511,7 @@ public class DotFilter {
 		{
 
 			// System.out.println("___Saving All Coordinates");
-			sCon.writeWholeCells(plateIndex, wellIndex, fieldIndex, cellCoords);
+			io.writeWholeCells(plateIndex, wellIndex, fieldIndex, cellCoords);
 		}
 	}
 

@@ -13,6 +13,11 @@
 package processors;
 
 
+import features.Feature;
+import gui.MainGUI;
+import imagerailio.ImageRail_SDCube;
+import imagerailio.Point;
+
 import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
@@ -20,14 +25,8 @@ import java.util.ArrayList;
 import models.Model_Field;
 import models.Model_Plate;
 import models.Model_Well;
+import segmentedobject.CellCoordinates;
 import segmentors.CellSegmentor;
-import us.hms.systemsbiology.data.Data2D;
-import us.hms.systemsbiology.data.ProjectHDFConnector;
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
-import us.hms.systemsbiology.idx2coordinates.Point;
-import us.hms.systemsbiology.segmentedobject.CellCoordinates;
-import features.Feature;
-import gui.MainGUI;
 
 public class Processor_SingleCells extends Thread implements Processor
 {
@@ -36,7 +35,6 @@ public class Processor_SingleCells extends Thread implements Processor
 	private int TotalCells;
 	private CellSegmentor TheSegmentor;
 	private File ResultsFile;
-	private boolean ClusterRun;
 	
 	
 	public Processor_SingleCells(Model_Well[] wellsToProcess, CellSegmentor segmentor)
@@ -45,7 +43,6 @@ public class Processor_SingleCells extends Thread implements Processor
 		WellsToProcess = wellsToProcess;
 		//The segmentor that is going to be used to segment the cells
 		TheSegmentor = segmentor;
-		ClusterRun = false;
 	}
 	
 	//When this thread starts, we run...
@@ -225,21 +222,9 @@ public class Processor_SingleCells extends Thread implements Processor
 		// -------------- Create Project file --------------------------------------------------------
 		// this contains the height of the images as well as the size of the microtiter plates
 		try
-		{
-			// Project name
-			ProjectHDFConnector con = gui.MainGUI.getGUI().getHDFprojectConnector();
-			if(con==null)
-				con = gui.MainGUI.getGUI().initHDFprojectConnectorAndPlates(gui.MainGUI.getGUI().getThePlateHoldingPanel().getPlates());
-			SegmentationHDFConnector sCon = null;
-			
-			//creating a HDF plate for each plate needed, since the wells could come from different plates
-			int[][] idsAndWells = getAllUniquePlateIDsAndNumWells(wells);
-			for (int i = 0; i < idsAndWells[0].length; i++)
-			{
-//				System.out.println("ids: "+(idsAndWells[0][i]-1) +"   wells: "+idsAndWells[1][i]);
-				con.writePlateSize(idsAndWells[0][i]-1, idsAndWells[1][i]);
-			}
-			
+		{	
+			ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
+
 			//Initializing some storage variables
 			float[] backgroundValues = new float[MainGUI.getGUI().getNumberOfChannels()];
 			int numWells = wells.length;
@@ -250,7 +235,7 @@ public class Processor_SingleCells extends Thread implements Processor
 			{
 				Model_Well well = wells[w];
 				well.clearOldData();
-				
+	
 				String thisWell = well.name;
 				System.out.println("______________________________________");
 				System.out.println("______________________________________");
@@ -261,7 +246,8 @@ public class Processor_SingleCells extends Thread implements Processor
 				MainGUI.getGUI().getPlateHoldingPanel().updatePanel();
 				
 				int wellIndex = (well.getPlate().getNumRows()*well.Column)+well.Row;
-				int plateIndex = well.getPlate().getID()-1;
+				int plateIndex = well.getPlate().getID();
+				
 				
 				//Now processing all the fields for this well
 				int numFields = well.getFields().length;
@@ -293,59 +279,43 @@ public class Processor_SingleCells extends Thread implements Processor
 					//image and extract the proper values
 					long time = System.currentTimeMillis();
 					System.out.println("-->> Performing Feature Computations");
-					float[][] dataMatrix = computeFeatureValues(cellCoords, Raster, backgroundValues);
-					if(dataMatrix!=null && dataMatrix.length>0)
+					float[][] cellFeatureMatrix = computeFeatureValues(cellCoords, Raster, backgroundValues);
+					if(cellFeatureMatrix!=null && cellFeatureMatrix.length>0)
 					{
-						
-
-						// System.out.println("TIME to compute FeatureValues: "+(System.currentTimeMillis()-time));
-						// System.out.println("DataMatrix size: "+dataMatrix.length
-						// +" , "+dataMatrix[0].length);
-						allDataForThisWell.add(dataMatrix);
-						
-						
+						// Stashing the data to combine with other fields
+						allDataForThisWell.add(cellFeatureMatrix);
 						//
-						//
+						// Now writing Cell coordinate data to HDF file
 						System.out.println("------------ Caching cell data Matrix and Coordinates to HDF file: ------------");
 						time = System.currentTimeMillis();
-						//Now writing Cell coordinate data to HDF file
-						// Parameters: plateIdx; wellIdx; fieldIdx; height
-						con.writeFieldHeight(plateIndex, wellIndex, f, Raster.length);
 						
 						// -------------- Store cells in HDF5 -------------------------------------------------------
 						try
 						{
-							sCon = new SegmentationHDFConnector(gui.MainGUI
-									.getGUI().getProjectDirectory()
-									.getAbsolutePath());
-							// Parameters to write: plateIdx, wellIdx, fieldIdx, cellList
-							con.writeFieldHeight( plateIndex, wellIndex, f, Raster.length);
-							sCon.createField(plateIndex, wellIndex, f);
-							// Parameters: plateIdx; wellIdx; fieldIdx; height
-							
-							
+							int[] fieldDimensions = { Raster.length,
+									Raster[0].length, Raster[0][0].length };
+							io.createField(well.getID(), plateIndex, wellIndex,
+									f,
+									fieldDimensions, gui.MainGUI.getGUI()
+											.getExpDesignConnector());
+
 							//Writing data matrix to HDF
-							// Write cell features.
-							Float[][] feature = new Float[dataMatrix.length][dataMatrix[0].length];
-							for (int i = 0; i < dataMatrix.length; i++)
-								for (int j = 0; j < dataMatrix[0].length; j++)
-									feature[i][j] = new Float(dataMatrix[i][j]);
-							Data2D<Float> cellFeature = new Data2D<Float>(feature);
-							sCon.writeFeature(plateIndex, wellIndex, f, cellFeature);
+							io.writeFeatures(plateIndex, wellIndex, f,
+									cellFeatureMatrix);
 							//Writing the feature names to file
 							Feature[] features = MainGUI.getGUI().getFeatures();
-							StringBuffer[] fNames = new StringBuffer[features.length];
+							String[] fNames = new String[features.length];
 							for (int i = 0; i < features.length; i++)
-								fNames[i] = new StringBuffer(features[i].toString());
-							sCon.writeFeatureNames(plateIndex, wellIndex, f, fNames);
+								fNames[i] = new String(features[i].toString());
+							io.writeFeatureNames(plateIndex, wellIndex, f, fNames);
 							
 							String whatToSave = well.TheParameterSet
 									.getCoordsToSaveToHDF();
 							if (whatToSave.equalsIgnoreCase("BoundingBox"))
 							{
 								//Only save the cell BoundingBoxes to file
-								ArrayList<CellCoordinates> bbox = us.hms.systemsbiology.segmentedobject.CellCoordinates.getBoundingBoxOfCoordinates(cellCoords);
-								sCon.writeCellBoundingBoxes( plateIndex, wellIndex, f, bbox);
+								ArrayList<CellCoordinates> bbox = segmentedobject.CellCoordinates.getBoundingBoxOfCoordinates(cellCoords);
+								io.writeCellBoundingBoxes( plateIndex, wellIndex, f, bbox);
 								
 								killCellCoordinates(bbox);
 								killCellCoordinates(cellCoords);
@@ -353,8 +323,8 @@ public class Processor_SingleCells extends Thread implements Processor
 							else if (whatToSave.equalsIgnoreCase("Centroid"))
 							{
 								//Only save the cell Centroids to file
-								ArrayList<CellCoordinates> centroids = us.hms.systemsbiology.segmentedobject.CellCoordinates.getCentroidOfCoordinates(cellCoords);
-								sCon.writeCellCentroids(plateIndex, wellIndex, f, centroids);
+								ArrayList<CellCoordinates> centroids = segmentedobject.CellCoordinates.getCentroidOfCoordinates(cellCoords);
+								io.writeCellCentroids(plateIndex, wellIndex, f, centroids);
 								
 								killCellCoordinates(centroids);
 								killCellCoordinates(cellCoords);
@@ -362,15 +332,15 @@ public class Processor_SingleCells extends Thread implements Processor
 							else if (whatToSave.equalsIgnoreCase("Outlines"))
 							{
 								//Only save the cell outlines to file
-								ArrayList<CellCoordinates> outlines = us.hms.systemsbiology.segmentedobject.CellCoordinates.getSingleCompartmentCoords(cellCoords, "Outline");
-								sCon.writeWholeCells( plateIndex, wellIndex, f, outlines);
+								ArrayList<CellCoordinates> outlines = segmentedobject.CellCoordinates.getSingleCompartmentCoords(cellCoords, "Outline");
+								io.writeWholeCells( plateIndex, wellIndex, f, outlines);
 								
 								killCellCoordinates(outlines);
 								killCellCoordinates(cellCoords);
 							}
 							else if (whatToSave.equalsIgnoreCase("Everything"))
 							{
-								sCon.writeWholeCells( plateIndex, wellIndex, f, cellCoords);
+								io.writeWholeCells( plateIndex, wellIndex, f, cellCoords);
 								killCellCoordinates(cellCoords);
 							}
 							
@@ -407,7 +377,7 @@ public class Processor_SingleCells extends Thread implements Processor
 				}
 				
 				if(gui.MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().isSelected())
-					well.loadCells(sCon, true, true);
+					well.loadCells(io, true, true);
 				
 				well.processing = false;
 				if (well!=null)
@@ -425,17 +395,21 @@ public class Processor_SingleCells extends Thread implements Processor
 						featureNames[i] = new StringBuffer(features[i].toString());
 				}
 				//Trying to write mean value data to file
-				if(well.Feature_Means!=null && sCon!=null)
+				if(well.Feature_Means!=null && io!=null)
 				{
-					sCon.writeWellMeanValues(plateIndex, wellIndex, well.Feature_Means);
-					if(featureNames!=null)
-						sCon.writeMeanFeatureNames(plateIndex, featureNames);
+					io.writeWellMeans(plateIndex, wellIndex,
+									well.Feature_Means);
+					// TODO_X
+					// if(featureNames!=null)
+					// io.writeMeanFeatureNames(plateIndex, featureNames);
 				}
-				if(well.Feature_Stdev!=null && sCon!=null)
-					sCon.writeWellStdDevValues(plateIndex, wellIndex, well.Feature_Stdev);
-				
-
-				
+				if(well.Feature_Stdev!=null && io!=null)
+					io.writeWellStdDevs(plateIndex, wellIndex,
+							well.Feature_Stdev);
+				//Writing HDF5 well sample metadata
+				int totNumWells = well.getPlate().getNumRows() * well.getPlate().getNumColumns();
+				io.writeParentPlateInfo(plateIndex, wellIndex,totNumWells);
+				io.writeSegmentationParameters(plateIndex, wellIndex, (int)well.getParameterSet().getThreshold_Nucleus(), (int)well.getParameterSet().getThreshold_Cell(), (int)well.getParameterSet().getThreshold_Background());
 			}
 			
 			
@@ -473,12 +447,6 @@ public class Processor_SingleCells extends Thread implements Processor
 		return null;
 	}
 	
-	/** Toggles cluster run option
-	 * @author BLM*/
-	public void setClusterRun(boolean boo)
-	{
-		ClusterRun = boo;
-	}
 	
 	/** Determines if the given file name is one to be processed
 	 * @author BLM*/

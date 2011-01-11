@@ -15,13 +15,13 @@ package models;
 /** Holder for images and objects pertinent to a single field aquired in a well
  * @author BLM*/
 
+import imagerailio.ImageRail_SDCube;
+
 import java.awt.Shape;
 import java.io.File;
 import java.util.ArrayList;
 
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
-import us.hms.systemsbiology.idx2coordinates.IdxConverter;
-import us.hms.systemsbiology.segmentedobject.Cell;
+import segmentedobject.Cell;
 
 public class Model_Field {
 	private Model_Well parentWell;
@@ -114,26 +114,40 @@ public class Model_Field {
 	}
 
 	/**
-	 * Checks if this field has a cooresponding HDF data file for it
+	 * Checks if this field has a corresponding single-cell data within the HDF5
+	 * file
 	 * 
 	 * @author BLM
 	 */
-	public boolean doesHDFexist(String projPath, String algoName) {
-		int plateIdx = parentWell.getPlate().getID() - 1;
-		int wellIdx = (parentWell.getPlate().getNumRows() * parentWell.Column)
-				+ parentWell.Row;
-		int plateSize = (parentWell.getPlate().getNumRows() * parentWell
-				.getPlate().getNumColumns());
+	public boolean doesDataExist(String hdfPath) {
+		// Seeing if path to this sample(well) exists
+		ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+		String pathToField = io.getHashtable().get(
+				io.getIndexKey(getParentWell().getPlate().getID(),
+						getParentWell().getWellIndex())
+						+ "f" + getIndexInWell());
+		if (pathToField != null)
+			return true;
+		return false;
 
-		// Create directory structure.
-		String fName = projPath + "/" + algoName + "/plate_" + plateIdx
-				+ "/well_" + IdxConverter.index2well(wellIdx, plateSize)
-				+ "/field_" + getIndexInWell() + ".h5";
-
-		File f = new File(fName);
-
-		// + "/field_" + getIndexInWell() + ".h5"
-		return f.exists();
+		// String pathToSample = io.getHashtable()
+		// .get(
+		// io.getIndexKey(getParentWell().getPlate().getID(),
+		// getParentWell().getWellIndex()));
+		//
+		// if (pathToSample != null) {
+		// // If sample exists, seeing if data for this specific field exists
+		// String path = pathToSample + "/Children/Child_" + getIndexInWell()
+		// + "/Data/feature_values";
+		// try {
+		// io.getH5IO().openHDF5(hdfPath);
+		// boolean exists = io.getH5IO().existsDataset(path);
+		// return exists;
+		// } catch (H5IO_Exception e) {
+		// e.printStackTrace();
+		// }
+		// }
+		// return false;
 	}
 
 	/**
@@ -141,24 +155,22 @@ public class Model_Field {
 	 * 
 	 * @author BLM
 	 */
-	public void loadCells(SegmentationHDFConnector sCon,
+	public void loadCells(ImageRail_SDCube io,
 			boolean loadCoords, boolean loadDataVals) {
-		if (doesHDFexist(gui.MainGUI.getGUI().getProjectDirectory()
-				.getAbsolutePath(), "Data")) {
 			try {
-				TheCellRepository = new Model_FieldCellRepository(this, sCon, loadCoords,
+				TheCellRepository = new Model_FieldCellRepository(this, io, loadCoords,
 						loadDataVals);
 			} catch (Exception e) {
-			}
+			// }
 			;
 		}
 	}
 
 	/** */
-	public void resaveCells(SegmentationHDFConnector sCon) {
+	public void resaveCells(ImageRail_SDCube io) {
 
 		if (TheCellRepository != null)
-			TheCellRepository.resaveCells(sCon);
+			TheCellRepository.resaveCells(io);
 	}
 
 	/**
@@ -234,7 +246,7 @@ public class Model_Field {
 		int numC = cells.size();
 		for (int i = 0; i < numC; i++)
 		{
-			us.hms.systemsbiology.idx2coordinates.Point p = cells.get(i).getCoordinates()
+			imagerailio.Point p = cells.get(i).getCoordinates()
 					.getComCoordinates(0)[0];
 			if(roi.contains(p.x,p.y))
 				counter++;

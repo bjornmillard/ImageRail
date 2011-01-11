@@ -16,7 +16,7 @@ import java.awt.Color;
 import java.awt.Polygon;
 import java.util.ArrayList;
 
-import us.hms.systemsbiology.segmentedobject.Cell;
+import segmentedobject.Cell;
 import features.Feature;
 
 public class Gate_DotPlot

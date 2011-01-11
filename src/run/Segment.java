@@ -188,7 +188,6 @@ public class Segment {
 
 		Processor_SingleCells tasker = new Processor_SingleCells(allWells,
 				new DefaultSegmentor());
-		tasker.setClusterRun(true);
 		tasker.start();
 
 		// Now just wait for the tasker Thread to finish its job

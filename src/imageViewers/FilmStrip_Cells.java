@@ -27,7 +27,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import us.hms.systemsbiology.segmentedobject.Cell;
+import segmentedobject.Cell;
 
 
 public class FilmStrip_Cells  extends JFrame implements WindowListener

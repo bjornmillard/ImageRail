@@ -3,6 +3,7 @@
 	<name>ImageRail</name>
 	<comment></comment>
 	<projects>
+		<project>SDCube_API</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

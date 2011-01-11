@@ -28,7 +28,6 @@ import javax.swing.JFileChooser;
 import midasGUI.Measurement;
 import models.Model_Plate;
 import models.Model_Well;
-import us.hms.systemsbiology.metadata.Description;
 import features.Feature;
 import gui.MainGUI;
 
@@ -112,20 +111,23 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 						{
 							if (plate.getWells()[r][c].isSelected())
 							{
-								Description[] treats = plate.getWells()[r][c].getMetaDataConnector().readTreatments( plate.getWells()[r][c].getWellIndex());
-								for (int n =0; n < treats.length; n++)
-								{
-									boolean unique = true;
-									len = uniqueT.size();
-									for (int j =0; j < len; j++)
-										if(((Description)uniqueT.get(j)).getName().equalsIgnoreCase((treats[n].getName())))
-											unique = false;
-									if (unique)
-									{
-										headers.add("TR:"+(treats[n].getName()));
-										uniqueT.add(treats[n]);
-									}
-								}
+								// TODO - MetaCon
+								// Description[] treats =
+								// plate.getWells()[r][c].getMetaDataConnector().readTreatments(
+								// plate.getWells()[r][c].getWellIndex());
+								// for (int n =0; n < treats.length; n++)
+								// {
+								// boolean unique = true;
+								// len = uniqueT.size();
+								// for (int j =0; j < len; j++)
+								// if(((Description)uniqueT.get(j)).getName().equalsIgnoreCase((treats[n].getName())))
+								// unique = false;
+								// if (unique)
+								// {
+								// headers.add("TR:"+(treats[n].getName()));
+								// uniqueT.add(treats[n]);
+								// }
+								// }
 							}
 						}				
 				}
@@ -179,54 +181,63 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 							Model_Well theWell = plate.getWells()[r][c];
 							if (theWell.isSelected())
 							{
-								Description[] treats = theWell.getMetaDataConnector().readTreatments(theWell.getWellIndex());
-								Description date = theWell.getMetaDataConnector().readDate(theWell.getWellIndex());
-								Description desc = theWell.getMetaDataConnector().readDescription(theWell.getWellIndex());
-								Description time = theWell.getMetaDataConnector().readTimePoint(theWell.getWellIndex());
-								
-
-								headerValues = new ArrayList();
-								headerValues.add(theWell.name);
-								headerValues
-										.add((theWell.getPlate().getTitle() + ""));
-								if (date != null)
-									headerValues.add(date.getValue());
-								else
-									headerValues.add("");
-								if (desc != null)
-									headerValues.add(desc.getValue());
-								else
-									headerValues.add("");
-
-								//for each treatment & measurement here in this well... determine which column to put it in
-								for (int i= 0; i < uniqueT.size(); i++)
-								{
-									num = treats.length;
-									boolean foundIt = false;
-									for (int n= 0; n < num; n++)
-									{
-										if (((Description)uniqueT.get(i)).getName().equalsIgnoreCase((treats[n].getName())))
-										{
-											headerValues.add(""+treats[n].getValue());
-											foundIt = true;
-											break;
-										}
-									}
-									if (!foundIt)
-										headerValues.add("");
-								}
-								
-								
-								//adding measurement times (numchannels)*3 <-- numcompartments
-								String st = "";
-								if (time!=null)
-									st+=time.getValue();
-								
-								for (int j = 0; j < numF*2; j++)
-									if (time==null)
-										headerValues.add("");
-									else
-										headerValues.add(""+st);
+								// TODO - MetaCon
+								// Description[] treats =
+								// theWell.getMetaDataConnector().readTreatments(theWell.getWellIndex());
+								// Description date =
+								// theWell.getMetaDataConnector().readDate(theWell.getWellIndex());
+								// Description desc =
+								// theWell.getMetaDataConnector().readDescription(theWell.getWellIndex());
+								// Description time =
+								// theWell.getMetaDataConnector().readTimePoint(theWell.getWellIndex());
+								//								
+								//
+								// headerValues = new ArrayList();
+								// headerValues.add(theWell.name);
+								// headerValues
+								// .add((theWell.getPlate().getTitle() + ""));
+								// if (date != null)
+								// headerValues.add(date.getValue());
+								// else
+								// headerValues.add("");
+								// if (desc != null)
+								// headerValues.add(desc.getValue());
+								// else
+								// headerValues.add("");
+								//
+								// //for each treatment & measurement here in
+								// this well... determine which column to put it
+								// in
+								// for (int i= 0; i < uniqueT.size(); i++)
+								// {
+								// num = treats.length;
+								// boolean foundIt = false;
+								// for (int n= 0; n < num; n++)
+								// {
+								// if
+								// (((Description)uniqueT.get(i)).getName().equalsIgnoreCase((treats[n].getName())))
+								// {
+								// headerValues.add(""+treats[n].getValue());
+								// foundIt = true;
+								// break;
+								// }
+								// }
+								// if (!foundIt)
+								// headerValues.add("");
+								// }
+								//								
+								//								
+								// //adding measurement times (numchannels)*3
+								// <-- numcompartments
+								// String st = "";
+								// if (time!=null)
+								// st+=time.getValue();
+								//								
+								// for (int j = 0; j < numF*2; j++)
+								// if (time==null)
+								// headerValues.add("");
+								// else
+								// headerValues.add(""+st);
 								
 								
 								if (theWell.Feature_Means!=null && theWell.Feature_Stdev!=null)

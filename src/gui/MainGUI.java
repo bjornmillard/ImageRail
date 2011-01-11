@@ -19,6 +19,7 @@ import filters.FilterManager;
 import imageViewers.FieldViewer;
 import imageViewers.FieldViewer_Frame;
 import imageViewers.HTMLViewer;
+import imagerailio.ImageRail_SDCube;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -81,11 +82,10 @@ import plots.HistogramPlot;
 import plots.LinePlot;
 import processors.Processor_SingleCells;
 import processors.Processor_WellAverage;
+import sdcubeio.ExpDesign_Model;
+import sdcubeio.H5IO_Exception;
+import segmentedobject.Cell;
 import segmentors.DefaultSegmentor;
-import us.hms.systemsbiology.data.HDFConnectorException;
-import us.hms.systemsbiology.data.ProjectHDFConnector;
-import us.hms.systemsbiology.data.SegmentationHDFConnector;
-import us.hms.systemsbiology.segmentedobject.Cell;
 import dataSavers.DataSaver_CSV;
 import dataSavers.DataSaver_Cells_Midas_wMetaData;
 import dataSavers.DataSaver_WellMeans_Midas_wMetaData;
@@ -98,9 +98,9 @@ import dialogs.ThresholdingBoundsInputDialog_WellMeans;
 public class MainGUI extends JFrame {
 	/** The GUI object */
 	private static MainGUI TheMainGUI;
-	
 	private static MainStartupDialog TheStartupDialog;
 	public static final String DATE_FORMAT_NOW = "yyyyMMdd_HHmmss";
+
 	static public int MAXPIXELVALUE = 65535;
 	static public final int MIDASINPUT = 0;
 	static public final int LINEGRAPH = 1;
@@ -156,10 +156,10 @@ public class MainGUI extends JFrame {
 	private boolean Processing;
 	private Gui_PlateRepository ThePlatePanel;
 	private File TheProjectDirectory;
-	private ProjectHDFConnector TheHDFprojectConnector;
+	private ImageRail_SDCube TheImageRail_H5IO;
 	private boolean areDataSetsModified;
 	private DotFilterQueue TheFilterQueue;
-
+	private ExpDesign_Model TheExpDesign_Model;
 
 	/**
 	 * The ImageRail GUI Constructor
@@ -174,7 +174,7 @@ public class MainGUI extends JFrame {
 		setSize(width, height);
 
 		TheMainGUI = this;
-		TheFeatures = new ArrayList();
+		TheFeatures = new ArrayList<Feature>();
 		TheFilters = new ArrayList();
 		TheColorMap = tools.ColorMaps.FIRE;
 		SubtractBackground = false;
@@ -197,7 +197,7 @@ public class MainGUI extends JFrame {
 
 		// Initialize with single 96-well plate
 		Model_Plate[] plates = new Model_Plate[1];
-		plates[0] = new Model_Plate(8, 12, 1);
+		plates[0] = new Model_Plate(8, 12, 0, true);
 		plates[0].initGUI();
 		ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
 				plates));
@@ -205,8 +205,8 @@ public class MainGUI extends JFrame {
 		TheInputPanel_Container = new JTabbedPane();
 		for (int i = 0; i < numplates; i++)
 			TheInputPanel_Container.addTab("Plate #" + (i + 1),
-					new MidasInputPanel(plates[0]));
-		initHDFprojectConnectorAndPlates(plates);
+					new MidasInputPanel(plates[0], TheExpDesign_Model));
+
 		TheMainPanel.setLeftComponent(TheInputPanel_Container);
 		TheMainPanel.setRightComponent(ThePlatePanel);
 		TheMainPanel.setDividerLocation(TheMainPanel.getDividerLocation());
@@ -712,229 +712,229 @@ public class MainGUI extends JFrame {
 		}
 		OptionsMenu.add(colorMapsMenu);
 
-		JMenu PlateSizeMenu = new JMenu("Plate Size");
-		OptionsMenu.add(PlateSizeMenu);
-
-		ButtonGroup bgroup = new ButtonGroup();
-
-		JRadioButtonMenuItem check = new JRadioButtonMenuItem("6-well");
-		bgroup.add(check);
-		check.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				Model_Plate[] plates = new Model_Plate[1];
-				plates[0] = new Model_Plate(2, 3, 1);
-				plates[0].initGUI();
-				ThePlatePanel = new Gui_PlateRepository(
-						new Model_PlateRepository(plates));
-				int numplates = plates.length;
-				TheInputPanel_Container = new JTabbedPane();
-				for (int i = 0; i < numplates; i++)
-					TheInputPanel_Container.addTab("Plate #" + (i + 1),
-							new MidasInputPanel(plates[0]));
-
-				TheMainPanel.setLeftComponent(TheInputPanel_Container);
-
-				initHDFprojectConnectorAndPlates(plates);
-				TheMainPanel.setRightComponent(ThePlatePanel);
-				TheMainPanel.setDividerLocation(TheMainPanel
-						.getDividerLocation());
-				TheMainPanel.validate();
-				TheMainPanel.repaint();
-				TheMainGUI.repaint();
-			}
-		});
-		PlateSizeMenu.add(check);
-		check = new JRadioButtonMenuItem("12-well");
-		bgroup.add(check);
-		check.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				Model_Plate[] plates = new Model_Plate[1];
-				plates[0] = new Model_Plate(3, 4, 1);
-				plates[0].initGUI();
-				ThePlatePanel = new Gui_PlateRepository(
-						new Model_PlateRepository(plates));
-				int numplates = plates.length;
-				TheInputPanel_Container = new JTabbedPane();
-				for (int i = 0; i < numplates; i++)
-					TheInputPanel_Container.addTab("Plate #" + (i + 1),
-							new MidasInputPanel(plates[0]));
-
-				initHDFprojectConnectorAndPlates(plates);
-				TheMainPanel.setLeftComponent(TheInputPanel_Container);
-				TheMainPanel.setRightComponent(ThePlatePanel);
-				TheMainPanel.setDividerLocation(TheMainPanel
-						.getDividerLocation());
-				TheMainPanel.validate();
-				TheMainPanel.repaint();
-				TheMainGUI.repaint();
-			}
-		});
-		PlateSizeMenu.add(check);
-		check = new JRadioButtonMenuItem("24-well");
-		bgroup.add(check);
-		check.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				Model_Plate[] plates = new Model_Plate[1];
-				plates[0] = new Model_Plate(4, 6, 1);
-				plates[0].initGUI();
-				ThePlatePanel = new Gui_PlateRepository(
-						new Model_PlateRepository(plates));
-				int numplates = plates.length;
-				TheInputPanel_Container = new JTabbedPane();
-				for (int i = 0; i < numplates; i++)
-					TheInputPanel_Container.addTab("Plate #" + (i + 1),
-							new MidasInputPanel(plates[0]));
-
-				initHDFprojectConnectorAndPlates(plates);
-				TheMainPanel.setLeftComponent(TheInputPanel_Container);
-				TheMainPanel.setRightComponent(ThePlatePanel);
-				TheMainPanel.setDividerLocation(TheMainPanel
-						.getDividerLocation());
-				TheMainPanel.validate();
-				TheMainPanel.repaint();
-				TheMainGUI.repaint();
-			}
-		});
-		PlateSizeMenu.add(check);
-		check = new JRadioButtonMenuItem("96-well");
-		bgroup.add(check);
-		check.setSelected(true);
-		check.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				Model_Plate[] plates = new Model_Plate[1];
-				plates[0] = new Model_Plate(8, 12, 1);
-				plates[0].initGUI();
-				ThePlatePanel = new Gui_PlateRepository(
-						new Model_PlateRepository(plates));
-				int numplates = plates.length;
-				TheInputPanel_Container = new JTabbedPane();
-				for (int i = 0; i < numplates; i++)
-					TheInputPanel_Container.addTab("Plate #" + (i + 1),
-							new MidasInputPanel(plates[0]));
-
-				initHDFprojectConnectorAndPlates(plates);
-				TheMainPanel.setLeftComponent(TheInputPanel_Container);
-				TheMainPanel.setRightComponent(ThePlatePanel);
-				TheMainPanel.setDividerLocation(TheMainPanel
-						.getDividerLocation());
-				TheMainPanel.validate();
-				TheMainPanel.repaint();
-				TheMainGUI.repaint();
-			}
-		});
-		PlateSizeMenu.add(check);
-
-		check = new JRadioButtonMenuItem("384-well");
-		bgroup.add(check);
-		check.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				Model_Plate[] plates = new Model_Plate[1];
-				plates[0] = new Model_Plate(16, 24, 1);
-				plates[0].initGUI();
-				ThePlatePanel = new Gui_PlateRepository(
-						new Model_PlateRepository(plates));
-				int numplates = plates.length;
-				TheInputPanel_Container = new JTabbedPane();
-				for (int i = 0; i < numplates; i++)
-					TheInputPanel_Container.addTab("Plate #" + (i + 1),
-							new MidasInputPanel(plates[0]));
-
-				initHDFprojectConnectorAndPlates(plates);
-				TheMainPanel.setLeftComponent(TheInputPanel_Container);
-				TheMainPanel.setRightComponent(ThePlatePanel);
-				TheMainPanel.setDividerLocation(TheMainPanel
-						.getDividerLocation());
-				TheMainPanel.validate();
-				TheMainPanel.repaint();
-				TheMainGUI.repaint();
-			}
-		});
-		PlateSizeMenu.add(check);
-		PlateSizeMenu.addSeparator();
-
-		check = new JRadioButtonMenuItem("multi-96well");
-		bgroup.add(check);
-		check.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-
-				String response = JOptionPane.showInputDialog(null,
-						"How many plates?", "Enter number of plates:",
-						JOptionPane.QUESTION_MESSAGE);
-				if (response == null || !tools.MathOps.isInt(response))
-					return;
-
-				int num = Integer.parseInt(response);
-
-				int counter = 0;
-				Model_Plate[] plates = new Model_Plate[num];
-				for (int p = 0; p < plates.length; p++) {
-					counter++;
-					plates[p] = new Model_Plate(8, 12, counter);
-					plates[p].initGUI();
-				}
-				ThePlatePanel = new Gui_PlateRepository(
-						new Model_PlateRepository(plates));
-
-				int numplates = plates.length;
-				TheInputPanel_Container = new JTabbedPane();
-				for (int i = 0; i < numplates; i++)
-					TheInputPanel_Container.addTab("Plate #" + (i + 1),
-							new MidasInputPanel(plates[i]));
-
-				initHDFprojectConnectorAndPlates(plates);
-
-				TheMainPanel.setLeftComponent(TheInputPanel_Container);
-				TheMainPanel.setRightComponent(ThePlatePanel);
-				TheMainPanel.setDividerLocation(TheMainPanel
-						.getDividerLocation());
-				TheMainPanel.validate();
-				TheMainPanel.repaint();
-				TheMainGUI.repaint();
-			}
-		});
-		PlateSizeMenu.add(check);
-
-		check = new JRadioButtonMenuItem("multi-384well");
-		bgroup.add(check);
-		check.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				String response = JOptionPane.showInputDialog(null,
-						"How many plates?", "Enter number of plates:",
-						JOptionPane.QUESTION_MESSAGE);
-				if (response == null || !tools.MathOps.isInt(response))
-					return;
-
-				int num = Integer.parseInt(response);
-
-				int counter = 0;
-				Model_Plate[] plates = new Model_Plate[num];
-
-				for (int p = 0; p < plates.length; p++) {
-					counter++;
-					plates[p] = new Model_Plate(16, 24, counter);
-					plates[p].initGUI();
-				}
-				ThePlatePanel = new Gui_PlateRepository(
-						new Model_PlateRepository(plates));
-
-				int numplates = plates.length;
-				TheInputPanel_Container = new JTabbedPane();
-				for (int i = 0; i < numplates; i++)
-					TheInputPanel_Container.addTab("Plate #" + (i + 1),
-							new MidasInputPanel(plates[i]));
-
-				initHDFprojectConnectorAndPlates(plates);
-
-				TheMainPanel.setLeftComponent(TheInputPanel_Container);
-				TheMainPanel.setRightComponent(ThePlatePanel);
-				TheMainPanel.setDividerLocation(TheMainPanel
-						.getDividerLocation());
-				TheMainPanel.validate();
-				TheMainPanel.repaint();
-				TheMainGUI.repaint();
-			}
-		});
-		PlateSizeMenu.add(check);
+//		JMenu PlateSizeMenu = new JMenu("Plate Size");
+////		OptionsMenu.add(PlateSizeMenu);
+//
+//		ButtonGroup bgroup = new ButtonGroup();
+//
+//		JRadioButtonMenuItem check = new JRadioButtonMenuItem("6-well");
+//		bgroup.add(check);
+//		check.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				Model_Plate[] plates = new Model_Plate[1];
+//				plates[0] = new Model_Plate(2, 3, 1);
+//				plates[0].initGUI();
+//				ThePlatePanel = new Gui_PlateRepository(
+//						new Model_PlateRepository(plates));
+//				int numplates = plates.length;
+//				TheInputPanel_Container = new JTabbedPane();
+//				for (int i = 0; i < numplates; i++)
+//					TheInputPanel_Container.addTab("Plate #" + (i + 1),
+//							new MidasInputPanel(plates[0]));
+//
+//				TheMainPanel.setLeftComponent(TheInputPanel_Container);
+//
+////				initH5IOAndPlates(plates);
+//				TheMainPanel.setRightComponent(ThePlatePanel);
+//				TheMainPanel.setDividerLocation(TheMainPanel
+//						.getDividerLocation());
+//				TheMainPanel.validate();
+//				TheMainPanel.repaint();
+//				TheMainGUI.repaint();
+//			}
+//		});
+//		PlateSizeMenu.add(check);
+//		check = new JRadioButtonMenuItem("12-well");
+//		bgroup.add(check);
+//		check.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				Model_Plate[] plates = new Model_Plate[1];
+//				plates[0] = new Model_Plate(3, 4, 1);
+//				plates[0].initGUI();
+//				ThePlatePanel = new Gui_PlateRepository(
+//						new Model_PlateRepository(plates));
+//				int numplates = plates.length;
+//				TheInputPanel_Container = new JTabbedPane();
+//				for (int i = 0; i < numplates; i++)
+//					TheInputPanel_Container.addTab("Plate #" + (i + 1),
+//							new MidasInputPanel(plates[0]));
+//
+////				initH5IOAndPlates(plates);
+//				TheMainPanel.setLeftComponent(TheInputPanel_Container);
+//				TheMainPanel.setRightComponent(ThePlatePanel);
+//				TheMainPanel.setDividerLocation(TheMainPanel
+//						.getDividerLocation());
+//				TheMainPanel.validate();
+//				TheMainPanel.repaint();
+//				TheMainGUI.repaint();
+//			}
+//		});
+//		PlateSizeMenu.add(check);
+//		check = new JRadioButtonMenuItem("24-well");
+//		bgroup.add(check);
+//		check.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				Model_Plate[] plates = new Model_Plate[1];
+//				plates[0] = new Model_Plate(4, 6, 1);
+//				plates[0].initGUI();
+//				ThePlatePanel = new Gui_PlateRepository(
+//						new Model_PlateRepository(plates));
+//				int numplates = plates.length;
+//				TheInputPanel_Container = new JTabbedPane();
+//				for (int i = 0; i < numplates; i++)
+//					TheInputPanel_Container.addTab("Plate #" + (i + 1),
+//							new MidasInputPanel(plates[0]));
+//
+////				initH5IOAndPlates(plates);
+//				TheMainPanel.setLeftComponent(TheInputPanel_Container);
+//				TheMainPanel.setRightComponent(ThePlatePanel);
+//				TheMainPanel.setDividerLocation(TheMainPanel
+//						.getDividerLocation());
+//				TheMainPanel.validate();
+//				TheMainPanel.repaint();
+//				TheMainGUI.repaint();
+//			}
+//		});
+//		PlateSizeMenu.add(check);
+//		check = new JRadioButtonMenuItem("96-well");
+//		bgroup.add(check);
+//		check.setSelected(true);
+//		check.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				Model_Plate[] plates = new Model_Plate[1];
+//				plates[0] = new Model_Plate(8, 12, 1);
+//				plates[0].initGUI();
+//				ThePlatePanel = new Gui_PlateRepository(
+//						new Model_PlateRepository(plates));
+//				int numplates = plates.length;
+//				TheInputPanel_Container = new JTabbedPane();
+//				for (int i = 0; i < numplates; i++)
+//					TheInputPanel_Container.addTab("Plate #" + (i + 1),
+//							new MidasInputPanel(plates[0]));
+//
+////				initH5IOAndPlates(plates);
+//				TheMainPanel.setLeftComponent(TheInputPanel_Container);
+//				TheMainPanel.setRightComponent(ThePlatePanel);
+//				TheMainPanel.setDividerLocation(TheMainPanel
+//						.getDividerLocation());
+//				TheMainPanel.validate();
+//				TheMainPanel.repaint();
+//				TheMainGUI.repaint();
+//			}
+//		});
+//		PlateSizeMenu.add(check);
+//
+//		check = new JRadioButtonMenuItem("384-well");
+//		bgroup.add(check);
+//		check.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				Model_Plate[] plates = new Model_Plate[1];
+//				plates[0] = new Model_Plate(16, 24, 1);
+//				plates[0].initGUI();
+//				ThePlatePanel = new Gui_PlateRepository(
+//						new Model_PlateRepository(plates));
+//				int numplates = plates.length;
+//				TheInputPanel_Container = new JTabbedPane();
+//				for (int i = 0; i < numplates; i++)
+//					TheInputPanel_Container.addTab("Plate #" + (i + 1),
+//							new MidasInputPanel(plates[0]));
+//
+////				initH5IOAndPlates(plates);
+//				TheMainPanel.setLeftComponent(TheInputPanel_Container);
+//				TheMainPanel.setRightComponent(ThePlatePanel);
+//				TheMainPanel.setDividerLocation(TheMainPanel
+//						.getDividerLocation());
+//				TheMainPanel.validate();
+//				TheMainPanel.repaint();
+//				TheMainGUI.repaint();
+//			}
+//		});
+//		PlateSizeMenu.add(check);
+//		PlateSizeMenu.addSeparator();
+//
+//		check = new JRadioButtonMenuItem("multi-96well");
+//		bgroup.add(check);
+//		check.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//
+//				String response = JOptionPane.showInputDialog(null,
+//						"How many plates?", "Enter number of plates:",
+//						JOptionPane.QUESTION_MESSAGE);
+//				if (response == null || !tools.MathOps.isInt(response))
+//					return;
+//
+//				int num = Integer.parseInt(response);
+//
+//				int counter = 0;
+//				Model_Plate[] plates = new Model_Plate[num];
+//				for (int p = 0; p < plates.length; p++) {
+//					counter++;
+//					plates[p] = new Model_Plate(8, 12, counter);
+//					plates[p].initGUI();
+//				}
+//				ThePlatePanel = new Gui_PlateRepository(
+//						new Model_PlateRepository(plates));
+//
+//				int numplates = plates.length;
+//				TheInputPanel_Container = new JTabbedPane();
+//				for (int i = 0; i < numplates; i++)
+//					TheInputPanel_Container.addTab("Plate #" + (i + 1),
+//							new MidasInputPanel(plates[i]));
+//
+////				initH5IOAndPlates(plates);
+//
+//				TheMainPanel.setLeftComponent(TheInputPanel_Container);
+//				TheMainPanel.setRightComponent(ThePlatePanel);
+//				TheMainPanel.setDividerLocation(TheMainPanel
+//						.getDividerLocation());
+//				TheMainPanel.validate();
+//				TheMainPanel.repaint();
+//				TheMainGUI.repaint();
+//			}
+//		});
+//		PlateSizeMenu.add(check);
+//
+//		check = new JRadioButtonMenuItem("multi-384well");
+//		bgroup.add(check);
+//		check.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				String response = JOptionPane.showInputDialog(null,
+//						"How many plates?", "Enter number of plates:",
+//						JOptionPane.QUESTION_MESSAGE);
+//				if (response == null || !tools.MathOps.isInt(response))
+//					return;
+//
+//				int num = Integer.parseInt(response);
+//
+//				int counter = 0;
+//				Model_Plate[] plates = new Model_Plate[num];
+//
+//				for (int p = 0; p < plates.length; p++) {
+//					counter++;
+//					plates[p] = new Model_Plate(16, 24, counter);
+//					plates[p].initGUI();
+//				}
+//				ThePlatePanel = new Gui_PlateRepository(
+//						new Model_PlateRepository(plates));
+//
+//				int numplates = plates.length;
+//				TheInputPanel_Container = new JTabbedPane();
+//				for (int i = 0; i < numplates; i++)
+//					TheInputPanel_Container.addTab("Plate #" + (i + 1),
+//							new MidasInputPanel(plates[i]));
+//
+////				initH5IOAndPlates(plates);
+//
+//				TheMainPanel.setLeftComponent(TheInputPanel_Container);
+//				TheMainPanel.setRightComponent(ThePlatePanel);
+//				TheMainPanel.setDividerLocation(TheMainPanel
+//						.getDividerLocation());
+//				TheMainPanel.validate();
+//				TheMainPanel.repaint();
+//				TheMainGUI.repaint();
+//			}
+//		});
+//		PlateSizeMenu.add(check);
 
 		// States what bit type the images are
 		// JMenu ImageBitTypeMenu = new JMenu("Image Type");
@@ -1067,71 +1067,81 @@ public class MainGUI extends JFrame {
 	}
 
 	/**
-	 * Constructs a new HDF project connector with the currently loaded project
-	 * directory
+	 * Returns the ExpDesignConnector so we can manage the XML data
+	 * 
+	 * @author Bjorn Millard
+	 * @return ExpDesign_IO
+	 */
+	public ExpDesign_Model getExpDesignConnector() {
+		return TheExpDesign_Model;
+	}
+
+
+	public ImageRail_SDCube getH5IO() {
+		return TheImageRail_H5IO;
+	}
+
+	/**
+	 * Constructs a new ImageRail_IO HDF project connector with the currently
+	 * loaded project directory
 	 * 
 	 * @author BLM
 	 */
-	public ProjectHDFConnector initHDFprojectConnector() {
+	public ImageRail_SDCube initH5IO() {
 		String projPath = gui.MainGUI.getGUI().getProjectDirectory()
 		.getAbsolutePath();
-		TheHDFprojectConnector = null;
+		TheImageRail_H5IO = null;
 		try {
-			TheHDFprojectConnector = new ProjectHDFConnector(projPath);
-			TheHDFprojectConnector.createProject();
+			TheImageRail_H5IO = new ImageRail_SDCube(projPath);
 		} catch (Exception e) {
+			System.out.println("Error creating the ImageRail_SDCube: "); e.printStackTrace();
 		}
 
-		return TheHDFprojectConnector;
+		return TheImageRail_H5IO;
 	}
+
+	
+	
+	
+//	/**
+//	 * Init the plate sizes for this project
+//	 * 
+//	 * @author BLM
+//	 */
+//	public void initHDFPlates(Model_Plate[] plates) {
+//		try {
+//			String algoName = "Data";
+//			for (int i = 0; i < plates.length; i++) {
+//
+//				// TODO_X - PlateSize Storage
+//				// TheImageRail_H5IO.writePlateSize(plates[i].getID() - 1,
+//				// plates[i].getNumColumns() * plates[i].getNumRows());
+//
+//				// String directory = TheProjectDirectory.getAbsolutePath() +
+//				// "/" + algoName + "/plate_" + plates[i].getPlateIndex();
+//				// new File(directory).mkdir();
+//			}
+//		} catch (Exception e) {
+//		}
+//
+//	}
+
 
 	/**
-	 * Init the plate sizes for this project
-	 * 
-	 * @author BLM
-	 */
-	public void initHDFPlates(Model_Plate[] plates) {
-		try {
-			String algoName = "Data";
-			for (int i = 0; i < plates.length; i++) {
-				TheHDFprojectConnector.writePlateSize(plates[i].getID() - 1,
-						plates[i].getNumColumns() * plates[i].getNumRows());
-				// String directory = TheProjectDirectory.getAbsolutePath() +
-				// "/" + algoName + "/plate_" + plates[i].getPlateIndex();
-				// new File(directory).mkdir();
-			}
-		} catch (Exception e) {
-		}
-
-	}
-
-	/**
-	 * Constructs a new HDF project connector with the currently loaded project
-	 * directory
-	 * 
-	 * @author BLM
-	 */
-	public ProjectHDFConnector initHDFprojectConnectorAndPlates(Model_Plate[] plates) {
-		TheHDFprojectConnector = null;
-		if (gui.MainGUI.getGUI().getProjectDirectory() != null) {
-			String projPath = gui.MainGUI.getGUI().getProjectDirectory()
-			.getAbsolutePath();
-			try {
-				TheHDFprojectConnector = new ProjectHDFConnector(projPath);
-				TheHDFprojectConnector.createProject();
-
-				for (int i = 0; i < plates.length; i++)
-					TheHDFprojectConnector.writePlateSize(
-							plates[i].getID() - 1, plates[i].getNumColumns()
-							* plates[i].getNumRows());
-
-			} catch (Exception e) {
-			}
-
-		}
-
-		return TheHDFprojectConnector;
-	}
+//	 * Constructs a new HDF project connector with the currently loaded project
+//	 * directory
+//	 * 
+//	 * @author BLM
+//	 */
+//	public ImageRail_SDCube initH5IOAndPlates(Model_Plate[] plates) {
+//		
+//			try {
+//				initH5IO();
+//				if(TheImageRail_H5IO!=null)
+//					TheImageRail_H5IO.createProject();
+//			} catch (Exception e) {}
+//		return TheImageRail_H5IO;
+//	}
 
 	/**
 	 * Returns the HDF project connector with the currently loaded project
@@ -1139,8 +1149,8 @@ public class MainGUI extends JFrame {
 	 * 
 	 * @author BLM
 	 */
-	public ProjectHDFConnector getHDFprojectConnector() {
-		return TheHDFprojectConnector;
+	public ImageRail_SDCube getImageRailio() {
+		return TheImageRail_H5IO;
 	}
 
 	/**
@@ -1209,6 +1219,10 @@ public class MainGUI extends JFrame {
 
 	}
 
+	/**
+	 * When creating a new project, this inits the project directory and the
+	 * plates
+	 */
 	public boolean initNewPlates(int numPlates, int numRows, int numCols) {
 		File dir = getTheDirectory();
 		JFileChooser fc = null;
@@ -1221,26 +1235,40 @@ public class MainGUI extends JFrame {
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			setTheDirectory(new File(file.getParent()));
-			File newF = new File(file.getAbsolutePath() + ".ir");
+			File newF = new File(file.getAbsolutePath() + ".sdc");
+			//
 			newF.mkdir();
 			setProjectDirectory(newF);
 
-			int counter = 0;
 			Model_Plate[] plates = new Model_Plate[numPlates];
 			for (int p = 0; p < plates.length; p++) {
-				counter++;
-				plates[p] = new Model_Plate(numRows, numCols, counter);
+				plates[p] = new Model_Plate(numRows, numCols, p, true);
 				plates[p].initGUI();
 			}
 			ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
 					plates));
 
+			// Reinit the ExpDesignModel
+				TheExpDesign_Model = new ExpDesign_Model(TheProjectDirectory
+						.getAbsolutePath());
+
 			TheInputPanel_Container = new JTabbedPane();
 			for (int i = 0; i < numPlates; i++)
 				TheInputPanel_Container.addTab("Plate #" + (i + 1),
-						new MidasInputPanel(plates[i]));
+						new MidasInputPanel(plates[i], TheExpDesign_Model));
 
-			initHDFprojectConnectorAndPlates(plates);
+			initH5IO();
+			try {
+				TheImageRail_H5IO.createProject();
+			} catch (H5IO_Exception e) {
+				e.printStackTrace();
+			}
+
+			//Attempt To init the hashtable
+			TheImageRail_H5IO.initHashtable();
+			TheImageRail_H5IO.writePlateCountAndSizes(numPlates, plates[0]
+					.getNumColumns()
+					* plates[0].getNumRows());
 			TheMainPanel.setLeftComponent(TheInputPanel_Container);
 			TheMainPanel.setRightComponent(ThePlatePanel);
 			TheMainPanel.setDividerLocation(TheMainPanel.getDividerLocation());
@@ -1282,7 +1310,7 @@ public class MainGUI extends JFrame {
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
 			TheDirectory = new File(file.getParent());
-			File newF = new File(file.getAbsolutePath() + ".ir");
+			File newF = new File(file.getAbsolutePath() + ".sdc");
 			TheProjectDirectory.renameTo(newF);
 			TheProjectDirectory = newF;
 
@@ -1293,9 +1321,9 @@ public class MainGUI extends JFrame {
 			TheInputPanel_Container = new JTabbedPane();
 			for (int i = 0; i < numplates; i++)
 				TheInputPanel_Container.addTab("Plate #" + (i + 1),
-						new MidasInputPanel(plates[i]));
+						new MidasInputPanel(plates[i], TheExpDesign_Model));
 
-			initHDFprojectConnectorAndPlates(plates);
+//			initH5IOAndPlates(plates);
 			TheMainPanel.setLeftComponent(TheInputPanel_Container);
 			TheMainPanel.setRightComponent(ThePlatePanel);
 			TheMainPanel.setDividerLocation(TheMainPanel.getDividerLocation());
@@ -1323,23 +1351,29 @@ public class MainGUI extends JFrame {
 		int returnVal = fc.showSaveDialog(null);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			File file = fc.getSelectedFile();
-			file.renameTo(new File(file.getAbsolutePath() + ".ir"));
+			file.renameTo(new File(file.getAbsolutePath() + ".sdc"));
 			TheDirectory = new File(file.getParent());
 			file.mkdir();
 			TheProjectDirectory = file;
 
 			Model_Plate[] plates = new Model_Plate[1];
-			plates[0] = new Model_Plate(8, 12, 1);
+			plates[0] = new Model_Plate(8, 12, 0, true);
 			plates[0].initGUI();
 			ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
 					plates));
 			int numplates = plates.length;
+
 			TheInputPanel_Container = new JTabbedPane();
 			for (int i = 0; i < numplates; i++)
 				TheInputPanel_Container.addTab("Plate #" + (i + 1),
-						new MidasInputPanel(plates[i]));
-
-			initHDFprojectConnectorAndPlates(plates);
+						new MidasInputPanel(plates[i], TheExpDesign_Model));
+			try {
+				initH5IO();
+				if(TheImageRail_H5IO!=null)
+					TheImageRail_H5IO.createProject();
+			} catch (Exception e) {e.printStackTrace();}
+				
+				
 			TheMainPanel.setLeftComponent(TheInputPanel_Container);
 			TheMainPanel.setRightComponent(ThePlatePanel);
 			TheMainPanel.setDividerLocation(TheMainPanel.getDividerLocation());
@@ -1359,7 +1393,7 @@ public class MainGUI extends JFrame {
 	public void updateAllPlots() {
 		if (LeftPanelDisplayed == MIDASINPUT)
 			updateMidasInputPanel();
-		else if (LeftPanelDisplayed == LINEGRAPH)
+		 if (LeftPanelDisplayed == LINEGRAPH)
 			updateLineGraph();
 		else if (LeftPanelDisplayed == DOTPLOT)
 			updateDotPlot();
@@ -1387,6 +1421,9 @@ public class MainGUI extends JFrame {
 	public void setProjectDirectory(File dir) {
 		setTitle("Project: " + dir.getAbsolutePath());
 		TheProjectDirectory = dir;
+
+		TheExpDesign_Model = new ExpDesign_Model(TheProjectDirectory
+				.getAbsolutePath());
 	}
 
 	/**
@@ -1400,10 +1437,11 @@ public class MainGUI extends JFrame {
 		int numplates = ThePlates.length;
 		for (int i = 0; i < numplates; i++)
 			((MidasInputPanel) TheInputPanel_Container.getComponentAt(i))
-			.updateInputPanel(ThePlates[i]);
+					.updateInputPanel();
 
 		TheInputPanel_Container.setSelectedIndex((ThePlatePanel
-				.getSelectedPlateID() - 1));
+				.getSelectedPlateID()));
+
 		TheInputPanel_Container.validate();
 		TheInputPanel_Container.repaint();
 	}
@@ -1865,9 +1903,10 @@ public class MainGUI extends JFrame {
 	 * Loads the plate with the TIFF images in the given directory
 	 * 
 	 * @author BLM
+	 * @throws H5IO_Exception 
 	 */
 	public void loadImageDirectory(File ImageDir_, Model_Plate plate,
-			boolean copyImages) {
+			boolean copyImages) throws H5IO_Exception {
 
 		File dir = ImageDir_;
 
@@ -1901,8 +1940,9 @@ public class MainGUI extends JFrame {
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		} else // Move images
 		{
+
 			File newFile = new File(Images.getAbsolutePath() + File.separator
-					+ "plate_" + (plate.getID() - 1));
+					+ "plate_" + (plate.getID()));
 			boolean result = dir.renameTo(newFile);
 			if (!result) {
 				System.out.println("Error moving images into project.");
@@ -1910,6 +1950,12 @@ public class MainGUI extends JFrame {
 			}
 			dir = newFile;
 
+			// Trying to write images to HDF5
+			// try {
+			// TheImageRail_H5IO.dumpAndReadImagesInProject(dir.listFiles());
+			// } catch (Exception e1) {
+			// e1.printStackTrace();
+			// }
 		}
 
 		// Waiting a second
@@ -1948,50 +1994,52 @@ public class MainGUI extends JFrame {
 		// Init Scaling parameters
 		initScalingParameters();
 
-		File temp = new File(TheProjectDirectory.getAbsolutePath()
-				+ "/Data/temp/featuresUsed");
-		if (!temp.exists()) {
-			temp.mkdirs();
-			// copy over current features to temp/featuresUsed folder
-			try {
-				// Try to load features from src tree, otherwise try deployed
-				// location
-				File f = new File("./src/features");
-				if (!f.exists())
-					f = new File("./features");
-				File[] fs = f.listFiles();
-				int len = fs.length;
+//		File temp = new File(TheProjectDirectory.getAbsolutePath()
+//				+ "/Data/temp/featuresUsed");
+//		if (!temp.exists()) {
+//			temp.mkdirs();
+//			// copy over current features to temp/featuresUsed folder
+//			try {
+//				// Try to load features from src tree, otherwise try deployed
+//				// location
+//				File f = new File("./src/features");
+//				if (!f.exists())
+//					f = new File("./features");
+//				File[] fs = f.listFiles();
+//				int len = fs.length;
+//
+//				for (int i = 0; i < len; i++) {
+//					if (fs[i].getAbsolutePath().indexOf(".java") > 0
+//							&& !fs[i].getName()
+//							.equalsIgnoreCase("Feature.java")
+//							&& !fs[i].getName().equalsIgnoreCase(
+//							"FeatureSorter.java")) {
+//
+//						// Copying images to new ImageDirectory
+//
+//						File file = new File(temp.getAbsolutePath()
+//								+ File.separator + fs[i].getName());
+//						try {
+//							tools.ImageTools.copyFile(fs[i], file);
+//							// System.out.println("feature copy: "
+//							// + file.getAbsolutePath()
+//							// + "    Successful ****");
+//						} catch (IOException e) {
+//							System.out
+//							.println("----*ERROR copying Feature file to ./Data/temp/featuresUsed*----");
+//							e.printStackTrace();
+//						}
+//
+//					}
+//				}
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
 
-				for (int i = 0; i < len; i++) {
-					if (fs[i].getAbsolutePath().indexOf(".java") > 0
-							&& !fs[i].getName()
-							.equalsIgnoreCase("Feature.java")
-							&& !fs[i].getName().equalsIgnoreCase(
-							"FeatureSorter.java")) {
-
-						// Copying images to new ImageDirectory
-
-						File file = new File(temp.getAbsolutePath()
-								+ File.separator + fs[i].getName());
-						try {
-							tools.ImageTools.copyFile(fs[i], file);
-							// System.out.println("feature copy: "
-							// + file.getAbsolutePath()
-							// + "    Successful ****");
-						} catch (IOException e) {
-							System.out
-							.println("----*ERROR copying Feature file to ./Data/temp/featuresUsed*----");
-							e.printStackTrace();
-						}
-
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
 
 		initFeatures(ChannelNames);
+
 
 		if (LeftPanelDisplayed == DOTPLOT) {
 			TheDotPlot = null;
@@ -2040,34 +2088,43 @@ public class MainGUI extends JFrame {
 	 */
 	public void loadProject(File ProjectDir) {
 
+		long sTime = System.currentTimeMillis();
 		try {
 			System.out.println("Loading Project: " + ProjectDir.getName());
 			TheDirectory = new File(ProjectDir.getParent());
 			setProjectDirectory(ProjectDir);
+			//Initialized the HDF5 I/O and creates the sample/well hash index
+			initH5IO();
+			TheImageRail_H5IO.initHashtable();
 
 			// Looking for what sort of plates were loaded in this prior project
-			initHDFprojectConnector();
-			ArrayList<Model_Plate> arr = new ArrayList<Model_Plate>();
-			int counter = 1;
-			for (int i = 0; i < 100; i++) {
-				int pSize = 0;
-				try {
-					pSize = TheHDFprojectConnector.readPlateSize(i);
-				} catch (Exception e) {
-					break;
+			ArrayList<int[]> plateSizes = TheImageRail_H5IO.getPlateSizes();
+			//We will create X plates where X == maxPlateID+1;
+			int max = 0;
+			int pSize = 96;
+			for (int i = 0; i < plateSizes.size(); i++) {
+				int[] one =  plateSizes.get(i);
+				int id = one[0];
+				if(id>max)
+					max = id;
+				if(i == 0)
+				pSize = one[1];
+				else
+					if(pSize!=one[1])
+						System.out.println("Project contains plates of different sizes*** This is currently not supported by ImageRail");
 				}
+			max++;
 
-				if (pSize == 0)
-					break;
-
+			
+			System.out.println("Starting to creating model plates");
+			ArrayList<Model_Plate> arr = new ArrayList<Model_Plate>();
+			for (int i = 0; i < max; i++) {
 				int numR = (int) Math.sqrt(pSize / 1.5f);
 				int numC = pSize / numR;
-				arr.add(new Model_Plate(numR, numC, counter));
-				counter++;
-
+				arr.add(new Model_Plate(numR, numC, i, true));
 			}
-
-
+			System.out.println("Finished creating model plates");
+			System.out.println(System.currentTimeMillis() - sTime);
 
 			// Creating the new plate holder with new plates
 			Model_Plate[] plates = new Model_Plate[arr.size()];
@@ -2078,14 +2135,15 @@ public class MainGUI extends JFrame {
 			}
 			ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
 					plates));
-			initHDFPlates(plates);
 
 			int numplates = plates.length;
 			TheInputPanel_Container = new JTabbedPane();
 			for (int i = 0; i < numplates; i++) {
 				Model_Plate plate = plates[i];
 				TheInputPanel_Container.addTab("Plate #" + plate.getID(),
-						new MidasInputPanel(plate));
+						new MidasInputPanel(plate, TheExpDesign_Model));
+				
+				
 				// Trying to load the well mean data from the HDF file if exists
 				plate.loadWellMeanAndStdevData();
 
@@ -2093,7 +2151,6 @@ public class MainGUI extends JFrame {
 						+ File.separator + "Images" + File.separator + "plate_"
 						+ i);
 
-				//
 				// Looking for images for this plate in the projPath/Images
 				// directory
 
@@ -2130,100 +2187,17 @@ public class MainGUI extends JFrame {
 			}
 
 			initScalingParameters();
-
-			// File featuresUsed = new
-			// File(TheProjectDirectory.getAbsolutePath()
-			// + "Data/temp/featuresUsed");
-			// if(!featuresUsed.exists()) //Couldnt find a featuresUsed folder
-			// for this project, so default use current IR features, but they
-			// may not match up
-			// {
-			// featuresUsed = new File("./features");
-			//				
-			// System.out.println("******SEVERE PROBLEM:  Feature names loaded dont match those loaded in this version of ImageRail********");
-			// JOptionPane.showMessageDialog(null,"Feature Missmatch Error! \n\n The features used to create this project are not \n"
-			// +
-			// "loaded up exactly in your current version of ImageRail. \n\n" +
-			// "Please make sure you are using the same Feature Plug-ins and try again \n"
-			// +
-			// "...or reprocess the images with your current set of Feature Plug-ins\n"
-			// +
-			// "to create new, self-consistant HDF5 data files.","Project Loading Error",JOptionPane.ERROR_MESSAGE);
-			// }
 			initFeatures(ChannelNames);
-
-			initHDFprojectConnectorAndPlates(plates);
 			updateFeatures();
 			updateAllPlots();
 
 			//
 			//Checking if loaded project features match up 
-			SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-					gui.MainGUI.getGUI().getProjectDirectory()
-					.getAbsolutePath());
+			ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
 			StringBuffer[] fNames = new StringBuffer[TheFeatures.size()];
 			for (int j = 0; j < TheFeatures.size(); j++) {
 				fNames[j] = new StringBuffer(((Feature)TheFeatures.get(j)).toString());
 			}
-
-
-			// Model_Plate[] ps= TheMainGUI.getPlateHoldingPanel().getThePlates();
-			// boolean featureNameProblems = false;
-			// for (int i = 0; i < numplates; i++)
-			// {
-			// Model_Plate plate = ps[i];
-			// int pInd = plate.getPlateIndex();
-			// Model_Well[][] wells = plate.getTheWells();
-			// int numR = plate.getNumRows();
-			// int numC = plate.getNumColumns();
-			// for (int j = 0; j < numR; j++) {
-			// for (int j2 = 0; j2 < numC; j2++) {
-			// Model_Well well = wells[j][j2];
-			// int numHDF = well.getHDFcount();
-			// if (numHDF>0)
-			// {
-			// Model_Field[] fields = well.getFields();
-			// for (int k = 0; k < fields.length; k++) {
-			// Model_Field field = fields[k];
-			// StringBuffer[] featureNames = sCon.readFeatureNames(pInd,
-			// well.getWellIndex(), field.getIndexInWell());
-			// if (featureNames!=null)
-			// {
-			// if(featureNames.length!=fNames.length)
-			// featureNameProblems = true;
-			// else
-			// for (int l = 0; l < featureNames.length; l++) {
-			// StringBuffer stringBuffer = featureNames[l];
-			// if(!fNames[l].toString().trim().equalsIgnoreCase(stringBuffer.toString().trim()))
-			// {
-			// System.out.println("Feature Mismatch: "+fNames[l]
-			// +" != "+featureNames[l]);
-			// featureNameProblems = true;
-			// }
-			// }
-			// }
-			// }
-			// }
-			//
-			// }
-			// }
-			//
-			// }
-			// //
-			// //
-			// if(featureNameProblems)
-			// {
-			// System.out.println("******SEVERE PROBLEM:  Feature names loaded dont match those loaded in this version of ImageRail********");
-			// JOptionPane.showMessageDialog(null,"Feature Missmatch Error! \n\n The features used to create this project are not \n"
-			// +
-			// "loaded up exactly in your current version of ImageRail. \n\n" +
-			// "Please make sure you are using the same Feature Plug-ins and try again \n"
-			// +
-			// "...or reprocess the images with your current set of Feature Plug-ins\n"
-			// +
-			// "to create new, self-consistant HDF5 data files.","Project Loading Error",JOptionPane.ERROR_MESSAGE);
-			// }
-
 
 			TheMainPanel.setLeftComponent(TheInputPanel_Container);
 			TheMainPanel.setRightComponent(ThePlatePanel);
@@ -2235,7 +2209,6 @@ public class MainGUI extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	/** */
@@ -2256,14 +2229,20 @@ public class MainGUI extends JFrame {
 	public void load(File f, Model_Plate plate) {
 		if (f.isDirectory()) {
 			// Loading a project
-			if (containsFile(f, "project.h5") || f.getName().indexOf(".ir") > 0) {
+			if (f.getName().indexOf(".sdc") > 0) {
 				loadProject(f);
 			} else // Only load images
 			{
 				System.out.println(" 	---> Loading Image Directory");
 				ImageDirectory = f;
 				TheDirectory = new File(f.getParent());
-				loadImageDirectory(f, plate, false);
+				
+				try {
+					loadImageDirectory(f, plate, false);
+				} catch (H5IO_Exception e) {
+					System.out.println("Error loading project directory: ");
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -2857,8 +2836,7 @@ public class MainGUI extends JFrame {
 	 * @author BLM
 	 */
 	private void resaveCells() {
-		SegmentationHDFConnector sCon = new SegmentationHDFConnector(
-				gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath());
+		ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
 
 		Model_Plate[] plates = getPlateHoldingPanel().getModel().getPlates();
 		int numP = plates.length;
@@ -2878,30 +2856,27 @@ public class MainGUI extends JFrame {
 				for (int c = 0; c < wells[0].length; c++) {
 					Model_Well well = wells[r][c];
 					if (well.areCellsModified()) {
+						System.out.println("Well: " + wells[r][c].name);
 						try {
-							System.out.println("Well: " + wells[r][c].name);
-							// Parameters to write: plateIdx, wellIdx, fieldIdx,
-							// cellList
 							Model_Field[] fields = wells[r][c].getFields();
 							for (int j = 0; j < fields.length; j++)
-								fields[j].resaveCells(sCon);
+								fields[j].resaveCells(io);
 
-							if (well.Feature_Means != null && sCon != null) {
-								sCon.writeWellMeanValues(plates[i]
-								                                .getPlateIndex(), well.getWellIndex(),
-								                                well.Feature_Means);
-								if (featureNames != null)
-									sCon.writeMeanFeatureNames(plates[i]
-									                                  .getPlateIndex(), featureNames);
+						} catch (Exception e) {
+							System.out
+							.println("**Error Writing Cells during resave of HDF5 files");
+							e.printStackTrace();
+						}
+					
+							if (well.Feature_Means != null && io != null) {						
+								io.writeWellMeans(plates[i].getPlateIndex(), well.getWellIndex(), well.Feature_Means);
 							}
-							if (well.Feature_Stdev != null && sCon != null)
-								sCon.writeWellStdDevValues(plates[i]
+							if (well.Feature_Stdev != null && io != null)
+								io
+										.writeWellStdDevs(plates[i]
 								                                  .getPlateIndex(), well.getWellIndex(),
 								                                  well.Feature_Stdev);
-						} catch (HDFConnectorException e) {
-							System.out
-							.println("Error Writing Model_Well Means/STDEV for new HDF5 files **** ");
-						}
+						
 						well.setCellsModified(false);
 					}
 
@@ -2950,6 +2925,12 @@ public class MainGUI extends JFrame {
 
 
 	}
+	// /** Gets the current time/date stamp to for unique sample IDs */
+	// public String getTimestamp() {
+	// Calendar cal = Calendar.getInstance();
+	// SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
+	// return sdf.format(cal.getTime());
+	// }
 
 	/** Gets the current time/date stamp to for unique sample IDs */
 	public String getTimestamp() {
@@ -2961,11 +2942,11 @@ public class MainGUI extends JFrame {
 	class FileChooserFilter_IR extends javax.swing.filechooser.FileFilter {
 		public boolean accept(File file) {
 			String filename = file.getName();
-			return filename.endsWith(".ir");
+			return filename.endsWith(".sdc");
 		}
 
 		public String getDescription() {
-			return "*.ir";
+			return "*.sdc";
 		}
 	}
 }

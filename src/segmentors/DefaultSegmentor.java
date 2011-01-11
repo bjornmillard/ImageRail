@@ -12,18 +12,19 @@
 
 package segmentors;
 
+import imagerailio.Point;
+
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
 import models.Model_ParameterSet;
+import segmentedobject.CellCompartment;
+import segmentedobject.CellCoordinates;
 import tempObjects.Cell_RAM;
 import tools.LinearKernals;
 import tools.SpatialFilter;
-import us.hms.systemsbiology.idx2coordinates.Point;
-import us.hms.systemsbiology.segmentedobject.CellCompartment;
-import us.hms.systemsbiology.segmentedobject.CellCoordinates;
 
 public class DefaultSegmentor implements CellSegmentor {
 	private Pixel[][] pixels;

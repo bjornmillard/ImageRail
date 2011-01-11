@@ -45,17 +45,12 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.border.BevelBorder;
-import javax.vecmath.Point3d;
 
 import models.Model_Well;
-import plots3D.ImageRail3D_Frame;
 import tools.SVG_writer;
-import us.hms.systemsbiology.metadata.Description;
-import us.hms.systemsbiology.metadata.MetaDataConnector;
 import dialogs.AxisBoundsInputDialog;
 import dialogs.CaptureImage_Dialog;
 
@@ -256,66 +251,71 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 		
 		
 		
-		JButton but11 = new JButton(tools.Icons.Icon_3d);
-		but11.setToolTipText("Launch 3D Plotter");
-		TheToolBar.add(but11);
-		but11.addActionListener(new ActionListener()
-								{
-					public void actionPerformed(ActionEvent ae)
-					{
-						
-						if (TheSeries==null)
-							return;
-						
-						Object response = JOptionPane.showInputDialog(TheMainGUI,
-																	  "What should the coloring represent?",
-																	  "Color Mapping", JOptionPane.QUESTION_MESSAGE,
-																	  null, new String[] { MEANVALUES, CV },MEANVALUES);
-						if (response==null)
-							return;
-						
-						
-						
-						//Collating all mean and stdev date into arrayLists
-						int len = TheSeries.length;
-						
-						ArrayList arr = new ArrayList();
-						ArrayList arr2 = new ArrayList();
-						for (int i = 0; i < len; i++)
-						{
-							int num = TheSeries[i].TheDataPoints.length;
-							for (int j = 0; j < num; j++)
-							{
-								arr.add(new Point3d(i,j,TheSeries[i].getValue_plot(j)));
-								float val = TheSeries[i].TheDataPoints[j].getStdev();
-								arr2.add(new Double(val/TheSeries[i].getValue_real(j)));
-							}
-						}
-						//Transfering to arrays
-						int num = arr.size();
-						Point3d[] points = new Point3d[num];
-						double[] colors = new double[num];
-						
-						if (((String)response).equalsIgnoreCase(MEANVALUES))
-							for (int i = 0; i < num; i++)
-							{
-								points[i] = (Point3d) arr.get(i);
-								colors[i] = points[i].z;
-							}
-						else if (((String)response).equalsIgnoreCase(CV))
-							for (int i = 0; i < num; i++)
-							{
-								points[i] = (Point3d) arr.get(i);
-								colors[i] = ((Double)arr2.get(i)).doubleValue();
-							}
-						ImageRail3D_Frame.load(points, colors);
-						
-						
-						validate();
-						repaint();
-						updatePanel();
-					}
-				});
+
+		//
+		// TODO - took the 3D plotting out as of October 6, 2010 - Did not find
+		// it useful and was clutter
+		//
+		// JButton but11 = new JButton(tools.Icons.Icon_3d);
+		// but11.setToolTipText("Launch 3D Plotter");
+		// TheToolBar.add(but11);
+		// but11.addActionListener(new ActionListener()
+		// {
+		// public void actionPerformed(ActionEvent ae)
+		// {
+		//						
+		// if (TheSeries==null)
+		// return;
+		//						
+		// Object response = JOptionPane.showInputDialog(TheMainGUI,
+		// "What should the coloring represent?",
+		// "Color Mapping", JOptionPane.QUESTION_MESSAGE,
+		// null, new String[] { MEANVALUES, CV },MEANVALUES);
+		// if (response==null)
+		// return;
+		//						
+		//						
+		//						
+		// //Collating all mean and stdev date into arrayLists
+		// int len = TheSeries.length;
+		//						
+		// ArrayList arr = new ArrayList();
+		// ArrayList arr2 = new ArrayList();
+		// for (int i = 0; i < len; i++)
+		// {
+		// int num = TheSeries[i].TheDataPoints.length;
+		// for (int j = 0; j < num; j++)
+		// {
+		// arr.add(new Point3d(i,j,TheSeries[i].getValue_plot(j)));
+		// float val = TheSeries[i].TheDataPoints[j].getStdev();
+		// arr2.add(new Double(val/TheSeries[i].getValue_real(j)));
+		// }
+		// }
+		// //Transfering to arrays
+		// int num = arr.size();
+		// Point3d[] points = new Point3d[num];
+		// double[] colors = new double[num];
+		//						
+		// if (((String)response).equalsIgnoreCase(MEANVALUES))
+		// for (int i = 0; i < num; i++)
+		// {
+		// points[i] = (Point3d) arr.get(i);
+		// colors[i] = points[i].z;
+		// }
+		// else if (((String)response).equalsIgnoreCase(CV))
+		// for (int i = 0; i < num; i++)
+		// {
+		// points[i] = (Point3d) arr.get(i);
+		// colors[i] = ((Double)arr2.get(i)).doubleValue();
+		// }
+		// ImageRail3D_Frame.load(points, colors);
+		//						
+		//						
+		// validate();
+		// repaint();
+		// updatePanel();
+		// }
+		// });
 		
 		
 		// adding the numCells buttons
@@ -534,13 +534,17 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 			int len = TheSeries[i].TheDataPoints.length;
 			for (int j = 0; j < len; j++)
 			{
-				Model_Well well = TheSeries[i].TheDataPoints[j].TheWell;
-				Description[] treats = well.getMetaDataConnector().readTreatments( well.getWellIndex());
-				for (int z = 0; z < treats.length; z++)
-				{
-					if(treats[z].getName().equalsIgnoreCase(name))
-						labels[j] = treats[z].getValue()+" "+treats[z].getUnits();
-				}
+				// TODO - MetaCon
+				//
+				// Model_Well well = TheSeries[i].TheDataPoints[j].TheWell;
+				// Description[] treats =
+				// well.getMetaDataConnector().readTreatments(
+				// well.getWellIndex());
+				// for (int z = 0; z < treats.length; z++)
+				// {
+				// if(treats[z].getName().equalsIgnoreCase(name))
+				// labels[j] = treats[z].getValue()+" "+treats[z].getUnits();
+				// }
 			}
 		}
 		return labels;
@@ -587,13 +591,16 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 		for (int i = 0; i < uniqueNames.size(); i++)
 			for (int j = 0; j < TheSeries.length; j++)
 			{
-				Model_Well well = TheSeries[j].TheDataPoints[0].TheWell;
-				//Then we check specifically for our treatment
-				Description treat = getTreatmentFromWell(uniqueNames.get(i), well.getPlate().getPlateIndex(), well.getWellIndex() ,  well.getMetaDataConnector());
-				if(treat!=null)
-					firstPoint[i][j] = treat.getValue()+" "+treat.getUnits();
-				else
-					firstPoint[i][j] = "";
+				// TODO - MetaCon
+				// Model_Well well = TheSeries[j].TheDataPoints[0].TheWell;
+				// //Then we check specifically for our treatment
+				// Description treat = getTreatmentFromWell(uniqueNames.get(i),
+				// well.getPlate().getPlateIndex(), well.getWellIndex() ,
+				// well.getMetaDataConnector());
+				// if(treat!=null)
+				// firstPoint[i][j] = treat.getValue()+" "+treat.getUnits();
+				// else
+				// firstPoint[i][j] = "";
 			}
 		
 		boolean[] areSame = new boolean[uniqueNames.size()];
@@ -609,19 +616,23 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 				
 				for (int d = 1; d < TheSeries[j].TheDataPoints.length; d++)
 				{
-					Model_Well well = TheSeries[j].TheDataPoints[d].TheWell;
-					
-					//Then we check specifically for our treatment
-					Description treat = getTreatmentFromWell(name, well.getPlate().getPlateIndex(), well.getWellIndex() ,  well.getMetaDataConnector());
-					if(treat!=null)
-					{
-						String val = treat.getValue()+" "+treat.getUnits();
-						if (!val.equalsIgnoreCase(firstPoint[i][j]))
-						{
-							areSame[i] = false;
-							break;
-						}
-					}
+					// TODO - MetaCon
+					//
+					// Model_Well well = TheSeries[j].TheDataPoints[d].TheWell;
+					//					
+					// //Then we check specifically for our treatment
+					// Description treat = getTreatmentFromWell(name,
+					// well.getPlate().getPlateIndex(), well.getWellIndex() ,
+					// well.getMetaDataConnector());
+					// if(treat!=null)
+					// {
+					// String val = treat.getValue()+" "+treat.getUnits();
+					// if (!val.equalsIgnoreCase(firstPoint[i][j]))
+					// {
+					// areSame[i] = false;
+					// break;
+					// }
+					// }
 				}
 				if(!areSame[i])
 					break;
@@ -650,21 +661,24 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 		ArrayList<String> unique = new ArrayList<String>();
 		for (int i = 0; i < numW; i++)
 		{
-			Description[] arr = wells.get(i).getMetaDataConnector().readTreatments(i);
-			for (int j = 0; j < arr.length; j++)
-			{
-				boolean foundIt = false;
-				for (int z = 0; z < unique.size(); z++)
-				{
-					if (unique.get(z).equalsIgnoreCase(arr[j].getName()))
-					{
-						foundIt = true;
-						break;
-					}
-				}
-				if(!foundIt)
-					unique.add(arr[j].getName());
-			}
+			// TODO - MetaCon
+			//
+			// Description[] arr =
+			// wells.get(i).getMetaDataConnector().readTreatments(i);
+			// for (int j = 0; j < arr.length; j++)
+			// {
+			// boolean foundIt = false;
+			// for (int z = 0; z < unique.size(); z++)
+			// {
+			// if (unique.get(z).equalsIgnoreCase(arr[j].getName()))
+			// {
+			// foundIt = true;
+			// break;
+			// }
+			// }
+			// if(!foundIt)
+			// unique.add(arr[j].getName());
+			// }
 		}
 		
 		return unique;
@@ -701,13 +715,17 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 			//Make an initial
 			for (int d = 0; d < TheSeries[0].TheDataPoints.length; d++)
 			{
-				//See if this well has this treatment name
-				Model_Well well = TheSeries[0].TheDataPoints[d].TheWell;
-				Description treat = getTreatmentFromWell(uniqueNames.get(i), well.getPlate().getPlateIndex(), well.getWellIndex() ,  well.getMetaDataConnector());
-				if(treat!=null)
-					labels[i][d] = treat.getValue()+" "+treat.getUnits();
-				else
-					labels[i][d] = "";
+				// TODO - MetaCon
+				//
+				// //See if this well has this treatment name
+				// Model_Well well = TheSeries[0].TheDataPoints[d].TheWell;
+				// Description treat = getTreatmentFromWell(uniqueNames.get(i),
+				// well.getPlate().getPlateIndex(), well.getWellIndex() ,
+				// well.getMetaDataConnector());
+				// if(treat!=null)
+				// labels[i][d] = treat.getValue()+" "+treat.getUnits();
+				// else
+				// labels[i][d] = "";
 			}
 		}
 		
@@ -722,20 +740,26 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 			{
 				for (int d = 0; d < TheSeries[j].TheDataPoints.length; d++)
 				{
-					Model_Well well = TheSeries[j].TheDataPoints[d].TheWell;
-					Description treat = getTreatmentFromWell(uniqueNames.get(i), well.getPlate().getPlateIndex(), well.getWellIndex() ,  well.getMetaDataConnector());
-					if(treat!=null)
-					{
-						String valUnits = treat.getValue()+" "+treat.getUnits();
-						if(labels[i][d]==null || labels[i][d].equalsIgnoreCase(""))
-						{
-							labels[i][d]  = valUnits;
-						}
-						else if(!valUnits.equalsIgnoreCase(labels[i][d]))
-						{
-							areSame[i] = false;
-						}
-					}
+					// TODO - MetaCon
+					//
+					// Model_Well well = TheSeries[j].TheDataPoints[d].TheWell;
+					// Description treat =
+					// getTreatmentFromWell(uniqueNames.get(i),
+					// well.getPlate().getPlateIndex(), well.getWellIndex() ,
+					// well.getMetaDataConnector());
+					// if(treat!=null)
+					// {
+					// String valUnits = treat.getValue()+" "+treat.getUnits();
+					// if(labels[i][d]==null ||
+					// labels[i][d].equalsIgnoreCase(""))
+					// {
+					// labels[i][d] = valUnits;
+					// }
+					// else if(!valUnits.equalsIgnoreCase(labels[i][d]))
+					// {
+					// areSame[i] = false;
+					// }
+					// }
 					
 				}
 			}
@@ -774,14 +798,20 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 				Color[] colors = new Color[getNumSeries()];
 				for (int i = 0; i < TheSeries.length; i++)
 				{
-					String text = "Error Reading Legend Species";
-					Description treat = getTreatmentFromWell(name, TheSeries[i].TheDataPoints[0].TheWell.getPlate().getPlateIndex(), TheSeries[i].TheDataPoints[0].TheWell.getWellIndex() ,  TheSeries[i].TheDataPoints[0].TheWell.getMetaDataConnector());
-					if(treat!=null)
-					{
-						text = treat.getName()+" ("+treat.getValue()+" "+treat.getUnits()+")";
-						speciesNames[i] = text;
-						colors[i] = TheSeries[i].color;
-					}
+					// TODO - MetaCon
+					//
+					// String text = "Error Reading Legend Species";
+					// Description treat = getTreatmentFromWell(name,
+					// TheSeries[i].TheDataPoints[0].TheWell.getPlate().getPlateIndex(),
+					// TheSeries[i].TheDataPoints[0].TheWell.getWellIndex() ,
+					// TheSeries[i].TheDataPoints[0].TheWell.getMetaDataConnector());
+					// if(treat!=null)
+					// {
+					// text =
+					// treat.getName()+" ("+treat.getValue()+" "+treat.getUnits()+")";
+					// speciesNames[i] = text;
+					// colors[i] = TheSeries[i].color;
+					// }
 				}
 				if(Legend_xy==null)
 					Legend_xy = new Point(XMARGIN_LEFT+10, ys-yRange+10);
@@ -878,18 +908,22 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 	}
 	
 	
-	/** Looks in the given plate/well for the given treatment with the given name
-	 * @author BLM*/
-	private Description getTreatmentFromWell(String name, int pIndex, int wIndex, MetaDataConnector meta)
-	{
-		Description[] d = meta.readTreatments(wIndex);
-		for (int i = 0; i < d.length; i++)
-		{
-			if (d[i].getName().equalsIgnoreCase(name))
-				return d[i];
-		}
-		return null;
-	}
+
+	// /** Looks in the given plate/well for the given treatment with the given
+	// name
+	// * @author BLM*/
+	// private ExpDesign_Description getTreatmentFromWell(String name, int
+	// pIndex,
+	// int wIndex, ExpDesign_IO meta)
+	// {
+	// Description[] d = meta.readTreatments(wIndex);
+	// for (int i = 0; i < d.length; i++)
+	// {
+	// if (d[i].getName().equalsIgnoreCase(name))
+	// return d[i];
+	// }
+	// return null;
+	// }
 	
 	
 	

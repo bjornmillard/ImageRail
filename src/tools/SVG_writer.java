@@ -220,17 +220,17 @@ public class SVG_writer extends Graphics2D
 		return false;
 	}
 	
-	/**
-	 * Method getDeviceConfiguration
-	 *
-	 * @return   a GraphicsConfiguration
-	 *
-	 */
-	public GraphicsConfiguration getDeviceConfiguration()
-	{
-		// TODO
-		return null;
-	}
+//	/**
+//	 * Method getDeviceConfiguration
+//	 *
+//	 * @return   a Graphiciofiguration
+//	 *
+//	 */
+//	public Graphiciofiguration getDeviceConfiguration()
+//	{
+//		// TODO
+//		return null;
+//	}
 	
 	/**
 	 * Method setComposite
@@ -1055,6 +1055,12 @@ public class SVG_writer extends Graphics2D
 		st+=body+" </text>";
 		pw.print(st);
 		pw.println();
+	}
+
+	@Override
+	public GraphicsConfiguration getDeviceConfiguration() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }
