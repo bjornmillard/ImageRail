@@ -1650,6 +1650,7 @@ path
 				// Get number of fields in this sample
 				int numFields = io.getGroupChildCount(hdfPath, pathToSample
 						+ "/Children");
+				boolean exists = false;
 				for (int j = 0; j < numFields; j++) {
 					// seeing if this field has a "feature_values" dataset
 					String path = pathToSample + "/Children/Child_" + j
@@ -1657,13 +1658,16 @@ path
 
 					try {
 						io.openHDF5(hdfPath);
-						boolean exists = io.existsDataset(path);
+						exists = io.existsDataset(path);
 					} catch (H5IO_Exception e) {
 						e.printStackTrace();
 					}
-					String indexKeyField = indexKey + "f" + j;
-					String pathToField = pathToSample + "/Children/Child_" + j;
-					hashtable_indexToPath.put(indexKeyField, pathToField);
+					if (exists) {
+						String indexKeyField = indexKey + "f" + j;
+						String pathToField = pathToSample + "/Children/Child_"
+								+ j;
+						hashtable_indexToPath.put(indexKeyField, pathToField);
+					}
 				}
 
 			}

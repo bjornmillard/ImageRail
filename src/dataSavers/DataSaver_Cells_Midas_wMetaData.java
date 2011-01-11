@@ -206,8 +206,12 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 								 headerValues.add((theWell.getPlate().getTitle()+""));
 								if (date != null && date.getValue() != null)
 									headerValues.add(date.getValue());
+								else
+									headerValues.add("");
 								if (desc != null && desc.getValue() != null)
 									headerValues.add(desc.getValue());
+								else
+									headerValues.add("");
 								// if (time != null && time.getValue() != null)
 								// headerValues.add(time.getTimeValue());
 																
