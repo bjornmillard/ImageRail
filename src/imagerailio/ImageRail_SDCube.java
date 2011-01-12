@@ -978,8 +978,12 @@ public class ImageRail_SDCube
 				wellIdx));
 		if (pathToSample != null) {
 
-			String path = pathToSample + "/Children/Child_" + fieldIdx
-					+ "/Data";
+			String pathChildren = pathToSample + "/Children/Child_" + fieldIdx
+					+ "/Children";
+			// String pathData = pathToSample + "/Children/Child_" + fieldIdx
+			// + "/Data";
+			String pathMeta = pathToSample + "/Children/Child_" + fieldIdx
+					+ "/Meta";
 
 			// Get the compartment names.
 			ArrayList<StringBuffer> comNames = new ArrayList<StringBuffer>();
@@ -998,13 +1002,16 @@ public class ImageRail_SDCube
 				int fieldHeight = getFieldHeight(plateIdx, wellIdx, fieldIdx);
 
 				if (cellList.size() > 0 && comNames.size() > 0) {
-					io.createGroup(hdfPath, path + "/cell_coordinates");
+					io.createGroup(hdfPath, pathChildren);
 					// cell loop
 					for (int i = 0; i < cellList.size(); i++) {
-						io.createGroup(hdfPath, path
-								+ "/cell_coordinates/cell_" + i);
+						String cellPath = pathChildren + "/Child_" + i;
+
+						io.createGroup(hdfPath, cellPath);
+						io.createGroup(hdfPath, cellPath + "/Children");
+						// io.createDataModule_Skeleton(hdfPath, cellPath);
 						io.openHDF5(hdfPath);
-						String cellPath = path + "/cell_coordinates/cell_" + i;
+
 						// compartment loop
 						for (int j = 0; j < cellList.get(i).getComSize(); j++) {
 							Point[] pt = cellList.get(i).getCompartment(j)
@@ -1019,40 +1026,57 @@ public class ImageRail_SDCube
 										data, Data_1D.INTEGER, cellList.get(i)
 												.getCompartment(j)
 										.getName());
-								String compartmentDS = cellPath
-										+ "/"
-										+ cellList.get(i).getCompartment(j)
-												.getName();
+
+								String compartmentPath = cellPath
+										+ "/Children/Child_" + j;
+								String compartmentName = cellList.get(i)
+										.getCompartment(j).getName();
+
+								io.createGroup(hdfPath, compartmentPath);
+								io.createGroup(hdfPath, compartmentPath
+										+ "/Data/");
+
 								// dim0 = index
-								io.createDataset(compartmentDS, "Integer",
+								io.openHDF5(hdfPath);
+								String dsPath = compartmentPath
+										+ "/Data/compartment_coords";
+								io.createDataset(dsPath, "Integer",
 										new long[] { data.length });
 								// dim0, offset)
-								io.writeArray(compartmentDS, dataArray, 0,
+								io.writeArray(dsPath, dataArray, 0,
 										new long[] { 0 });
 								// Add dimension names.
-								io.writeAttribute(compartmentDS, "dataType",
+								io.writeAttribute(dsPath, "dataType",
 										"H5T_NATIVE_INT");
-								io.writeAttribute(compartmentDS, "dim0",
+								io.writeAttribute(dsPath, "dim0",
 										"index");
+								
+
+								//Writing meta data
+								// Write compartment names.
+								// io.writeStringDataset(compartmentPath +
+								// "/Meta/" + "/compartment_name",new
+								// StringBuffer[]{new
+								// StringBuffer(compartmentName)}
+								// );
 							}
 						}
+						// Write compartment names.
+						io.writeStringDataset(pathMeta + "/compartment_names",
+								(StringBuffer[]) comNames
+										.toArray(new StringBuffer[0]));
 					}
-					// Write compartment names.
-					io.writeStringDataset(
-path
-							+ "/cell_coordinates/compartment_names",
-							(StringBuffer[]) comNames
-									.toArray(new StringBuffer[0]));
+
 
 					// Write cell count
-					io.createDataset(path + "/cell_coordinates/cell_count",
+					io.createDataset(pathMeta + "/cell_count",
 							"Integer", new long[] { 1 });
-					io.writeAttribute(path + "/cell_coordinates/cell_count",
+					io.writeAttribute(pathMeta + "/cell_count",
 							"dataType", "H5T_NATIVE_INT");
 					DataObject cellCount = new Data_1D<Integer>(
 							new Integer[] { cellList.size() }, Data_1D.INTEGER,
 							"cell_count");
-					io.writeArray(path + "/cell_coordinates/cell_count",
+					io.writeArray(pathMeta + "/cell_count",
 							cellCount, 0, new long[] { 0 });
 				}
 
@@ -1081,42 +1105,47 @@ path
 		ArrayList<CellCoordinates> cellList = null;
 		if (pathToSample != null) {
 
-			String pathToCoordsFolder = pathToSample + "/Children/Child_"
-					+ fieldIdx
-					+ "/Data/cell_coordinates";
+
+			String pathMeta = pathToSample + "/Children/Child_" + fieldIdx
+					+ "/Meta";
 			int fieldHeight = getFieldHeight(plateIdx, wellIdx, fieldIdx);
 
 			// Add dimension names
 			io.openHDF5(hdfPath);
-			if (io.existsDataset(pathToCoordsFolder + "/compartment_names")
-					&& io.existsDataset(pathToCoordsFolder + "/cell_count")) {
+			if (io.existsDataset(pathMeta + "/compartment_names")
+					&& io.existsDataset(pathMeta + "/cell_count")) {
 
 				cellList = new ArrayList<CellCoordinates>();
 				// Get cell count
 				// DataObject dataArray = null;
-				DataObject dataArray = io.readArray(pathToCoordsFolder
+				DataObject dataArray = io.readArray(pathMeta
 						+ "/cell_count", 0, 0, 1);
 				Integer[] cellCount = (Integer[]) ((Data_1D)dataArray).getData();
 				// Read compartment names
 				io.closeHDF5();
 
 				StringBuffer[] comNames = io.readDataset_String(hdfPath,
-						pathToCoordsFolder + "/compartment_names");
+						pathMeta + "/compartment_names");
 
 				io.openHDF5(hdfPath);
+
 
 				// cell loop
 				for (int i = 0; i < cellCount[0]; i++) {
 					ArrayList<CellCompartment> comArray = new ArrayList<CellCompartment>();
+					String pathToCell = pathToSample + "/Children/Child_"
+							+ fieldIdx + "/Children/Child_" + i;
+
 					// compartment loop
 					for (int j = 0; j < comNames.length; j++) {
-						String comName = pathToCoordsFolder + "/cell_" + i
-								+ "/"
-								+ comNames[j].toString().trim();
-						if (io.existsDataset(comName)) {
+
+						String comPath = pathToCell + "/Children/Child_" + j
+								+ "/Data/compartment_coords";
+
+						if (io.existsDataset(comPath)) {
 							// dim0 = index
-							long[] counts = io.getDimensions(comName);
-							DataObject data = io.readArray(comName, 0, 0,
+							long[] counts = io.getDimensions(comPath);
+							DataObject data = io.readArray(comPath, 0, 0,
 									counts[0]);
 							Integer[] idx = (Integer[]) ((Data_1D)data).getData();
 							// point loop
@@ -1131,8 +1160,6 @@ path
 					}
 					CellCoordinates cell = new CellCoordinates(comArray);
 					cellList.add(cell);
-
-
 
 				}
 			}
@@ -1327,7 +1354,7 @@ path
 				// io.writeAttribute(path + "/cell_centroids", "dim2", "index");
 				// Write compartment names.
 				io.writeStringDataset(pathMeta
-						+ "/compartment_names_cell_centroids",
+ + "/compartment_names",
 						(StringBuffer[]) comNames.toArray(new StringBuffer[0]));
 
 				io.closeHDF5();
@@ -1357,9 +1384,11 @@ path
 				wellIdx));
 		if (pathToSample != null) {
 
-			String path = pathToSample + "/Children/Child_" + fieldIdx
+			String pathData = pathToSample + "/Children/Child_" + fieldIdx
 					+ "/Data";
-
+			String pathMeta = pathToSample + "/Children/Child_" + fieldIdx
+			+ "/Meta";
+			
 			// Get the compartment names.
 			ArrayList<StringBuffer> comNames = new ArrayList<StringBuffer>();
 			for (int i = 0; i < cellList.size(); i++) {
@@ -1380,7 +1409,7 @@ path
 
 				// dim0 = cells; dim1 = compartments; dim2 = index
 				long[] maxDims = { cellList.size(), 2 };
-				io.createDataset(path + "/cell_bounding_boxes", "Integer",
+				io.createDataset(pathData + "/cell_bounding_boxes", "Integer",
 						maxDims);
 
 				// cell loop
@@ -1396,20 +1425,20 @@ path
 						}
 						DataObject dataArray = new Data_1D<Integer>(data,
 								Data_1D.INTEGER, "cell_bounding_boxes");
-						io.writeArray(path + "/cell_bounding_boxes", dataArray,
+						io.writeArray(pathData + "/cell_bounding_boxes", dataArray,
  1,
 							new long[] { i, 0 });
 				}
 				// Add dimension names.
-				io.writeAttribute(path + "/cell_bounding_boxes", "dataType",
+				io.writeAttribute(pathData + "/cell_bounding_boxes", "dataType",
 						"H5T_NATIVE_INT");
-				io.writeAttribute(path + "/cell_bounding_boxes", "dim0",
+				io.writeAttribute(pathData + "/cell_bounding_boxes", "dim0",
 						"cells");
-				io.writeAttribute(path + "/cell_bounding_boxes", "dim1",
+				io.writeAttribute(pathData + "/cell_bounding_boxes", "dim1",
 						"index");
 				// Write compartment names.
-				io.writeStringDataset(path
-						+ "/compartment_names_bounding_boxes",
+				io.writeStringDataset(pathMeta
+ + "/compartment_names",
 						(StringBuffer[]) comNames.toArray(new StringBuffer[0]));
 
 				io.closeHDF5();
