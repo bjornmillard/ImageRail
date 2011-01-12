@@ -129,25 +129,6 @@ public class Model_Field {
 		if (pathToField != null)
 			return true;
 		return false;
-
-		// String pathToSample = io.getHashtable()
-		// .get(
-		// io.getIndexKey(getParentWell().getPlate().getID(),
-		// getParentWell().getWellIndex()));
-		//
-		// if (pathToSample != null) {
-		// // If sample exists, seeing if data for this specific field exists
-		// String path = pathToSample + "/Children/Child_" + getIndexInWell()
-		// + "/Data/feature_values";
-		// try {
-		// io.getH5IO().openHDF5(hdfPath);
-		// boolean exists = io.getH5IO().existsDataset(path);
-		// return exists;
-		// } catch (H5IO_Exception e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// return false;
 	}
 
 	/**

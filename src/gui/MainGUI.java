@@ -2116,15 +2116,12 @@ public class MainGUI extends JFrame {
 			max++;
 
 			
-			System.out.println("Starting to creating model plates");
 			ArrayList<Model_Plate> arr = new ArrayList<Model_Plate>();
 			for (int i = 0; i < max; i++) {
 				int numR = (int) Math.sqrt(pSize / 1.5f);
 				int numC = pSize / numR;
 				arr.add(new Model_Plate(numR, numC, i, true));
 			}
-			System.out.println("Finished creating model plates");
-			System.out.println(System.currentTimeMillis() - sTime);
 
 			// Creating the new plate holder with new plates
 			Model_Plate[] plates = new Model_Plate[arr.size()];

@@ -58,13 +58,13 @@ public class Model_FieldCellRepository
 			initCells(cellCoords, dataValues);
 
 			if (cellCoords != null && dataValues != null)
-				System.out.println("Loading ---> Plate: " + plateIndex
+				System.out.println("Loaded ---> Plate: " + plateIndex
 						+ "  Well: " + well_parent.name + " Field: "
 						+ field.getIndexInWell() + "   ||  cells:"
 						+ cells.size() + "  data_vals: " + dataValues.length
 						+ " coords: " + cellCoords.size());
 			else if (dataValues != null)
-				System.out.println("Loading ---> Plate: " + plateIndex
+				System.out.println("Loaded ---> Plate: " + plateIndex
 						+ "  Well: " + well_parent.name + "  Field: "
 						+ field.getIndexInWell() + "   ||  cells:"
 						+ cells.size() + "  data_vals: " + dataValues.length

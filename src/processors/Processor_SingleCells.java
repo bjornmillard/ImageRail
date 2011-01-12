@@ -353,7 +353,8 @@ public class Processor_SingleCells extends Thread implements Processor
 							// Handle this exception!!!
 							e.printStackTrace();
 						}
-						System.out.println("done writing: "+(System.currentTimeMillis()-time));
+						System.out.println("Done writing: "
+								+ (System.currentTimeMillis() - time));
 						time = System.currentTimeMillis();
 						
 						
