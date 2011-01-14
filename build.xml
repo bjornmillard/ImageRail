@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="ImageRail" default="makejar" basedir=".">
-    <target name="makejar">
-        <jar destfile="ImageRail.jar" includes="**/*.class" basedir="bin" whenmanifestonly="fail"/>
-    </target>
-</project> 
+<project name="ImageRail" default="copydeps">
+	<target name="makejar">
+		<jar destfile="ImageRail.jar" includes="**/*.class" basedir="bin" whenmanifestonly="fail" />
+	</target>
+	<target name="copydeps" depends="makejar">
+		<copy file="${basedir}/../SDCube_API/SDCube_API.jar" overwrite="true" preservelastmodified="true" todir="jars" />
+		<copy todir="jars">
+			<fileset dir="${basedir}/../SDCube_API/jars" />
+		</copy>
+	</target>
+</project>
