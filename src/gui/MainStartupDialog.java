@@ -25,6 +25,8 @@ import java.awt.Toolkit;
 import java.io.File;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -36,6 +38,7 @@ import dialogs.PlateInputDialog;
 public class MainStartupDialog extends JFrame
 {
 	private Image im;
+	private Icon sdc_icon;
 	private int width = 475;
 	private int height = 200;
 	private JFrame TheStartUpDialog = this;
@@ -51,6 +54,9 @@ public class MainStartupDialog extends JFrame
 		
 		im = Toolkit.getDefaultToolkit().getImage(
 				"icons/ImageRail_long_newLogo.png");
+		Image sdc_icon_image = Toolkit.getDefaultToolkit().getImage("icons/ImageRail_icon.png")
+				.getScaledInstance(-1, 16, Image.SCALE_SMOOTH);
+		sdc_icon = new ImageIcon(sdc_icon_image);
 		
 		// Set the window's bounds, centering the window
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -177,8 +183,8 @@ public class MainStartupDialog extends JFrame
 								else
 									fc = new JFileChooser();
 								
-						fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 						fc.addChoosableFileFilter(new FileChooserFilter_IR());
+						fc.setFileView(new FileChooserView_IR());
 
 								int returnVal = fc.showOpenDialog(null);
 								if (returnVal == JFileChooser.APPROVE_OPTION)
@@ -217,15 +223,27 @@ public class MainStartupDialog extends JFrame
 
 	class FileChooserFilter_IR extends javax.swing.filechooser.FileFilter {
 		public boolean accept(File file) {
-			String filename = file.getName();
-			return filename.endsWith(".ir");
+			return file.isDirectory();
 		}
-
+		
 		public String getDescription() {
-			return "*.ir";
+			return "ImageRail projects";
 		}
 	}
 	
+
+	/*
+	 * For IR projects, prevents navigating into them and displays a custom icon
+	 */
+	class FileChooserView_IR extends javax.swing.filechooser.FileView {
+		public Boolean isTraversable(File f) {
+			return (f.isDirectory() && !f.getName().endsWith(".sdc")) ? Boolean.TRUE : Boolean.FALSE;
+		}
+		
+		public Icon getIcon(File f) {
+			return f.getName().endsWith(".sdc") ? sdc_icon : null;
+		}
+	}
 	
 	
 }

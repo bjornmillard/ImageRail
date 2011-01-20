@@ -2936,14 +2936,4 @@ public class MainGUI extends JFrame {
 		return sdf.format(cal.getTime());
 	}
 
-	class FileChooserFilter_IR extends javax.swing.filechooser.FileFilter {
-		public boolean accept(File file) {
-			String filename = file.getName();
-			return filename.endsWith(".sdc");
-		}
-
-		public String getDescription() {
-			return "*.sdc";
-		}
-	}
 }
