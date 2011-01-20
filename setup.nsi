@@ -1,11 +1,11 @@
 Name ImageRail
 
-#SetCompressor /SOLID lzma
-SetCompress off   # uncomment this and comment above line for quick test builds
+SetCompressor /SOLID lzma
+#SetCompress off   # uncomment this and comment above line for quick test builds
 
 # Defines
 !define REGKEY "SOFTWARE\$(^Name)"
-!define VERSION 1.1
+!define VERSION 1.2
 !define PATCH_LEVEL 0
 !define FULL_VERSION "${VERSION}.${PATCH_LEVEL}"
 !define COMPANY ""
