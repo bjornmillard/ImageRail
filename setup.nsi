@@ -1,21 +1,15 @@
 Name ImageRail
 
-SetCompressor /SOLID lzma
-#SetCompress off   # uncomment this and comment above line for quick test builds
+#SetCompressor /SOLID lzma
+SetCompress off   # uncomment this and comment above line for quick test builds
 
 # Defines
 !define REGKEY "SOFTWARE\$(^Name)"
-!define VERSION 1.051
-#!define PATCH_LEVEL 01
+!define VERSION 1.1
+!define PATCH_LEVEL 0
+!define FULL_VERSION "${VERSION}.${PATCH_LEVEL}"
 !define COMPANY ""
 !define URL ""
-
-!ifndef PATCH_LEVEL
-  !define FULL_VERSION "${VERSION}"
-  !define PATCH_LEVEL 0
-!else
-  !define FULL_VERSION "${VERSION}.${PATCH_LEVEL}"
-!endif
 
 # MUI defines
 !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
@@ -41,7 +35,7 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_LANGUAGE English
 
 # Installer attributes
-OutFile ImageRail-${FULL_VERSION}-win32.exe
+OutFile build\ImageRail-${FULL_VERSION}-win32.exe
 InstallDir $PROGRAMFILES\ImageRail
 CRCCheck on
 XPStyle on
@@ -59,16 +53,7 @@ ShowUninstDetails show
 Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite on
-    File ImageRail.jar
-    File HDF5XML.jar
-    File ImageRail_Windows.bat
-    File /r /x .svn doc
-    File /r /x .svn icons
-    File /r /x .svn jars
-    File /r /x .svn jre6
-
-    SetOutPath $INSTDIR\features
-    File /r /x .svn features
+    File /r build\stage\*.*
 
     CreateDirectory "$SMPROGRAMS\ImageRail"
     CreateShortCut "$SMPROGRAMS\ImageRail\ImageRail.lnk" "$INSTDIR\ImageRail_Windows.bat" "" "$INSTDIR\icons\ImageRail.ico" 0
@@ -104,12 +89,12 @@ done${UNSECTION_ID}:
 # Uninstaller sections
 Section /o un.Main UNSEC0000
     Delete $INSTDIR\ImageRail.jar
-    Delete $INSTDIR\HDF5XML.jar
     Delete $INSTDIR\ImageRail_Windows.bat
     RmDir /r /REBOOTOK $INSTDIR\doc
+    RmDir /r /REBOOTOK $INSTDIR\features
     RmDir /r /REBOOTOK $INSTDIR\icons 
-    RmDir /r /REBOOTOK $INSTDIR\jars
-    RmDir /r /REBOOTOK $INSTDIR\jre6
+    RmDir /r /REBOOTOK $INSTDIR\jre
+    RmDir /r /REBOOTOK $INSTDIR\lib
 
     RmDir /r "$SMPROGRAMS\ImageRail"
     DeleteRegValue HKLM "${REGKEY}\Components" Main

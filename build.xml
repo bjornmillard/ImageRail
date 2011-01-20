@@ -1,12 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="ImageRail" default="copydeps">
-	<target name="makejar">
-		<jar destfile="ImageRail.jar" includes="**/*.class" basedir="bin" whenmanifestonly="fail" />
+<project name="ImageRail" default="stage">
+	<target name="cleanstage">
+		<delete dir="build/stage" />
 	</target>
-	<target name="copydeps" depends="makejar">
-		<copy file="${basedir}/../SDCube_API/SDCube_API.jar" overwrite="true" preservelastmodified="true" todir="jars" />
-		<copy todir="jars">
-			<fileset dir="${basedir}/../SDCube_API/jars" />
+	<target name="makejar">
+		<mkdir dir="build/stage" />
+		<jar destfile="build/stage/ImageRail.jar" includes="**/*.class" basedir="bin" whenmanifestonly="fail" />
+	</target>
+	<target name="copyfeatures">
+		<!-- FIXME: we still need to provide the feature source files so initFeatures can enumerate them! -->
+		<copy todir="build/stage/features">
+			<fileset dir="src/features" includes="*.java" />
 		</copy>
+	</target>
+	<target name="copyicons">
+		<copy todir="build/stage/icons">
+			<fileset dir="icons" excludes="**/.svn" />
+		</copy>
+	</target>
+	<target name="copydoc">
+		<copy todir="build/stage/doc">
+			<fileset dir="doc" excludes="**/.svn" />
+		</copy>
+	</target>
+	<target name="copydeps">
+		<copy file="${basedir}/../SDCube_API/build/SDCube_API.jar" overwrite="true" preservelastmodified="true" todir="build/stage/lib" />
+		<copy todir="build/stage/lib">
+			<fileset dir="${basedir}/../SDCube_API/lib" excludes=".svn" />
+		</copy>
+	</target>
+	<target name="copybat">
+		<copy todir="build/stage" file="ImageRail_Windows.bat" />
+	</target>
+	<target name="copyjre">
+		<copy todir="build/stage/jre">
+			<fileset dir="etc/jres/win32" />
+		</copy>
+	</target>
+	<target name="stage" depends="makejar,copyfeatures,copyicons,copydoc,copydeps,copybat,copyjre">
 	</target>
 </project>
