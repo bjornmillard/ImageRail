@@ -183,6 +183,7 @@ public class MainStartupDialog extends JFrame
 								else
 									fc = new JFileChooser();
 								
+						fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 						fc.addChoosableFileFilter(new FileChooserFilter_IR());
 						fc.setFileView(new FileChooserView_IR());
 
