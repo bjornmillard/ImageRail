@@ -1,6 +1,6 @@
 @echo off
 
-set IR_DIR=%PROGRAMFILES%\ImageRail
+set IR_DIR=%~dp0
 set LIB_DIR=%IR_DIR%\lib
 
 set CLASSPATH=%CLASSPATH%;%IR_DIR%\ImageRail.jar;%LIB_DIR%\SDCube_API.jar;%LIB_DIR%\jhdf5.jar
