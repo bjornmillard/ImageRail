@@ -130,7 +130,8 @@ public class ImageRail_SDCube
 			// create the sample container first
 			// String sampleID ="p" + plateIndex + "w" + wellIndex + "_"
 			// + getTimeStamp();
-			createSample_skeleton(sampleID, sampleIndex, plateIndex, wellIndex);
+			createSample_skeleton(sampleID, sampleIndex, plateIndex, wellIndex,
+					true, true, true, false);
 
 			// Creating XML sample information
 			ExpDesign_Sample expSample = new ExpDesign_Sample(sampleID);
@@ -139,7 +140,7 @@ public class ImageRail_SDCube
 			// init this field
 			String pathToSample = "./Children/" + sampleIndex;
 			createField_skeleton(pathToSample, fieldIndex, fieldID,
-					fieldDimensions);
+					fieldDimensions, false, true, true, false);
 
 
 			// Close the HDF5 file to prevent multiple process access
@@ -154,12 +155,14 @@ public class ImageRail_SDCube
 							+ fieldIndex)) {
 
 				// If not, create field group
-				createField_skeleton(path, fieldIndex, fieldID, fieldDimensions);
+				createField_skeleton(path, fieldIndex, fieldID,
+						fieldDimensions, false, true, true, false);
 			} else
 			{
 				// If exists, overwrite?
 				io.removeDataset(path + "/Children/" + fieldIndex);
-				createField_skeleton(path, fieldIndex, fieldID, fieldDimensions);
+				createField_skeleton(path, fieldIndex, fieldID,
+						fieldDimensions, false, true, true, false);
 			}
 			io.closeHDF5();
 		}
@@ -177,25 +180,37 @@ public class ImageRail_SDCube
 	 * @throws H5IO_Exception
 	 * */
 	public void createField_skeleton(String pathToSample, int fieldIndex,
-			String fieldID, int[] fieldDimensions)
+			String fieldID, int[] fieldDimensions, boolean includeChildren,
+			boolean includeData, boolean includeMeta, boolean includeRaw)
 			throws H5IO_Exception {
+
 		// Create the Field_X group
+		io.openHDF5(hdfPath);
+
 		io.createGroup(hdfPath, pathToSample + "/Children/"
 				+ fieldIndex);
 		String fPath = pathToSample + "/Children/" + fieldIndex;
 		// init the Metadata group
-		io.createGroup(hdfPath, fPath + "/Meta");
+		if (includeMeta)
+			io.createGroup(hdfPath, fPath + "/Meta");
 		// init the Data group
-		io.createGroup(hdfPath, fPath + "/Data");
+		if (includeData)
+			io.createGroup(hdfPath, fPath + "/Data");
 		// init the Samples group
-		io.createGroup(hdfPath, fPath + "/Children");
+		if(includeChildren)
+			io.createGroup(hdfPath, fPath + "/Children");
 		// init the Raw group
-		io.createGroup(hdfPath, fPath + "/Raw");
+		if(includeRaw)
+			io.createGroup(hdfPath, fPath + "/Raw");
+		io.closeHDF5();
 
+		if(includeMeta)
+ {
 		// Writing Field Dimensions
 		io.writeDataset(hdfPath, fPath + "/Meta" + "/"
 				+ "Height_Width_Channels",
 				fieldDimensions);
+	}
 		// Writing Field_ID
 		String[] fID = { fieldID };
 		io.writeDataset(hdfPath, fPath + "/Meta" + "/" + "Field_ID", fID);
@@ -212,29 +227,41 @@ public class ImageRail_SDCube
 	 * */
 	public void createSample_skeleton(String sampleID, int sampleIndex,
 			int plateIndex,
-			int wellIndex) throws H5IO_Exception {
+ int wellIndex, boolean includeChildren,
+			boolean includeData, boolean includeMeta, boolean includeRaw)
+			throws H5IO_Exception {
+
+		io.openHDF5(hdfPath);
 
 		io.createGroup(hdfPath, "./Children/" + sampleIndex);
 		// init the Data group for this sample
+		if (includeData)
 		io.createGroup(hdfPath, "./Children/" + sampleIndex
 				+ "/Data");
 		// init the Metadata group
+		if (includeMeta)
 		io.createGroup(hdfPath, "./Children/" + sampleIndex
 				+ "/Meta");
 		// init the Raw group
+		if (includeRaw)
 		io.createGroup(hdfPath, "./Children/" + sampleIndex + "/Raw");
 		// init the Samples group
+		if (includeChildren)
 		io
 .createGroup(hdfPath, "./Children/" + sampleIndex
 						+ "/Children");
 
+		io.closeHDF5();
+
 		// write the samples plate/well data
+		String indexKey = "p" + plateIndex + "w" + wellIndex;
+		if (includeMeta) {
 		int[] in = { plateIndex, wellIndex };
 		io.writeDataset(hdfPath,
  "./Children/" + sampleIndex + "/Meta"
 				+ "/" + "Plate_Well", in);
 		// Writing Sample_ID
-		String indexKey = "p" + plateIndex + "w" + wellIndex;
+
 		String[] str = { sampleID };
 		io.writeDataset(hdfPath,
  "./Children/" + sampleIndex + "/Meta"
@@ -245,6 +272,7 @@ public class ImageRail_SDCube
 .writeDataset(hdfPath, "./Children/" + sampleIndex
  + "/Meta"
 				+ "/" + "Sample_TYPE", str);
+		}
 		
 		// Hashing this well index/path upon success
 		hashtable_indexToPath.put(indexKey, "./Children/"
@@ -976,16 +1004,16 @@ public class ImageRail_SDCube
 			throws H5IO_Exception
 	{
 
+		long time = System.currentTimeMillis();
+		System.out.println("Starting writing whole cell coords:");
+
 		String pathToSample = hashtable_indexToPath.get(getIndexKey(plateIdx,
 				wellIdx));
 		if (pathToSample != null) {
 
-			String pathChildren = pathToSample + "/Children/" + fieldIdx
-					+ "/Children";
-			// String pathData = pathToSample + "/Children/" + fieldIdx
-			// + "/Data";
 			String pathMeta = pathToSample + "/Children/" + fieldIdx
 					+ "/Meta";
+			String pathData = pathToSample + "/Children/" + fieldIdx + "/Data";
 
 			// Get the compartment names.
 			ArrayList<StringBuffer> comNames = new ArrayList<StringBuffer>();
@@ -1000,19 +1028,16 @@ public class ImageRail_SDCube
 				}
 			}
 
+			// Iterating through all cells and writing compartment coordinate
+			// data
 			if (cellList.size() > 0 && comNames.size() > 0) {
 				int fieldHeight = getFieldHeight(plateIdx, wellIdx, fieldIdx);
 
+				io.openHDF5(hdfPath);
 				if (cellList.size() > 0 && comNames.size() > 0) {
-					io.createGroup(hdfPath, pathChildren);
+
 					// cell loop
 					for (int i = 0; i < cellList.size(); i++) {
-						String cellPath = pathChildren + "/" + i;
-
-						io.createGroup(hdfPath, cellPath);
-						io.createGroup(hdfPath, cellPath + "/Children");
-						// io.createDataModule_Skeleton(hdfPath, cellPath);
-						io.openHDF5(hdfPath);
 
 						// compartment loop
 						for (int j = 0; j < cellList.get(i).getComSize(); j++) {
@@ -1029,19 +1054,13 @@ public class ImageRail_SDCube
 												.getCompartment(j)
 										.getName());
 
-								String compartmentPath = cellPath
-										+ "/Children/" + j;
-								String compartmentName = cellList.get(i)
-										.getCompartment(j).getName();
+								// writing compartments into cell/data folder to
+								// improve performance rather than
+								// creating an entirely new tier
+								String compartmentName = cellList.get(i).getCompartment(j).getName();
+								String dsPath = pathData + "/coords_" + i + "_"
+										+ compartmentName;
 
-								io.createGroup(hdfPath, compartmentPath);
-								io.createGroup(hdfPath, compartmentPath
-										+ "/Data/");
-
-								// dim0 = index
-								io.openHDF5(hdfPath);
-								String dsPath = compartmentPath
-										+ "/Data/compartment_coords";
 								io.createDataset(dsPath, "Integer",
 										new long[] { data.length });
 								// dim0, offset)
@@ -1053,14 +1072,6 @@ public class ImageRail_SDCube
 								io.writeAttribute(dsPath, "dim0",
 										"index");
 								
-
-								//Writing meta data
-								// Write compartment names.
-								// io.writeStringDataset(compartmentPath +
-								// "/Meta/" + "/compartment_name",new
-								// StringBuffer[]{new
-								// StringBuffer(compartmentName)}
-								// );
 							}
 						}
 						// Write compartment names.
@@ -1083,6 +1094,9 @@ public class ImageRail_SDCube
 				}
 
 				io.closeHDF5();
+				System.out.println("Done writing whole cells: "
+						+ ((System.currentTimeMillis() - time) / 1000f));
+
 			}
 		} else
 			System.out.println("***Error*** Sample/Field does not exist!!!");
@@ -1107,9 +1121,9 @@ public class ImageRail_SDCube
 		ArrayList<CellCoordinates> cellList = null;
 		if (pathToSample != null) {
 
-
 			String pathMeta = pathToSample + "/Children/" + fieldIdx
 					+ "/Meta";
+			String pathData = pathToSample + "/Children/" + fieldIdx + "/Data";
 			int fieldHeight = getFieldHeight(plateIdx, wellIdx, fieldIdx);
 
 			// Add dimension names
@@ -1129,21 +1143,16 @@ public class ImageRail_SDCube
 				StringBuffer[] comNames = io.readDataset_String(hdfPath,
 						pathMeta + "/compartment_names");
 
+				
 				io.openHDF5(hdfPath);
-
-
 				// cell loop
 				for (int i = 0; i < cellCount[0]; i++) {
 					ArrayList<CellCompartment> comArray = new ArrayList<CellCompartment>();
-					String pathToCell = pathToSample + "/Children/" + fieldIdx
-							+ "/Children/" + i;
-
 					// compartment loop
 					for (int j = 0; j < comNames.length; j++) {
 
-						String comPath = pathToCell + "/Children/" + j
-								+ "/Data/compartment_coords";
-
+						String comPath = pathData + "/coords_" + i + "_"
+								+ comNames[j].toString().trim();
 						if (io.existsDataset(comPath)) {
 							// dim0 = index
 							long[] counts = io.getDimensions(comPath);
@@ -1194,7 +1203,7 @@ public class ImageRail_SDCube
 		if (pathToSample != null) {
 
 			String pathToDS = pathToSample + "/Children/" + fieldIdx
-					+ "/Data/cell_bounding_boxes";
+					+ "/Data/coords_bounding_boxes";
 			int fieldHeight = getFieldHeight(plateIdx, wellIdx, fieldIdx);
 
 			try {
@@ -1253,7 +1262,7 @@ public class ImageRail_SDCube
 		if (pathToSample != null) {
 
 			String pathToDS = pathToSample + "/Children/" + fieldIdx
-					+ "/Data/cell_centroids";
+					+ "/Data/coords_centroids";
 			int fieldHeight = getFieldHeight(plateIdx, wellIdx, fieldIdx);
 
 			// Add dimension names
@@ -1327,7 +1336,8 @@ public class ImageRail_SDCube
 
 				// dim0 = cells; dim1 = compartments; dim2 = index
 				long[] maxDims = { cellList.size() };// , comNames.size(), 1 };
-				io.createDataset(pathData + "/cell_centroids", "Integer", maxDims);
+				io.createDataset(pathData + "/coords_centroids", "Integer",
+						maxDims);
 
 				// cell loop
 				for (int i = 0; i < cellList.size(); i++) {
@@ -1342,15 +1352,16 @@ public class ImageRail_SDCube
 									fieldHeight);
 						}
 						DataObject dataArray = new Data_1D<Integer>(data,
-								Data_1D.INTEGER, "cell_centroids");
-						io.writeArray(pathData + "/cell_centroids", dataArray, 0,
+							Data_1D.INTEGER, "coords_centroids");
+					io.writeArray(pathData + "/coords_centroids", dataArray, 0,
 							new long[] { i });
 					// }
 				}
 				// Add dimension names.
-				io.writeAttribute(pathData + "/cell_centroids", "dataType",
+				io.writeAttribute(pathData + "/coords_centroids", "dataType",
 						"H5T_NATIVE_INT");
-				io.writeAttribute(pathData + "/cell_centroids", "dim0", "cells");
+				io.writeAttribute(pathData + "/coords_centroids", "dim0",
+						"cells");
 				// io.writeAttribute(path + "/cell_centroids", "dim1",
 				// "compartments");
 				// io.writeAttribute(path + "/cell_centroids", "dim2", "index");
@@ -1411,7 +1422,8 @@ public class ImageRail_SDCube
 
 				// dim0 = cells; dim1 = compartments; dim2 = index
 				long[] maxDims = { cellList.size(), 2 };
-				io.createDataset(pathData + "/cell_bounding_boxes", "Integer",
+				io.createDataset(pathData + "/coords_bounding_boxes",
+						"Integer",
 						maxDims);
 
 				// cell loop
@@ -1426,17 +1438,19 @@ public class ImageRail_SDCube
 									fieldHeight);
 						}
 						DataObject dataArray = new Data_1D<Integer>(data,
-								Data_1D.INTEGER, "cell_bounding_boxes");
-						io.writeArray(pathData + "/cell_bounding_boxes", dataArray,
+							Data_1D.INTEGER, "coords_bounding_boxes");
+					io.writeArray(pathData + "/coords_bounding_boxes",
+							dataArray,
  1,
 							new long[] { i, 0 });
 				}
 				// Add dimension names.
-				io.writeAttribute(pathData + "/cell_bounding_boxes", "dataType",
+				io.writeAttribute(pathData + "/coords_bounding_boxes",
+						"dataType",
 						"H5T_NATIVE_INT");
-				io.writeAttribute(pathData + "/cell_bounding_boxes", "dim0",
+				io.writeAttribute(pathData + "/coords_bounding_boxes", "dim0",
 						"cells");
-				io.writeAttribute(pathData + "/cell_bounding_boxes", "dim1",
+				io.writeAttribute(pathData + "/coords_bounding_boxes", "dim1",
 						"index");
 				// Write compartment names.
 				io.writeStringDataset(pathMeta

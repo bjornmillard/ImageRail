@@ -154,6 +154,7 @@ public class MainGUI extends JFrame {
 	private HistogramPlot TheHistogram;
 	private int LeftPanelDisplayed;
 	private boolean Processing;
+	private boolean StopProcessing;
 	private Gui_PlateRepository ThePlatePanel;
 	private File TheProjectDirectory;
 	private ImageRail_SDCube TheImageRail_H5IO;
@@ -179,6 +180,7 @@ public class MainGUI extends JFrame {
 		TheColorMap = tools.ColorMaps.FIRE;
 		SubtractBackground = false;
 		Processing = false;
+		StopProcessing = false;
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		setLocation((int) (d.width / 2f) - width / 2, (int) (d.height / 2f)
 				- height / 2);
@@ -995,7 +997,7 @@ public class MainGUI extends JFrame {
 		});
 
 		ProcessMenu.add(item);
-		// ProcessMenu.addSeparator();
+
 
 		item = new JMenuItem("Single Cells");
 		// item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,ActionEvent.META_MASK));
@@ -1013,6 +1015,19 @@ public class MainGUI extends JFrame {
 
 				ThresholdingBoundsInputDialog_SingleCells s = new ThresholdingBoundsInputDialog_SingleCells(
 						wells);
+			}
+
+		});
+		ProcessMenu.add(item);
+
+		ProcessMenu.addSeparator();
+		item = new JMenuItem("Stop");
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				if (Processing = true)
+					StopProcessing = true;
+				else
+					StopProcessing = false;
 			}
 
 		});
@@ -2368,6 +2383,16 @@ public class MainGUI extends JFrame {
 	 */
 	public void setProcessing(boolean boo) {
 		Processing = boo;
+		StopProcessing = false;
+	}
+
+	/**
+	 * Returns whether the user wants to stop the current image processing
+	 * 
+	 * @author BLM
+	 * */
+	public boolean shouldStop() {
+		return !StopProcessing;
 	}
 
 	/**

@@ -138,17 +138,17 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 		group.add(r1);
 		group.add(r0);
 		group.add(r2);
-		group.add(r3);
+		// group.add(r3);
 		CoordsToSave = 1;
 		JPanel radioPanel = new JPanel();
-		radioPanel.setLayout(new GridLayout(5, 1));
+		radioPanel.setLayout(new GridLayout(4, 1));
 		radioPanel.setBorder(BorderFactory
 				.createBevelBorder(BevelBorder.LOWERED));
 		radioPanel.add(new JLabel("Coordinates for HDF Storage:"));
 		radioPanel.add(r1);
 		radioPanel.add(r0);
 		radioPanel.add(r2);
-		radioPanel.add(r3);
+		// radioPanel.add(r3);
 
 		MainGUI.getGUI().setWatershedNucleiCheckBox(
 				new JCheckBoxMenuItem("Watershed Nuclei"));
@@ -401,6 +401,19 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 					for (int i = 0; i < numW; i++)
 						wellsWithImages[i] = wellsWIm.get(i);
 
+					// TODO - need to reinstate multithreading, but till then
+					// dont let them start a new
+					// proces until previous one is complete
+					if (gui.MainGUI.getGUI().isProcessing())
+ {
+						JOptionPane
+								.showMessageDialog(
+										null,
+										"Please wait till segmentation is complete before starting another process",
+										"Be Patient", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+
 					// Single thread run
 					if (wellsWithImages[0].TheParameterSet.getNumThreads() == 1) {
 					Processor_SingleCells tasker = new Processor_SingleCells(
@@ -428,36 +441,6 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 						}
 					}
 
-					// Finally, printing out the segmentation parameters to a
-					// CSV file for record keeping
-					// TODO - this will change soon once we program the
-					// Universal SDCube to be stored in HDF5
-
-//					PrintWriter pw = null;
-//					try {
-//						pw = new PrintWriter(new File(
-//MainGUI.getGUI()
-//								.getProjectDirectory().getAbsolutePath()
-//								+ "/Data/temp/SegmentationParameters_"
-//								+ MainGUI.getGUI().getTimestamp() + ".csv"));
-//						String st = "Plate, Well, Nuc_Threshold, Cyto_Threshold, Bkgd_Threshold,";
-//						pw.println(st);
-//						for (int i = 0; i < numW; i++) {
-//							st = "";
-//							Model_ParameterSet pset = wellsWithImages[i].TheParameterSet;
-//							st += wellsWithImages[i].getPlate().getID() + ",";
-//							st += wellsWithImages[i].name + ",";
-//							st += pset.getThreshold_Nucleus() + ",";
-//							st += pset.getThreshold_Cell() + ",";
-//							st += pset.getThreshold_Background() + ",";
-//							pw.println(st);
-//						}
-//						pw.flush();
-//						pw.close();
-//
-//					} catch (FileNotFoundException e1) {
-//						e1.printStackTrace();
-//					}
 
 				} else {
 					JOptionPane

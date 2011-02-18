@@ -77,6 +77,9 @@ public class Processor_WellAverage extends Thread implements Processor
 		//Processing all the wells
 		for (int w = 0; w < numWells; w++)
 		{
+			if (!MainGUI.getGUI().shouldStop())
+				break;
+
 			Model_Well well = WellsToProcess[w];
 			well.processing = true;
 			MainGUI.getGUI().getPlateHoldingPanel().updatePanel();
@@ -94,9 +97,12 @@ public class Processor_WellAverage extends Thread implements Processor
 			int totalPix=0;
 			for (int f = 0; f < numFields; f++)
 			{
+				if (!MainGUI.getGUI().shouldStop())
+					break;
 
 				File[] images_oneField = well.getFields()[f].getImageFiles();
-				int[][][] Raster_Channels = tools.ImageTools.getImageRaster_FromFiles_copy(images_oneField);
+				int[][][] Raster_Channels = tools.ImageTools
+						.getImageRaster_FromFiles_copy(images_oneField);
 				int[] fieldDimensions = { Raster_Channels.length,
 						Raster_Channels[0].length, Raster_Channels[0][0].length };
 				try {
@@ -108,13 +114,16 @@ public class Processor_WellAverage extends Thread implements Processor
 							.println("** Error creating field in HDF5 file **");
 					e.printStackTrace();
 				}
-				//Getting integrated values of the images for each channel
-				float[][] tempIntegration = DefaultSegmentor.findTotalIntegrationAndTotalPixUsed(Raster_Channels, well.TheParameterSet);
-				//storing this data
-				for (int p=0; p< tempIntegration.length; p++)
-					totalIntegration[p]+=tempIntegration[p][0];
-				totalPix+=tempIntegration[0][1];
+				// Getting integrated values of the images for each channel
+				float[][] tempIntegration = DefaultSegmentor
+						.findTotalIntegrationAndTotalPixUsed(Raster_Channels,
+								well.TheParameterSet);
+				// storing this data
+				for (int p = 0; p < tempIntegration.length; p++)
+					totalIntegration[p] += tempIntegration[p][0];
+				totalPix += tempIntegration[0][1];
 				Raster_Channels = null;
+
 			}
 			
 			

@@ -233,6 +233,9 @@ public class Processor_SingleCells extends Thread implements Processor
 			
 			for (int w = 0; w < numWells; w++)
 			{
+				if (!MainGUI.getGUI().shouldStop())
+					break;
+
 				Model_Well well = wells[w];
 				well.clearOldData();
 	
@@ -255,6 +258,9 @@ public class Processor_SingleCells extends Thread implements Processor
 				ArrayList<float[][]> allDataForThisWell = new ArrayList<float[][]>();
 				for (int f = 0; f < numFields; f++)
 				{
+					if (!MainGUI.getGUI().shouldStop())
+						break;
+
 					System.out.println("	Field: " + (f + 1));
 					
 					//  (1) Getting all the channel images for this field

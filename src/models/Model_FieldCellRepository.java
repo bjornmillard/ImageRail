@@ -288,6 +288,9 @@ public class Model_FieldCellRepository
 			throws H5IO_Exception {
 		// Assuming all cells in this cell bank are stored with the same
 		// structure
+
+		long timeS = System.currentTimeMillis();
+
 		CellCoordinates cell = cellCoords.get(0);
 		int numC = cell.getComSize();
 		String comName = "";
@@ -316,6 +319,10 @@ public class Model_FieldCellRepository
 			io.writeWholeCells(plateIndex, wellIndex, field.getIndexInWell(),
 					cellCoords);
 		}
+
+		System.out
+				.println("writeTime: " + (timeS - System.currentTimeMillis()));
+
 	}
 
 	/** */
