@@ -33,9 +33,7 @@
 		<copy todir="build/stage" file="ImageRail_Windows.bat" />
 	</target>
 	<target name="copyjre">
-		<copy todir="build/stage/jre">
-			<fileset dir="etc/jres/win32" />
-		</copy>
+		<unzip src="etc/jres/win32.zip" dest="build/stage/jre" overwrite="false"/>
 	</target>
 	<target name="stage" depends="makejar,copyfeatures,copyicons,copydoc,copydeps,copybat,copyjre">
 	</target>
