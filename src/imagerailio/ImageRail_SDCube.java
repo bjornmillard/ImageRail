@@ -1783,6 +1783,7 @@ public class ImageRail_SDCube
 
 		ArrayList<ExpDesign_Sample> samples = ExpDesign_IO
 				.parseSamples(xmlPath);
+
 		int len = samples.size();
 		for (int i = 0; i < len; i++) {
 			String id = samples.get(i).getId().trim();
