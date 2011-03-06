@@ -239,8 +239,8 @@ public class DefaultSegmentor implements CellSegmentor {
 		iRaster = null;
 		pixList = null;
 
-		System.out.println("Elapsed Time: "
-				+ (System.currentTimeMillis() - time));
+		// System.out.println("Elapsed Time: "
+		// + (System.currentTimeMillis() - time));
 	}
 
 	private void assignAllOnNeighbors_nucleusThresholding(Pixel pix,

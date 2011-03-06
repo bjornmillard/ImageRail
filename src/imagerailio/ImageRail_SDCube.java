@@ -1,3 +1,15 @@
+/** 
+ * Author: Bjorn L. Millard
+ * (c) Copyright 2011
+ * 
+ * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
+ * GNU General Public License as published by the Free Software Foundation; either version 3 of 
+ * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+ * more details. You should have received a copy of the GNU General Public License along with this 
+ * program. If not, see http://www.gnu.org/licenses/.  */
+
 package imagerailio;
 
 import java.io.File;
@@ -140,7 +152,7 @@ public class ImageRail_SDCube
 			// init this field
 			String pathToSample = "./Children/" + sampleIndex;
 			createField_skeleton(pathToSample, fieldIndex, fieldID,
-					fieldDimensions, false, true, true, false);
+					fieldDimensions, true, true, true, false);
 
 
 			// Close the HDF5 file to prevent multiple process access
@@ -1005,7 +1017,7 @@ public class ImageRail_SDCube
 	{
 
 		long time = System.currentTimeMillis();
-		System.out.println("Starting writing whole cell coords:");
+		// System.out.println("Starting writing whole cell coords:");
 
 		String pathToSample = hashtable_indexToPath.get(getIndexKey(plateIdx,
 				wellIdx));
@@ -1013,7 +1025,11 @@ public class ImageRail_SDCube
 
 			String pathMeta = pathToSample + "/Children/" + fieldIdx
 					+ "/Meta";
-			String pathData = pathToSample + "/Children/" + fieldIdx + "/Data";
+			String pathData = "";
+			// String pathData = pathToSample + "/Children/" + fieldIdx +
+			// "/Data";
+			String pathChild = pathToSample + "/Children/" + fieldIdx
+					+ "/Children";
 
 			// Get the compartment names.
 			ArrayList<StringBuffer> comNames = new ArrayList<StringBuffer>();
@@ -1038,9 +1054,13 @@ public class ImageRail_SDCube
 
 					// cell loop
 					for (int i = 0; i < cellList.size(); i++) {
+						// create cell folder
+						pathData = pathChild + "/" + i + "/Data";
+						io.createGroup(hdfPath, pathData);
 
 						// compartment loop
-						for (int j = 0; j < cellList.get(i).getComSize(); j++) {
+						int numCom = cellList.get(i).getComSize();
+						for (int j = 0; j < numCom; j++) {
 							Point[] pt = cellList.get(i).getCompartment(j)
 									.getCoordinates();
 							if (pt.length > 0) {
@@ -1058,7 +1078,7 @@ public class ImageRail_SDCube
 								// improve performance rather than
 								// creating an entirely new tier
 								String compartmentName = cellList.get(i).getCompartment(j).getName();
-								String dsPath = pathData + "/coords_" + i + "_"
+								String dsPath = pathData + "/coords_"
 										+ compartmentName;
 
 								io.createDataset(dsPath, "Integer",
@@ -1094,8 +1114,8 @@ public class ImageRail_SDCube
 				}
 
 				io.closeHDF5();
-				System.out.println("Done writing whole cells: "
-						+ ((System.currentTimeMillis() - time) / 1000f));
+				// System.out.println("Done writing whole cells: "
+				// + ((System.currentTimeMillis() - time) / 1000f));
 
 			}
 		} else
@@ -1123,7 +1143,8 @@ public class ImageRail_SDCube
 
 			String pathMeta = pathToSample + "/Children/" + fieldIdx
 					+ "/Meta";
-			String pathData = pathToSample + "/Children/" + fieldIdx + "/Data";
+			String pathData = "";// pathToSample + "/Children/" + fieldIdx +
+									// "/Data";
 			int fieldHeight = getFieldHeight(plateIdx, wellIdx, fieldIdx);
 
 			// Add dimension names
@@ -1142,16 +1163,16 @@ public class ImageRail_SDCube
 
 				StringBuffer[] comNames = io.readDataset_String(hdfPath,
 						pathMeta + "/compartment_names");
-
 				
 				io.openHDF5(hdfPath);
 				// cell loop
 				for (int i = 0; i < cellCount[0]; i++) {
 					ArrayList<CellCompartment> comArray = new ArrayList<CellCompartment>();
 					// compartment loop
-					for (int j = 0; j < comNames.length; j++) {
-
-						String comPath = pathData + "/coords_" + i + "_"
+					int numCom = comNames.length;
+					for (int j = 0; j < numCom; j++) {
+						String comPath = pathToSample + "/Children/" + fieldIdx
+								+ "/Children/" + i + "/Data/coords_"
 								+ comNames[j].toString().trim();
 						if (io.existsDataset(comPath)) {
 							// dim0 = index

@@ -320,8 +320,8 @@ public class Model_FieldCellRepository
 					cellCoords);
 		}
 
-		System.out
-				.println("writeTime: " + (timeS - System.currentTimeMillis()));
+		// System.out
+		// .println("writeTime: " + (timeS - System.currentTimeMillis()));
 
 	}
 
