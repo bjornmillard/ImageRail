@@ -17,6 +17,9 @@ NOTES
 	<target name="platform-windows-x86" description="Sets the platform to windows-x86">
 		<property name="platform" value="windows-x86" />
 	</target>
+	<target name="platform-macosx-x86" description="Sets the platform to macosx-x86">
+		<property name="platform" value="macosx-x86" />
+	</target>
 	<target name="checkplatform" description="Verifies $$platform is set and creates its subdirectory under build/.">
 		<fail unless="platform" message="$$platform must be set for this build." />
 		<mkdir dir="build/${platform}" />
@@ -56,5 +59,30 @@ NOTES
 	</target>
 	<target name="stage-windows-x86" depends="platform-windows-x86,stage-common,copyjre" description="Stages the windows-x86 build.">
 		<copy todir="build/${platform}" file="ImageRail_Windows.bat" />
+	</target>
+	<target name="stage-macosx-x86" depends="platform-macosx-x86,stage-common" description="Stages the macosx-x86 build.">
+		<!-- FIXME: this is all a little dirty... should copy things to the right directories in the first place. -->
+		<move todir="build/${platform}/ImageRail.app/Contents/Resources">
+			<fileset dir="build/${platform}" excludes="ImageRail.app,*.jar,lib/**" />
+		</move>
+		<delete dir="build/${platform}/lib/native" excludes="*.jnilib" />
+		<move todir="build/${platform}/ImageRail.app/Contents/Resources/Java">
+			<fileset dir="build/${platform}" includes="*.jar" />
+			<fileset dir="build/${platform}/lib" />
+		</move>
+		<delete file="build/${platform}/lib" />
+		<copy todir="build/${platform}/ImageRail.app/Contents">
+			<fileset dir="etc/platform/${platform}" includes="Info.plist,PkgInfo" />
+		</copy>
+		<copy todir="build/${platform}/ImageRail.app/Contents/Resources">
+			<fileset dir="etc/platform/${platform}" includes="ImageRail.icns" />
+		</copy>
+		<copy todir="build/${platform}/ImageRail.app/Contents/MacOS" file="etc/platform/${platform}/JavaApplicationStub" />
+		<chmod file="build/${platform}/ImageRail.app/Contents/MacOS/JavaApplicationStub" perm="a+x" />
+		<exec executable="/Developer/Tools/SetFile">
+			<arg value="-a" />
+			<arg value="B" />
+			<arg path="build/${platform}/ImageRail.app" />
+		</exec>
 	</target>
 </project>
