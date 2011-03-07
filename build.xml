@@ -14,8 +14,8 @@ NOTES
 	<target name="clean-platform" depends="checkplatform" description="Removes the build/ directory for a fresh start.">
 		<delete dir="build/${platform}" />
 	</target>
-	<target name="platform-win32" description="Sets the platform to win32">
-		<property name="platform" value="win32" />
+	<target name="platform-windows-x86" description="Sets the platform to windows-x86">
+		<property name="platform" value="windows-x86" />
 	</target>
 	<target name="checkplatform" description="Verifies $$platform is set and creates its subdirectory under build/.">
 		<fail unless="platform" message="$$platform must be set for this build." />
@@ -46,16 +46,15 @@ NOTES
 			<fileset dir="${basedir}/../SDCube_API/lib" excludes=".svn" />
 		</copy>
 	</target>
-	<target name="checkjre" depends="checkplatform" description="Sets jre.bundled.available if the build platform has a JRE to bundle.  Also sets jre.bundled.path to its location.">
+	<target name="copyjre" depends="checkplatform" description="Copies this platform's bundled JRE to the build directory.">
 		<property name="jre.bundled.path" value="etc/jres/${platform}.zip" />
 		<available file="${jre.bundled.path}" property="jre.bundled.available" />
-	</target>
-	<target name="copyjre" depends="checkplatform,checkjre" if="jre.bundled.available" description="Copies the bundled JRE, if available, to the build directory.">
+		<fail unless="jre.bundled.available" message="Missing JRE for platform '${platform}'." />
 		<unzip src="${jre.bundled.path}" dest="build/${platform}/jre" />
 	</target>
-	<target name="stage-common" depends="clean-platform,copyjar,copymisc,copydeps,copyjre" description="Stages all requirements common to every platform to the build directory.">
+	<target name="stage-common" depends="clean-platform,copyjar,copymisc,copydeps" description="Stages all requirements common to every platform to the build directory.">
 	</target>
-	<target name="stage-win32" depends="platform-win32,stage-common" description="Stages the win32 build.">
+	<target name="stage-windows-x86" depends="platform-windows-x86,stage-common,copyjre" description="Stages the windows-x86 build.">
 		<copy todir="build/${platform}" file="ImageRail_Windows.bat" />
 	</target>
 </project>

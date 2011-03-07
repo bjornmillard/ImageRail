@@ -1,7 +1,7 @@
 Name ImageRail
 
-SetCompressor /SOLID lzma
-#SetCompress off   # uncomment this and comment above line for quick test builds
+#SetCompressor /SOLID lzma
+SetCompress off   # uncomment this and comment above line for quick test builds
 
 # Defines
 !define REGKEY "SOFTWARE\$(^Name)"
@@ -10,6 +10,7 @@ SetCompressor /SOLID lzma
 !define FULL_VERSION "${VERSION}.${PATCH_LEVEL}"
 !define COMPANY ""
 !define URL ""
+!define PLATFORM "windows-x86"
 
 # MUI defines
 !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
@@ -35,7 +36,7 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_LANGUAGE English
 
 # Installer attributes
-OutFile build\ImageRail-${FULL_VERSION}-win32.exe
+OutFile build\ImageRail-${FULL_VERSION}-${PLATFORM}.exe
 InstallDir $PROGRAMFILES\ImageRail
 CRCCheck on
 XPStyle on
@@ -53,7 +54,7 @@ ShowUninstDetails show
 Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite on
-    File /r build\stage\*.*
+    File /r build\windows-x86\*.*
 
     CreateDirectory "$SMPROGRAMS\ImageRail"
     CreateShortCut "$SMPROGRAMS\ImageRail\ImageRail.lnk" "$INSTDIR\ImageRail_Windows.bat" "" "$INSTDIR\icons\ImageRail.ico" 0
