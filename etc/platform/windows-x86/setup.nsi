@@ -12,6 +12,9 @@ SetCompressor /SOLID lzma
 !define URL ""
 !define PLATFORM "windows-x86"
 
+!define BUILD_DIR "..\..\..\build"  # path args to File etc. are relative to .nsi file
+!define STAGE_DIR "${BUILD_DIR}\${PLATFORM}"
+
 # MUI defines
 !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall.ico"
@@ -36,7 +39,7 @@ SetCompressor /SOLID lzma
 !insertmacro MUI_LANGUAGE English
 
 # Installer attributes
-OutFile build\ImageRail-${FULL_VERSION}-${PLATFORM}.exe
+OutFile ${BUILD_DIR}\ImageRail-${FULL_VERSION}-${PLATFORM}.exe
 InstallDir $PROGRAMFILES\ImageRail
 CRCCheck on
 XPStyle on
@@ -54,7 +57,7 @@ ShowUninstDetails show
 Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite on
-    File /r build\windows-x86\*.*
+    File /r ${STAGE_DIR}\*.*
 
     CreateDirectory "$SMPROGRAMS\ImageRail"
     CreateShortCut "$SMPROGRAMS\ImageRail\ImageRail.lnk" "$INSTDIR\ImageRail_Windows.bat" "" "$INSTDIR\ImageRail.ico" 0
