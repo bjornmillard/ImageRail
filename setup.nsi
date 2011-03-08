@@ -1,12 +1,12 @@
 Name ImageRail
 
-#SetCompressor /SOLID lzma
-SetCompress off   # uncomment this and comment above line for quick test builds
+SetCompressor /SOLID lzma
+#SetCompress off   # uncomment this and comment above line for quick test builds
 
 # Defines
 !define REGKEY "SOFTWARE\$(^Name)"
 !define VERSION 1.2
-!define PATCH_LEVEL 0
+!define PATCH_LEVEL 1
 !define FULL_VERSION "${VERSION}.${PATCH_LEVEL}"
 !define COMPANY ""
 !define URL ""
@@ -57,7 +57,7 @@ Section -Main SEC0000
     File /r build\windows-x86\*.*
 
     CreateDirectory "$SMPROGRAMS\ImageRail"
-    CreateShortCut "$SMPROGRAMS\ImageRail\ImageRail.lnk" "$INSTDIR\ImageRail_Windows.bat" "" "$INSTDIR\icons\ImageRail.ico" 0
+    CreateShortCut "$SMPROGRAMS\ImageRail\ImageRail.lnk" "$INSTDIR\ImageRail_Windows.bat" "" "$INSTDIR\ImageRail.ico" 0
     CreateShortCut "$SMPROGRAMS\ImageRail\Uninstall ImageRail.lnk" "$INSTDIR\uninstall.exe"
     WriteRegStr HKLM "${REGKEY}\Components" Main 1
 SectionEnd
@@ -89,8 +89,8 @@ done${UNSECTION_ID}:
 
 # Uninstaller sections
 Section /o un.Main UNSEC0000
-    Delete $INSTDIR\ImageRail.jar
     Delete $INSTDIR\ImageRail_Windows.bat
+    Delete $INSTDIR\ImageRail.ico
     RmDir /r /REBOOTOK $INSTDIR\doc
     RmDir /r /REBOOTOK $INSTDIR\features
     RmDir /r /REBOOTOK $INSTDIR\icons 
@@ -113,6 +113,26 @@ SectionEnd
 # Installer functions
 Function .onInit
     InitPluginsDir
+
+    ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" UninstallString
+    ReadRegStr $R1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" DisplayVersion
+    StrCmp $R0 "" done
+
+    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
+    '$(^Name) version $R1 is already installed.  We recommend removing $\n \
+    this older version before continuing to upgrade to version ${FULL_VERSION}. $\n$\n \
+    Click "OK" to automatically remove the previous version and continue, $\n \
+    or "Cancel" to cancel this upgrade.' \
+    IDOK uninst
+    Abort
+ 
+    # Run the uninstaller
+uninst:
+    ClearErrors
+    # Silent, and do not copy the uninstaller to a temp file
+    ExecWait '"$R0" /S _?=$INSTDIR'
+
+done:
 FunctionEnd
 
 
