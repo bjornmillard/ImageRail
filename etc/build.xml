@@ -7,7 +7,7 @@ NOTES
 * stage-common does non-platform-specific stuff
   	* copy* targets each copy some specific element of the build
 -->
-<project name="ImageRail" default="makejar">
+<project name="ImageRail" default="makejar" basedir="..">
 	<target name="clean" description="Removes the build/ directory for a fresh start.">
 		<delete dir="build" />
 	</target>
