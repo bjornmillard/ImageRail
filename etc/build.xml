@@ -8,6 +8,8 @@ NOTES
   	* copy* targets each copy some specific element of the build
 -->
 <project name="ImageRail" default="makejar" basedir="..">
+	<!-- FIXME need to automate this -->
+	<property name="app.version" value="1.2.1" />
 	<target name="clean" description="Removes the build/ directory for a fresh start.">
 		<delete dir="build" />
 	</target>
@@ -81,6 +83,18 @@ NOTES
 			<arg value="-a" />
 			<arg value="B" />
 			<arg path="build/${platform}/ImageRail.app" />
+		</exec>
+	</target>
+	<target name="package-macosx-x86" depends="stage-macosx-x86" description="Packages the macosx-x86 installer.">
+		<exec executable="hdiutil">
+			<arg value="create" />
+			<arg value="-srcfolder" />
+			<arg value="build/${platform}" />
+			<arg value="-volname" />
+			<arg value="ImageRail ${app.version}" />
+			<arg value="-layout" />
+			<arg value="none" />
+			<arg value="build/ImageRail-${app.version}-${platform}.dmg" />
 		</exec>
 	</target>
 </project>
