@@ -1,14 +1,22 @@
-/** 
- * Author: Bjorn L. Millard
- * (c) Copyright 2010
- * 
- * ImageRail is free software; you can redistribute it and/or modify it under the terms of the 
- * GNU General Public License as published by the Free Software Foundation; either version 3 of 
- * the License, or (at your option) any later version. SBDataPipe is distributed in the hope that 
- * it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
- * more details. You should have received a copy of the GNU General Public License along with this 
- * program. If not, see http://www.gnu.org/licenses/.  */
+/**  
+   ImageRail:
+   Software for high-throughput microscopy image analysis
+
+   Copyright (C) 2011 Bjorn Millard <bjornmillard@gmail.com>
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 package gui;
 
@@ -248,7 +256,7 @@ public class MainGUI extends JFrame {
 		TheMenuBar.add(OptionsMenu);
 		// TheMenuBar.add(ToolsMenu);
 		TheMenuBar.add(DisplayMenu);
-		// TheMenuBar.add(HelpMenu);
+		TheMenuBar.add(HelpMenu);
 		setJMenuBar(TheMenuBar);
 
 		this.addWindowListener(new WindowAdapter() {
@@ -1037,15 +1045,29 @@ public class MainGUI extends JFrame {
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				try {
-					MainSplash splash = new MainSplash();
-					splash.showSplash();
+					String text = "ImageRail: \n"
+							+ "Software for high-throughput microscopy image analysis \n\n"
+							+ "Copyright (c) 2011 Bjorn Millard <bjornmillard@gmail.com> \n\n"
+							+ "This program is free software: you can redistribute it and/or \n"
+							+ "modify it under the terms of the GNU General Public License as \n"
+							+ "published by the Free Software Foundation, either version 3 of \n"
+							+ "the License, or (at your option) any later version.\n\n"
+							+ "This program is distributed in the hope that it will be useful,\n"
+							+ "but WITHOUT ANY WARRANTY; without even the implied warranty of \n"
+							+ "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the \n"
+							+ "GNU General Public License for more details. \n\n"
+							+ "You should have received a copy of the GNU General Public License \n"
+							+ "along with this program.  If not, see <http://www.gnu.org/licenses/>\n";
+
+					JOptionPane.showMessageDialog(null, text, "About",
+							JOptionPane.INFORMATION_MESSAGE);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 
 		});
-		// HelpMenu.add(item);
+		HelpMenu.add(item);
 
 		item = new JMenuItem("Help Browser");
 		item.addActionListener(new ActionListener() {
@@ -1060,7 +1082,7 @@ public class MainGUI extends JFrame {
 
 			}
 		});
-		HelpMenu.add(item);
+		// HelpMenu.add(item);
 
 		updateFeatures();
 		ThePlatePanel.updatePanel();

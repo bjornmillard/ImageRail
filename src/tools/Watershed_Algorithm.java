@@ -1,3 +1,7 @@
+/**
+This method was adapted from a Watershed Algorithm from the NIH's ImageJ software (http://rsbweb.nih.gov/ij) 
+ */
+
 package tools;
 
 
