@@ -28,37 +28,44 @@ NOTES
 	</target>
 	<target name="makejar" description="Builds the main jar.">
 		<mkdir dir="build" />
-		<jar destfile="build/ImageRail.jar" includes="**/*.class" basedir="bin" whenmanifestonly="fail" />
+		<jar destfile="build/ImageRail.jar" whenmanifestonly="fail">
+			<fileset dir="bin" includes="**/*.class" />
+			<fileset dir="." includes="LICENSE.txt,COPYING.txt" />
+		</jar>
 	</target>
 	<target name="copyjar" depends="checkplatform,makejar" description="Copies the main jar file to the build directory.">
-		<copy todir="build/${platform}/lib" file="build/ImageRail.jar" />
+		<copy todir="build/${platform}/lib" file="build/ImageRail.jar" preservelastmodified="true" />
 	</target>
 	<target name="copymisc" depends="checkplatform" description="Copies various support files to the build directory.">
-		<copy todir="build/${platform}/doc">
+		<copy todir="build/${platform}/doc" preservelastmodified="true">
 			<fileset dir="doc" excludes="**/.svn,**/*.ai" />
 		</copy>
-		<copy todir="build/${platform}/icons">
+		<copy todir="build/${platform}/icons" preservelastmodified="true">
 			<fileset dir="icons" excludes="**/.svn" />
 		</copy>
+		<copy todir="build/${platform}" preservelastmodified="true">
+			<fileset dir="." includes="LICENSE.txt,COPYING.txt" />
+		</copy>
 		<!-- FIXME: we still need to provide the feature source files so initFeatures can enumerate them! -->
-		<copy todir="build/${platform}/features">
+		<copy todir="build/${platform}/features" preservelastmodified="true">
 			<fileset dir="src/features" includes="*.java" />
 		</copy>
 	</target>
 	<target name="copydeps" depends="checkplatform" description="Copies the library dependencies to the build directory.">
 		<copy file="${basedir}/../SDCube_API/build/SDCube_API.jar" overwrite="true" preservelastmodified="true" todir="build/${platform}/lib" />
-		<copy todir="build/${platform}/lib">
+		<copy todir="build/${platform}/lib" preservelastmodified="true">
 			<fileset dir="${basedir}/../SDCube_API/lib" excludes=".svn" />
 		</copy>
 	</target>
 	<target name="stage-common" depends="clean-platform,copyjar,copymisc,copydeps" description="Stages all requirements common to every platform to the build directory.">
 	</target>
 	<target name="stage-windows-x86" depends="platform-windows-x86,stage-common" description="Stages the windows-x86 build.">
-        <unzip src="etc/platform/${platform}/jre.zip" dest="build/${platform}/jre" />
-		<copy todir="build/${platform}" >
+		<unzip src="etc/platform/${platform}/jre.zip" dest="build/${platform}/jre" />
+		<copy todir="build/${platform}" preservelastmodified="true">
 			<fileset dir="etc/platform/${platform}" includes="ImageRail_Windows.bat,ImageRail.ico" />
 		</copy>
-        <delete dir="build/${platform}/lib/native" excludes="*.dll" />
+		<delete dir="build/${platform}/lib/native" excludes="*.dll" />
+		<fixcrlf srcdir="build/${platform}" includes="*.txt" eol="dos" preservelastmodified="true" />
 	</target>
 	<target name="stage-macosx-x86" depends="platform-macosx-x86,stage-common" description="Stages the macosx-x86 build.">
 		<!-- FIXME: this is all a little dirty... should copy things to the right directories in the first place. -->
@@ -71,13 +78,13 @@ NOTES
 			<fileset dir="build/${platform}/lib" />
 		</move>
 		<delete file="build/${platform}/lib" />
-		<copy todir="build/${platform}/ImageRail.app/Contents">
+		<copy todir="build/${platform}/ImageRail.app/Contents" preservelastmodified="true">
 			<fileset dir="etc/platform/${platform}" includes="Info.plist,PkgInfo" />
 		</copy>
-		<copy todir="build/${platform}/ImageRail.app/Contents/Resources">
-			<fileset dir="etc/platform/${platform}" includes="ImageRail.icns" />
+		<copy todir="build/${platform}/ImageRail.app/Contents/Resources" preservelastmodified="true">
+			<fileset dir="etc/platform/${platform}" includes="ImageRail.icns,LICENSE.txt,COPYING.txt" />
 		</copy>
-		<copy todir="build/${platform}/ImageRail.app/Contents/MacOS" file="etc/platform/${platform}/JavaApplicationStub" />
+		<copy todir="build/${platform}/ImageRail.app/Contents/MacOS" file="etc/platform/${platform}/JavaApplicationStub" preservelastmodified="true" />
 		<chmod file="build/${platform}/ImageRail.app/Contents/MacOS/JavaApplicationStub" perm="a+x" />
 		<exec executable="/Developer/Tools/SetFile">
 			<arg value="-a" />

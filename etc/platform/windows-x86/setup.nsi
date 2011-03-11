@@ -94,6 +94,8 @@ done${UNSECTION_ID}:
 Section /o un.Main UNSEC0000
     Delete $INSTDIR\ImageRail_Windows.bat
     Delete $INSTDIR\ImageRail.ico
+    Delete $INSTDIR\LICENSE.txt
+    Delete $INSTDIR\COPYING.txt
     RmDir /r /REBOOTOK $INSTDIR\doc
     RmDir /r /REBOOTOK $INSTDIR\features
     RmDir /r /REBOOTOK $INSTDIR\icons 
