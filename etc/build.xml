@@ -38,7 +38,7 @@ NOTES
 	</target>
 	<target name="copymisc" depends="checkplatform" description="Copies various support files to the build directory.">
 		<copy todir="build/${platform}/doc" preservelastmodified="true">
-			<fileset dir="doc" excludes="**/.svn,**/*.ai" />
+			<fileset file="doc/ImageRail Manual.pdf" />
 		</copy>
 		<copy todir="build/${platform}/icons" preservelastmodified="true">
 			<fileset dir="icons" excludes="**/.svn" />
@@ -52,7 +52,10 @@ NOTES
 		</copy>
 	</target>
 	<target name="copydeps" depends="checkplatform" description="Copies the library dependencies to the build directory.">
-		<copy file="${basedir}/../SDCube_API/build/SDCube_API.jar" overwrite="true" preservelastmodified="true" todir="build/${platform}/lib" />
+		<copy overwrite="true" preservelastmodified="true" todir="build/${platform}/lib">
+			<fileset file="${basedir}/../SDCube_API/build/SDCube_API.jar" />
+			<fileset file="${basedir}/../SDCube_API/doc/SDCube Programming Manual.pdf" />
+		</copy>
 		<copy todir="build/${platform}/lib" preservelastmodified="true">
 			<fileset dir="${basedir}/../SDCube_API/lib" excludes=".svn" />
 		</copy>
@@ -66,12 +69,17 @@ NOTES
 		</copy>
 		<delete dir="build/${platform}/lib/native" excludes="*.dll" />
 		<fixcrlf srcdir="build/${platform}" includes="*.txt" eol="dos" preservelastmodified="true" />
+		<echo>You must now compile etc/platform/${platform}/setup.nsi to create the installer.</echo>
 	</target>
 	<target name="stage-macosx-x86" depends="platform-macosx-x86,stage-common" description="Stages the macosx-x86 build.">
 		<!-- FIXME: this is all a little dirty... should copy things to the right directories in the first place. -->
 		<move todir="build/${platform}/ImageRail.app/Contents/Resources">
-			<fileset dir="build/${platform}" excludes="ImageRail.app,*.jar,lib/**" />
+			<fileset dir="build/${platform}" excludes="ImageRail.app,*.jar,lib/**,doc/**" />
 		</move>
+		<move todir="build/${platform}">
+			<fileset file="build/${platform}/doc/ImageRail Manual.pdf" />
+		</move>
+		<delete dir="build/${platform}/doc" />
 		<delete dir="build/${platform}/lib/native" excludes="*.jnilib" />
 		<move todir="build/${platform}/ImageRail.app/Contents/Resources/Java">
 			<fileset dir="build/${platform}" includes="*.jar" />
@@ -86,15 +94,16 @@ NOTES
 		</copy>
 		<copy todir="build/${platform}/ImageRail.app/Contents/MacOS" file="etc/platform/${platform}/JavaApplicationStub" preservelastmodified="true" />
 		<chmod file="build/${platform}/ImageRail.app/Contents/MacOS/JavaApplicationStub" perm="a+x" />
-		<exec executable="/Developer/Tools/SetFile">
+		<exec executable="/Developer/Tools/SetFile" failonerror="true">
 			<arg value="-a" />
 			<arg value="B" />
 			<arg path="build/${platform}/ImageRail.app" />
 		</exec>
 	</target>
 	<target name="package-macosx-x86" depends="stage-macosx-x86" description="Packages the macosx-x86 installer.">
-		<exec executable="hdiutil">
+		<exec executable="hdiutil" failonerror="true">
 			<arg value="create" />
+			<arg value="-ov" />
 			<arg value="-srcfolder" />
 			<arg value="build/${platform}" />
 			<arg value="-volname" />
