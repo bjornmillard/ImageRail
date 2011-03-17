@@ -61,6 +61,7 @@ Section -Main SEC0000
 
     CreateDirectory "$SMPROGRAMS\ImageRail"
     CreateShortCut "$SMPROGRAMS\ImageRail\ImageRail.lnk" "$INSTDIR\ImageRail_Windows.bat" "" "$INSTDIR\ImageRail.ico" 0
+    CreateShortCut "$SMPROGRAMS\ImageRail\ImageRail Manual.lnk" "$INSTDIR\doc\ImageRail Manual.pdf"
     CreateShortCut "$SMPROGRAMS\ImageRail\Uninstall ImageRail.lnk" "$INSTDIR\uninstall.exe"
     WriteRegStr HKLM "${REGKEY}\Components" Main 1
 SectionEnd
@@ -134,8 +135,8 @@ Function .onInit
     # Run the uninstaller
 uninst:
     ClearErrors
-    # Silent, and do not copy the uninstaller to a temp file
-    ExecWait '"$R0" /S _?=$INSTDIR'
+    # uninstall silently
+    ExecWait '"$R0" /S'
 
 done:
 FunctionEnd
