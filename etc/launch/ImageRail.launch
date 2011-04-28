@@ -8,5 +8,5 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="gui.MainGUI"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ImageRail"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1000M"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx1000M -d32"/>
 </launchConfiguration>
