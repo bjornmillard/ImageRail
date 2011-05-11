@@ -226,12 +226,12 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					}
 			}
 
-			 TheWell = null;
-			for (int p = 0; p < numP; p++)
-				if (ThePlates[p].getID() == well.getPlate().getID()) {
-					TheWell = ThePlates[p].getWell(well.name);
-					break;
-				}
+			TheWell = well;
+			// for (int p = 0; p < numP; p++)
+			// if (ThePlates[p].getID() == well.getPlate().getID()) {
+			// TheWell = ThePlates[p].getWell(well.name);
+			// break;
+			// }
 			ThePanel.repaint();
 		}
 	}
@@ -300,34 +300,33 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					int ptsLen = pts.length;
 
 					if (comName.trim().equalsIgnoreCase("Centroid")) // Draw a
-																		// centroid
-																		// with
-																		// the
-																		// single
-																		// point
+					// centroid
+					// with
+					// the
+					// single
+					// point
 					{
 						for (int z = 0; z < ptsLen; z++)
 							g2.fillOval((int) (scalingFactor * pts[z].x),
 									(int) (scalingFactor * pts[z].y), radius,
 									radius);
 						// System.out.println();
-					}
-					else if (comName.trim().equalsIgnoreCase("BoundingBox")) // Draw
-																				// a
-																				// bounding
-																				// box
-																				// with
-																				// the
-																				// 2
-																				// points
-																				// as
-																				// the
-																				// upper
-																				// left
-																				// and
-																				// bottom
-																				// right
-																				// corner
+					} else if (comName.trim().equalsIgnoreCase("BoundingBox")) // Draw
+						// a
+						// bounding
+						// box
+						// with
+						// the
+						// 2
+						// points
+						// as
+						// the
+						// upper
+						// left
+						// and
+						// bottom
+						// right
+						// corner
 						g2.drawRect((int) (scalingFactor * pts[0].x),
 								(int) (scalingFactor * pts[0].y),
 								(int) (scalingFactor * (pts[1].x - pts[0].x)),
@@ -345,8 +344,109 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 						}
 					}
 				}
-			
+
 			}
+			
+			//
+			//
+			// TODO DELETE
+			// File outFile = new File("/Users/blm13/Desktop/outTest.csv");
+			// PrintWriter pw = null;
+			// try {
+			// pw = new PrintWriter(outFile);
+			// } catch (FileNotFoundException e) {
+			// e.printStackTrace();
+			// }
+			// String st = "";
+
+			// ----
+			// if (false) {
+			// g2.setColor(Color.magenta);
+			// ArrayList<Cell> selCells = TheCellBank.getSelectedCells();
+			// ArrayList<Cell> allCells = TheCellBank.getCells();
+			// int selLen = selCells.size();
+			// int allLen = allCells.size();
+			// Raster raster = getCurrentRaster();
+			// int numBands = raster.getNumBands();
+			// int[] pix = new int[numBands];
+			// for (int c = 0; c < selLen; c++) {
+			// imagerailio.Point p1 = selCells.get(c).getCoordinates()
+			// .getCentroid_subcompartment("Outline");
+			// for (int r = 0; r < allLen; r++) {
+			// if (c != r) {
+			// imagerailio.Point p2 = allCells.get(r)
+			// .getCoordinates()
+			// .getCentroid_subcompartment("Outline");
+			//
+			// int xDist = p2.x - p1.x;
+			// int yDist = p2.y - p1.y;
+			// int yStart = p1.y;
+			// int xStart = p1.x;
+			// // compute slope btw points
+			// float m = ((float) yDist) / ((float) xDist);
+			//
+			// boolean staysAboveBkgd = true;
+			// int bkgd = (int) TheWell.getParameterSet()
+			// .getThreshold_Background();
+			// // Need to invert line tracking if slope too
+			// // vertical
+			// // (ex: walk along y axis not x axis)
+			// if (m != Float.NaN || m != 0) {
+			// // st = "";
+			// if (Math.abs(m) < 1) {
+			// for (int x = 0; x < Math.abs(xDist); x++) {
+			//
+			// int xI = x;
+			// if (xDist < 0)
+			// xI = -x;
+			//
+			// int xP = xStart + xI;
+			// int y = (int) (m * xI + yStart);
+			//
+			// raster.getPixel(xP, y, pix);
+			//
+			// if (pix[0] < bkgd) {
+			// staysAboveBkgd = false;
+			// break;
+			// }
+			// }
+			//
+			// } else {
+			// for (int y = 0; y < Math.abs(yDist); y++) {
+			//
+			// float yI = y;
+			// if (yDist < 0)
+			// yI = -y;
+			//
+			// float yP = (float) yStart + yI;
+			// int x = (int) (1f / m * yI + xStart);
+			//
+			// raster.getPixel(x, (int) yP, pix);
+			//
+			// if (pix[0] < bkgd) {
+			// staysAboveBkgd = false;
+			// break;
+			// }
+			// }
+			// }
+			// if (staysAboveBkgd)
+			// g2.drawLine((int) (scalingFactor * p2.x),
+			// (int) (scalingFactor * p2.y),
+			// (int) (scalingFactor * p1.x),
+			// (int) (scalingFactor * p1.y));
+			// }
+			//
+			// }
+			// }
+			// }
+			// }
+			// -----
+			// pw.flush();
+			// pw.close();
+			//
+			//
+			//
+
 		}
 
 		/**

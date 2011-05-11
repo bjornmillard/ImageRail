@@ -424,8 +424,13 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 
 					// Single thread run
 					if (wellsWithImages[0].TheParameterSet.getNumThreads() == 1) {
-					Processor_SingleCells tasker = new Processor_SingleCells(
+						Processor_SingleCells tasker = new Processor_SingleCells(
 								wellsWithImages, new DefaultSegmentor());
+
+						// Processor_SingleCells tasker = new
+						// Processor_SingleCells(
+						// wellsWithImages, new Segmentor_Osteo());
+
 					tasker.start();
 					} else // Multi-thread run
 					{

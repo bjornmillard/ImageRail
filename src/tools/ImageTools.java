@@ -31,8 +31,10 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +53,7 @@ import javax.swing.JFrame;
 import models.Model_ParameterSet;
 import models.Model_Plate;
 import models.Model_Well;
+import segmentedobject.CellCoordinates;
 import segmentors.DefaultSegmentor.Pixel;
 
 import com.sun.media.jai.codec.FileSeekableStream;
@@ -1469,8 +1472,84 @@ public class ImageTools
 		return result;
 	}
 
+	/**
+	 * Given a list of cells
+	 * */
+	static public void printInterCellLineProfiles(
+			ArrayList<CellCoordinates> cells, int[][][] raster, int channelIndex) {
 
-	
-	
+		File f = new File("/Users/blm13/Desktop/out_"
+				+ System.currentTimeMillis() + ".csv");
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(f);
+		} catch (FileNotFoundException e) {
+			System.out.println("ERROR creating printwriter for file: "
+					+ f.getAbsolutePath());
+			e.printStackTrace();
+			return;
+		}
+		int len = cells.size();
+		for (int c = 0; c < len; c++) {
+			CellCoordinates cell = cells.get(c);
+			for (int r = 0; r < len; r++) {
+				if (c != r) {
+
+					CellCoordinates cell2 = cells.get(r);
+					imagerailio.Point p1 = cell.getCentroid();
+					imagerailio.Point p2 = cell2.getCentroid();
+					// // compute slope btw points
+					// float m = ((float) p2.y - (float) p1.y)
+					// / ((float) p2.x - (float) p1.x);
+					// int xDist = p2.x - p1.x;
+					// int yStart = p1.y;
+					// int xStart = p1.x;
+					// if (xDist > 0) {
+					// String st = "";
+					// for (int x = 0; x < xDist; x++) {
+					// int y = (int) (m * x + yStart);
+					// int val = raster[y][xStart + x][channelIndex];
+					// st += val + ",";
+					// }
+					// pw.println(st);
+					// pw.flush();
+					//
+					// }
+
+					// compute slope btw points
+					float m = ((float) p2.y - (float) p1.y)
+							/ ((float) p2.x - (float) p1.x);
+					int xDist = p2.x - p1.x;
+					int yStart = p1.y;
+					int xStart = p1.x;
+
+					String st = "";
+					for (int x = 0; x < Math.abs(xDist); x++) {
+
+						int xI = x;
+						if (xDist < 0)
+							xI = -x;
+
+						int xP = xStart + xI;
+
+						int y = (int) (m * xI + yStart);
+						// g2.drawLine((int) (scalingFactor * xP),
+						// (int) (scalingFactor * y),
+						// (int) (scalingFactor * xP),
+						// (int) (scalingFactor * y));
+
+						int val = raster[y][xP][channelIndex];
+						st += val + ",";
+					}
+					pw.println(st);
+				}
+			}
+		}
+		pw.flush();
+		pw.close();
+		System.exit(0);
+
+	}
 }
+
 

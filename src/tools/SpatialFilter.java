@@ -75,6 +75,39 @@ public class SpatialFilter
 	}
 	
 	
+	static public int[][][] stdevWindow(int[][][] inputRaster, int width,
+			int index) {
+		int kernalWidth = width;
+		int halfKernalWidth = (int) (((float) kernalWidth - 1f) / 2f);
+		int nRows = inputRaster.length;
+		int nCols = inputRaster[0].length;
+		int[][][] temp = tools.ImageTools.copyRaster(inputRaster);
+		int halfway = (int) ((float) (width * width) / 2f);
+		float sum = 0;
+		for (int r = halfKernalWidth; r < nRows - halfKernalWidth; r++)
+			for (int c = halfKernalWidth; c < nCols - halfKernalWidth; c++) {
+				int counter = 0;
+				for (int n = r - halfKernalWidth; n < r + halfKernalWidth; n++)
+					for (int k = c - halfKernalWidth; k < c + halfKernalWidth; k++) {
+						sum = tools.ImageTools
+								.getPixelIntensity(inputRaster[n][k]);
+						counter++;
+					}
+
+				float mean = (float) sum / (float) counter;
+				sum = 0;
+				for (int n = r - halfKernalWidth; n < r + halfKernalWidth; n++) {
+					for (int k = c - halfKernalWidth; k < c + halfKernalWidth; k++) {
+						sum += Math.pow((tools.ImageTools
+								.getPixelIntensity(inputRaster[n][k]) - mean),
+								2);
+					}
+				}
+				double stdev = Math.sqrt(1f / (float) counter * sum);
+				temp[r][c][index] = (int) (stdev * 100);
+			}
+		return temp;
+	}
 	
 	static public int[][][] erosion(int[][][] inputRaster)
 	{
@@ -547,7 +580,9 @@ public class SpatialFilter
 	
 	/** If there is an edge, this method replaces it with a White pixel, otherwise, Black pixel
 	 * @author BLM*/
-	static public int[][][] sobelEdgeDetector_binary(int[][][] inputRaster, float[][] kernal_h, float[][] kernal_v, float[][] kernal_d1,float[][] kernal_d2)
+	static public int[][][] sobelEdgeDetector_binary(int[][][] inputRaster,
+			float[][] kernal_h, float[][] kernal_v, float[][] kernal_d1,
+			float[][] kernal_d2, double threshold)
 	{
 		int kernalWidth = kernal_v.length;
 		int halfKernalWidth = (int)(((float)kernalWidth-1f)/2f);
@@ -597,7 +632,7 @@ public class SpatialFilter
 				else if (sum > max)
 					max = sum;
 				
-				double threshold = 1000d;
+
 				//either turn it on or off based on edge thresholding
 				if (sum>threshold)
 					tools.ImageTools.setIntensityToPixel(temp[r][c], 3000);

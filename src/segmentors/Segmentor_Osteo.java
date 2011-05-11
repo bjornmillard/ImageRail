@@ -25,6 +25,8 @@ import imagerailio.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 import models.Model_ParameterSet;
@@ -34,7 +36,7 @@ import tempObjects.Cell_RAM;
 import tools.LinearKernals;
 import tools.SpatialFilter;
 
-public class DefaultSegmentor implements CellSegmentor {
+public class Segmentor_Osteo implements CellSegmentor {
 	private Pixel[][] pixels;
 	private int height;
 	private int width;
@@ -97,7 +99,140 @@ public class DefaultSegmentor implements CellSegmentor {
 			coordCells.add(new CellCoordinates(allCompartments));
 		}
 
+		// Merging cells that were within same cytoplasm
+		mergeMultiNucleateCells(raster, pset, coordCells);
+
 		return coordCells;
+	}
+
+	private void mergeMultiNucleateCells(int[][][] raster,
+			Model_ParameterSet pset, ArrayList<CellCoordinates> cells) {
+
+		int len = cells.size();
+		ArrayList<int[]> mergers = new ArrayList<int[]>();
+		for (int c = 0; c < len; c++) {
+			imagerailio.Point p1 = cells.get(c).getCentroid();
+			for (int r = 0; r < len; r++) {
+				if (c != r) {
+					imagerailio.Point p2 = cells.get(r).getCentroid();
+
+					int xDist = p2.x - p1.x;
+					int yDist = p2.y - p1.y;
+					int yStart = p1.y;
+					int xStart = p1.x;
+					// compute slope btw points
+					float m = ((float) yDist) / ((float) xDist);
+
+					boolean staysAboveBkgd = true;
+					int bkgd = (int) pset.getThreshold_Background();
+					// Need to invert line tracking if slope too vertical
+					// (ex: walk along y axis not x axis)
+					if (m != Float.NaN || m != 0) {
+						// st = "";
+						if (Math.abs(m) < 1) {
+							for (int x = 0; x < Math.abs(xDist); x++) {
+
+								int xI = x;
+								if (xDist < 0)
+									xI = -x;
+
+								int xP = xStart + xI;
+								int y = (int) (m * xI + yStart);
+
+								int val = raster[y][xP][pset
+										.getThresholdChannel_cyto_Index()];
+
+								// printing out this trace
+								// st += pix[0] + ",";
+								if (val < bkgd) {
+									staysAboveBkgd = false;
+									break;
+								}
+							}
+
+						} else {
+							for (int y = 0; y < Math.abs(yDist); y++) {
+
+								float yI = y;
+								if (yDist < 0)
+									yI = -y;
+
+								float yP = (float) yStart + yI;
+								int x = (int) (1f / m * yI + xStart);
+
+								int val = raster[(int) yP][x][pset
+										.getThresholdChannel_cyto_Index()];
+								// printing out this trace
+								// st += pix[0] + ",";
+
+								if (val < bkgd) {
+									staysAboveBkgd = false;
+									break;
+								}
+							}
+						}
+						// pw.println(st);
+						if (staysAboveBkgd)
+ {
+							int[] pair = new int[] { r, c };
+							mergers.add(pair);
+
+						}
+					}
+
+				}
+			}
+		}
+
+		// Hash of Integer cell index pointing to what group it belongs too
+		// (represented as a ArrayList<Integer>)
+		Hashtable<Integer, ArrayList<Integer>> hash = new Hashtable<Integer, ArrayList<Integer>>();
+		ArrayList<Integer> g = null;
+		len = mergers.size();
+		for (int i = 0; i < len; i++) {
+			int[] arr = (int[]) mergers.get(i);
+			System.out.println(arr[0] + "," + arr[1]);
+			// See if this pair is in a group
+			Integer int0 = new Integer(arr[0]);
+			Integer int1 = new Integer(arr[1]);
+			ArrayList<Integer> group_0 = hash.get(int0);
+			ArrayList<Integer> group_1 = hash.get(int1);
+
+				g = new ArrayList<Integer>();
+				if (group_0 != null) {
+					int gSize = group_0.size();
+					for (int j = 0; j < gSize; j++)
+						g.add(group_0.get(j));
+				group_0 = null;
+				} else
+					g.add(int0);
+				if (group_1 != null) {
+					int gSize = group_1.size();
+					for (int j = 0; j < gSize; j++)
+						g.add(group_1.get(j));
+				group_1 = null;
+				}
+ else
+					g.add(int1);
+
+
+				hash.remove(int0);
+				hash.put(int0, g);
+				hash.remove(int1);
+				hash.put(int1, g);
+		}
+
+		Enumeration e = hash.elements();
+		while (e.hasMoreElements())
+ {
+			ArrayList<Integer> arr = (ArrayList<Integer>) e.nextElement();
+			int num = arr.size();
+			String st = "";
+			for (int j = 0; j < num; j++) {
+				st += arr.get(j).toString() + ",";
+			}
+			System.out.println(st);
+		}
 	}
 
 	/***
@@ -143,8 +278,7 @@ public class DefaultSegmentor implements CellSegmentor {
 				if (iRaster[r][c][0] > max)
 					max = iRaster[r][c][0];
 		Pixel.resetIDs(pixels);
-		ArrayList<Pixel> pixList = new ArrayList<Pixel>(width
-				* height);
+		ArrayList<Pixel> pixList = new ArrayList<Pixel>(width * height);
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++) {
 				pixels[r][c].setValue((int) iRaster[r][c][0]);
@@ -185,12 +319,10 @@ public class DefaultSegmentor implements CellSegmentor {
 					iRaster[r][c][0] = 255f;
 
 					// Dilating 1x some pixels
-					Pixel[] neighs = Pixel.getNeighbors(pixels[r][c],
-							pixels);
+					Pixel[] neighs = Pixel.getNeighbors(pixels[r][c], pixels);
 					int num = neighs.length;
 					for (int i = 0; i < num; i++) {
-						Pixel[] neighs2 = Pixel.getNeighbors(
-								neighs[i], pixels);
+						Pixel[] neighs2 = Pixel.getNeighbors(neighs[i], pixels);
 						int size = neighs.length;
 						for (int n = 0; n < size; n++) {
 							if (neighs2[n].getRow() != r
@@ -232,8 +364,8 @@ public class DefaultSegmentor implements CellSegmentor {
 					if (validNuclei)
 						if (allPixels.size() > 0) {
 							// creating a new cell object & storing its centroid
-							Nucleus nuc = new Nucleus(allPixels,
-									pixels[r][c].getID());
+							Nucleus nuc = new Nucleus(allPixels, pixels[r][c]
+									.getID());
 							allNuclei.add(nuc);
 						}
 				}
@@ -375,8 +507,8 @@ public class DefaultSegmentor implements CellSegmentor {
 		return integValues;
 	}
 
-	public Cell[] growSeedsIntoCells(Nucleus[] nuclei,
-			int[][][] Raster, Model_ParameterSet pset) {
+	public Cell[] growSeedsIntoCells(Nucleus[] nuclei, int[][][] Raster,
+			Model_ParameterSet pset) {
 
 		int height = Raster.length;
 		int width = Raster[0].length;
@@ -407,8 +539,7 @@ public class DefaultSegmentor implements CellSegmentor {
 				Point po = nuc.getPixelCoordinate(p);
 				Pixel pix = pixels[po.y][po.x];
 
-				Pixel[] neighbors = Pixel.getFourNeighbors(pix,
-						pixels);
+				Pixel[] neighbors = Pixel.getFourNeighbors(pix, pixels);
 				int len = neighbors.length;
 				for (int i = 0; i < len; i++) {
 					Pixel neigh = neighbors[i];
@@ -439,8 +570,7 @@ public class DefaultSegmentor implements CellSegmentor {
 					Point po = (Point) arr.get(p);
 					Pixel pix = pixels[po.y][po.x];
 
-					Pixel[] neighbors = Pixel.getNeighbors(pix,
-							pixels);
+					Pixel[] neighbors = Pixel.getNeighbors(pix, pixels);
 					int len = neighbors.length;
 					for (int i = 0; i < len; i++) {
 						Pixel neigh = neighbors[i];
@@ -511,8 +641,8 @@ public class DefaultSegmentor implements CellSegmentor {
 	 * @author BLM
 	 */
 	static public ArrayList<Nucleus> expandNucleiFromSeeds(
-			ArrayList<Nucleus> nucSeeds, Pixel[][] pixels,
-			int[][][] rgbRaster, Model_ParameterSet pset) {
+			ArrayList<Nucleus> nucSeeds, Pixel[][] pixels, int[][][] rgbRaster,
+			Model_ParameterSet pset) {
 		int numNuc = nucSeeds.size();
 
 		// Getting all the nucPoints and adding them to arrLists for convenience
@@ -541,8 +671,7 @@ public class DefaultSegmentor implements CellSegmentor {
 				int numPix = nuc.size();
 				for (int p = 0; p < numPix; p++) {
 					Pixel pix = (Pixel) nuc.get(p);
-					Pixel[] neighbors = Pixel.getNeighbors(pix,
-							pixels);
+					Pixel[] neighbors = Pixel.getNeighbors(pix, pixels);
 					int len = neighbors.length;
 					for (int i = 0; i < len; i++) {
 						Pixel neigh = neighbors[i];
@@ -598,9 +727,7 @@ public class DefaultSegmentor implements CellSegmentor {
 		return vals;
 	}
 
-	
-	public static class Cell
-	{
+	public static class Cell {
 
 		private int ID;
 		private int FieldNumber;
@@ -611,22 +738,20 @@ public class DefaultSegmentor implements CellSegmentor {
 
 		private int SourceImage_Width;
 		private int SourceImage_Height;
-		
-		
-		public Cell(Nucleus nucleus_, Cytoplasm cytoplasm_)
-		{
-			ID = (int)(Math.random()*100000000);
+
+		public Cell(Nucleus nucleus_, Cytoplasm cytoplasm_) {
+			ID = (int) (Math.random() * 100000000);
 			nucleus = nucleus_;
 			cytoplasm = cytoplasm_;
 		}
 
-		
-		
-		
-		/** Returns the boundary points in an arrayList demarking the cytoplasmic boundary of the cell
-		 * @author BLM*/
-		public ArrayList<Point> getBoundaryPoints()
-		{
+		/**
+		 * Returns the boundary points in an arrayList demarking the cytoplasmic
+		 * boundary of the cell
+		 * 
+		 * @author BLM
+		 */
+		public ArrayList<Point> getBoundaryPoints() {
 			Point[] pts = nucleus.getBoundaryPoints();
 			ArrayList<Point> arr = new ArrayList<Point>();
 			for (int i = 0; i < pts.length; i++)
@@ -635,163 +760,195 @@ public class DefaultSegmentor implements CellSegmentor {
 				arr.add(boundaryPoints.get(i));
 			return arr;
 		}
-		/** Sets the boundary points in an arrayList demarking the cytoplasmic boundary of the cell
-		 * @author BLM*/
-		public void setBoundaryPoints(ArrayList<Point> points)
-		{
+
+		/**
+		 * Sets the boundary points in an arrayList demarking the cytoplasmic
+		 * boundary of the cell
+		 * 
+		 * @author BLM
+		 */
+		public void setBoundaryPoints(ArrayList<Point> points) {
 			boundaryPoints = points;
 		}
-		
-		
-		/** Returns the cytoplasm object of this cell
-		 * @author BLM*/
-		public Cytoplasm getCytoplasm()
-		{
+
+		/**
+		 * Returns the cytoplasm object of this cell
+		 * 
+		 * @author BLM
+		 */
+		public Cytoplasm getCytoplasm() {
 			return cytoplasm;
 		}
-		
-		/** Sets the cytoplasm object of this cell
-		 * @author BLM*/
-		public void setCytoplasm(Cytoplasm cytoplasm_)
-		{
+
+		/**
+		 * Sets the cytoplasm object of this cell
+		 * 
+		 * @author BLM
+		 */
+		public void setCytoplasm(Cytoplasm cytoplasm_) {
 			cytoplasm = cytoplasm_;
 		}
-		
-		/** Returns the nucleus object of this cell
-		 * @author BLM*/
-		public Nucleus getNucleus()
-		{
+
+		/**
+		 * Returns the nucleus object of this cell
+		 * 
+		 * @author BLM
+		 */
+		public Nucleus getNucleus() {
 			return nucleus;
 		}
-		
-		/** Sets the nucleus object of this cell
-		 * @author BLM*/
-		public void setNucleus(Nucleus nucleus_)
-		{
+
+		/**
+		 * Sets the nucleus object of this cell
+		 * 
+		 * @author BLM
+		 */
+		public void setNucleus(Nucleus nucleus_) {
 			nucleus = nucleus_;
 		}
-		
 
-		
-		public void setSourceImageWidth(int width)
-		{
+		public void setSourceImageWidth(int width) {
 			SourceImage_Width = width;
 		}
-		public int getSourceImageWidth()
-		{
+
+		public int getSourceImageWidth() {
 			return SourceImage_Width;
 		}
-		public void setSourceImageHeight(int height)
-		{
+
+		public void setSourceImageHeight(int height) {
 			SourceImage_Height = height;
 		}
-		public int getSourceImageHeight()
-		{
+
+		public int getSourceImageHeight() {
 			return SourceImage_Height;
 		}
-		
-		/** Sets the Model_Field number that this cell came from
-		 * @author BLM*/
-		public void setFieldNumber(int field_)
-		{
+
+		/**
+		 * Sets the Model_Field number that this cell came from
+		 * 
+		 * @author BLM
+		 */
+		public void setFieldNumber(int field_) {
 			FieldNumber = field_;
 		}
-		
-		/** Returns the field number that this cell came from
-		 * @author BLM*/
-		public int getFieldNumber()
-		{
-			return	FieldNumber;
+
+		/**
+		 * Returns the field number that this cell came from
+		 * 
+		 * @author BLM
+		 */
+		public int getFieldNumber() {
+			return FieldNumber;
 		}
-		
-		/** Returns Cell ID
-		 * @author BLM*/
-		public int getID()
-		{
+
+		/**
+		 * Returns Cell ID
+		 * 
+		 * @author BLM
+		 */
+		public int getID() {
 			return ID;
 		}
-		
-		/** Sets Cell ID
-		 * @author BLM*/
-		public void setID(int id)
-		{
+
+		/**
+		 * Sets Cell ID
+		 * 
+		 * @author BLM
+		 */
+		public void setID(int id) {
 			ID = id;
 		}
-		
-		/** Clears the pixel coordinates representing this cell
-		 * @author BLM*/
-		public void clearPixelData()
-		{
+
+		/**
+		 * Clears the pixel coordinates representing this cell
+		 * 
+		 * @author BLM
+		 */
+		public void clearPixelData() {
 			boundaryPoints = null;
 			cytoplasm.clearPixelData();
 			nucleus.clearPixelData();
 		}
-		
-		/** Sets a list of all the cells that were in the same image as this cell
-		 * @author BLM*/
-		public void setAllCells(Cell_RAM[] cells)
-		{
+
+		/**
+		 * Sets a list of all the cells that were in the same image as this cell
+		 * 
+		 * @author BLM
+		 */
+		public void setAllCells(Cell_RAM[] cells) {
 			allCells = cells;
 		}
-		
-		/** Returns a list of all the cells that were in the same image as this cell
-		 * @author BLM*/
-		public Cell_RAM[] getAllCells()
-		{
+
+		/**
+		 * Returns a list of all the cells that were in the same image as this
+		 * cell
+		 * 
+		 * @author BLM
+		 */
+		public Cell_RAM[] getAllCells() {
 			return allCells;
 		}
-		
-		/** Sets up the mean value float[] arrays (length==numChannels) to store values for this cell
-		 * @author BLM*/
-		public void initNumChannels(int numChannels)
-		{
+
+		/**
+		 * Sets up the mean value float[] arrays (length==numChannels) to store
+		 * values for this cell
+		 * 
+		 * @author BLM
+		 */
+		public void initNumChannels(int numChannels) {
 			cytoplasm.initNumChannels(numChannels);
 		}
-		
 
 		
 		
-		/** Returns the whole cell pixel area (numPixels) of this cell
-		 * @author BLM*/
-		public int getPixelArea_wholeCell()
-		{
-			return (getPixelArea_cytoplasmic()+getPixelArea_nuclear());
+		/**
+		 * Returns the whole cell pixel area (numPixels) of this cell
+		 * 
+		 * @author BLM
+		 */
+		public int getPixelArea_wholeCell() {
+			return (getPixelArea_cytoplasmic() + getPixelArea_nuclear());
 		}
-		
-		/** Returns the cytoplasmic pixel area (numPixels) of this cell
-		 * @author BLM*/
-		public int getPixelArea_cytoplasmic()
-		{
+
+		/**
+		 * Returns the cytoplasmic pixel area (numPixels) of this cell
+		 * 
+		 * @author BLM
+		 */
+		public int getPixelArea_cytoplasmic() {
 			return cytoplasm.getNumPixels();
 		}
-		
-		/** Returns the nuclear pixel area (numPixels) of this cell
-		 * @author BLM*/
-		public int getPixelArea_nuclear()
-		{
-			return 	nucleus.getNumPixels();
+
+		/**
+		 * Returns the nuclear pixel area (numPixels) of this cell
+		 * 
+		 * @author BLM
+		 */
+		public int getPixelArea_nuclear() {
+			return nucleus.getNumPixels();
 		}
-		
 
 		
 		
-		/** Given the arrayList of points, this method sets the boundary points and bounding box of the cell
-		 * @author BLM*/
-		public void initBoundary(ArrayList points)
-		{
+		/**
+		 * Given the arrayList of points, this method sets the boundary points
+		 * and bounding box of the cell
+		 * 
+		 * @author BLM
+		 */
+		public void initBoundary(ArrayList points) {
 			boundaryPoints = points;
-			if (boundaryPoints==null)
+			if (boundaryPoints == null)
 				return;
-			
+
 			float xMin = Float.POSITIVE_INFINITY;
 			float xMax = Float.NEGATIVE_INFINITY;
 			float yMin = Float.POSITIVE_INFINITY;
 			float yMax = Float.NEGATIVE_INFINITY;
 			int len = boundaryPoints.size();
-			for (int i=0; i < len; i++)
-			{
-				Point p = (Point)points.get(i);
-				if (p.x< xMin)
+			for (int i = 0; i < len; i++) {
+				Point p = (Point) points.get(i);
+				if (p.x < xMin)
 					xMin = p.x;
 				if (p.x > xMax)
 					xMax = p.x;
@@ -800,32 +957,33 @@ public class DefaultSegmentor implements CellSegmentor {
 				if (p.y > yMax)
 					yMax = p.y;
 			}
-			
+
 		}
-		
-		/** Given a arrayList of all coordinate points of this cell, and the original pixel matrix from the image, this will search all the coordinates and
-		 * determine which pixels are the boundary pixels and then initialize this cell with those boundaries
-		 * @author BLM*/
-		public void findAndInitBoundary(ArrayList allPoints, Pixel[][] pixels)
-		{
-			//init the cell boundary pixels now
+
+		/**
+		 * Given a arrayList of all coordinate points of this cell, and the
+		 * original pixel matrix from the image, this will search all the
+		 * coordinates and determine which pixels are the boundary pixels and
+		 * then initialize this cell with those boundaries
+		 * 
+		 * @author BLM
+		 */
+		public void findAndInitBoundary(ArrayList allPoints, Pixel[][] pixels) {
+			// init the cell boundary pixels now
 			ArrayList arr = allPoints;
 			int numPix = arr.size();
 			cytoplasm.setNumPixels(numPix);
-			
+
 			ArrayList boundaryPixels = new ArrayList();
-			for (int pi = 0; pi < numPix; pi++)
-			{
-				Point po = (Point)arr.get(pi);
+			for (int pi = 0; pi < numPix; pi++) {
+				Point po = (Point) arr.get(pi);
 				Pixel pix = pixels[po.y][po.x];
-				
+
 				Pixel[] neighbors = Pixel.getNeighbors(pix, pixels);
 				int len = neighbors.length;
-				for (int j =0; j < len; j++)
-				{
+				for (int j = 0; j < len; j++) {
 					Pixel neigh = neighbors[j];
-					if (neigh.getID()!=pix.getID())
-					{
+					if (neigh.getID() != pix.getID()) {
 						boundaryPixels.add(po);
 						break;
 					}
@@ -833,19 +991,20 @@ public class DefaultSegmentor implements CellSegmentor {
 			}
 			initBoundary(boundaryPixels);
 		}
-		
-		/** In order to save memory, this method tries to clear every trace of this cell
-		 * @author BLM*/
-		public void kill()
-		{
+
+		/**
+		 * In order to save memory, this method tries to clear every trace of
+		 * this cell
+		 * 
+		 * @author BLM
+		 */
+		public void kill() {
 			cytoplasm.kill();
 			nucleus.kill();
-			if (boundaryPoints!=null)
-			{
+			if (boundaryPoints != null) {
 				Iterator iter = boundaryPoints.iterator();
-				while (iter.hasNext())
-				{
-					Point element = (Point)iter.next();
+				while (iter.hasNext()) {
+					Point element = (Point) iter.next();
 					element = null;
 				}
 				boundaryPoints = null;
@@ -854,91 +1013,86 @@ public class DefaultSegmentor implements CellSegmentor {
 	}
 
 
-	public static class Cytoplasm
-	{
+	public static class Cytoplasm {
 		private int numPixels;
 		private float[] channelValues_integrated;
 		private ArrayList<Point> PixelCoordinates;
-		
-		public Cytoplasm()
-		{
+
+		public Cytoplasm() {
 			PixelCoordinates = new ArrayList<Point>();
 		}
-		
-		
-		
-		public void clearPixelData()
-		{
+
+		public void clearPixelData() {
 			PixelCoordinates = null;
 		}
-		
-		
-		/** Returns the number of pixels that compose the nucleus (ex: nuclear area in pixel units)
-		 * @author BLM*/
-		public int getNumPixels()
-		{
+
+		/**
+		 * Returns the number of pixels that compose the nucleus (ex: nuclear
+		 * area in pixel units)
+		 * 
+		 * @author BLM
+		 */
+		public int getNumPixels() {
 			return numPixels;
 		}
-		/** Sets the number of pixels that compose the nucleus (ex: nuclear area in pixel units)
-		 * @author BLM*/
-		public void setNumPixels(int numPix)
-		{
-			 numPixels = numPix;
+
+		/**
+		 * Sets the number of pixels that compose the nucleus (ex: nuclear area
+		 * in pixel units)
+		 * 
+		 * @author BLM
+		 */
+		public void setNumPixels(int numPix) {
+			numPixels = numPix;
 		}
-		
-		/** Returns the ArrayList of Points that represent the coordinates of the  of the pixels that compose this cytoplasm
-		 * @author BLM */
-		public ArrayList<Point> getPixelCoordinates()
-		{
+
+		/**
+		 * Returns the ArrayList of Points that represent the coordinates of the
+		 * of the pixels that compose this cytoplasm
+		 * 
+		 * @author BLM
+		 */
+		public ArrayList<Point> getPixelCoordinates() {
 			return PixelCoordinates;
 		}
-		
-		/** Returns the integrated float values of the features computed for this cytoplasm.  The array of values is of length==numFeatures
-		 * @author BLM*/
-		public float[] getChannelValues_integrated()
-		{
+
+		/**
+		 * Returns the integrated float values of the features computed for this
+		 * cytoplasm. The array of values is of length==numFeatures
+		 * 
+		 * @author BLM
+		 */
+		public float[] getChannelValues_integrated() {
 			return channelValues_integrated;
 		}
-		
-		
-		public void initNumChannels(int numChannels)
-		{
+
+		public void initNumChannels(int numChannels) {
 			channelValues_integrated = new float[numChannels];
 		}
-		
-		public void setChannelValue(float val, int index, int TYPE)
-		{
+
+		public void setChannelValue(float val, int index, int TYPE) {
 			if (TYPE == Cell_RAM.INTEGRATED)
 				channelValues_integrated[index] = val;
 		}
-		
-		public double getChannelValue(int index, int TYPE)
-		{
-			if (TYPE == Cell_RAM.MEAN)
-			{
-				if (index>=channelValues_integrated.length)
+
+		public double getChannelValue(int index, int TYPE) {
+			if (TYPE == Cell_RAM.MEAN) {
+				if (index >= channelValues_integrated.length)
 					return 0;
-				return channelValues_integrated[index]/(float)numPixels;
-			}
-			else if (TYPE == Cell_RAM.INTEGRATED)
-			{
-				if (index>=channelValues_integrated.length)
+				return channelValues_integrated[index] / (float) numPixels;
+			} else if (TYPE == Cell_RAM.INTEGRATED) {
+				if (index >= channelValues_integrated.length)
 					return 0;
 				return channelValues_integrated[index];
 			}
 			return 0;
 		}
-		
-		
-		
-		public void kill()
-		{
-			if (PixelCoordinates!=null)
-			{
+
+		public void kill() {
+			if (PixelCoordinates != null) {
 				Iterator iter = PixelCoordinates.iterator();
-				while (iter.hasNext())
-				{
-					Point element = (Point)iter.next();
+				while (iter.hasNext()) {
+					Point element = (Point) iter.next();
 					element = null;
 				}
 				PixelCoordinates = null;
@@ -949,111 +1103,113 @@ public class DefaultSegmentor implements CellSegmentor {
 	}
 
 
-	public static class Nucleus
-	{
+	public static class Nucleus {
 		private int ID;
 		private int numPixels;
 		private Point[] pixelCoordinates;
 		private Point[] boundaryPoints;
 		private Point2D.Double Centroid;
-		
-		public Nucleus(int id)
-		{
+
+		public Nucleus(int id) {
 			ID = id;
 		}
-		
-		public Nucleus(ArrayList pixels_, int id)
-		{
+
+		public Nucleus(ArrayList pixels_, int id) {
 			ID = id;
 			numPixels = pixels_.size();
 			pixelCoordinates = new Point[numPixels];
 			for (int i = 0; i < numPixels; i++)
-				pixelCoordinates[i] = new Point(((Pixel)pixels_.get(i)).getColumn(), ((Pixel)pixels_.get(i)).getRow());
+				pixelCoordinates[i] = new Point(((Pixel) pixels_.get(i))
+						.getColumn(), ((Pixel) pixels_.get(i)).getRow());
 			Centroid = getCentroid();
 		}
-		
-		/** Returns the ID of the cell
-		 * @author BLM*/
-		public int getID()
-		{
+
+		/**
+		 * Returns the ID of the cell
+		 * 
+		 * @author BLM
+		 */
+		public int getID() {
 			return ID;
 		}
-		
-		/** Sets the number of pixels that compse this nucleus
-		 * @author BLM*/
-		public void setNumPixels(int numPix)
-		{
+
+		/**
+		 * Sets the number of pixels that compse this nucleus
+		 * 
+		 * @author BLM
+		 */
+		public void setNumPixels(int numPix) {
 			numPixels = numPix;
 		}
-		
-		/** Returns the array of coordinates that denote the outline of the nucleus
-		 * @author BLM*/
-		public Point[] getBoundaryPoints()
-		{
+
+		/**
+		 * Returns the array of coordinates that denote the outline of the
+		 * nucleus
+		 * 
+		 * @author BLM
+		 */
+		public Point[] getBoundaryPoints() {
 			return boundaryPoints;
 		}
 
-		public void clearPixelData()
-		{
+		public void clearPixelData() {
 			boundaryPoints = null;
 			pixelCoordinates = null;
 		}
-		
-		public Point[] getAllPixelCoordinates()
-		{
+
+		public Point[] getAllPixelCoordinates() {
 			return pixelCoordinates;
 		}
-		
+
 		/** returns the requested indexed pixel */
-		public Point getPixelCoordinate(int i)
-		{
+		public Point getPixelCoordinate(int i) {
 			return pixelCoordinates[i];
 		}
-		
-		/** Returns the number of pixels that compose the nucleus (ex: nuclear area in pixel units)
-		 * @author BLM*/
-		public int getNumPixels()
-		{
+
+		/**
+		 * Returns the number of pixels that compose the nucleus (ex: nuclear
+		 * area in pixel units)
+		 * 
+		 * @author BLM
+		 */
+		public int getNumPixels() {
 			return numPixels;
 		}
-		
-		/**Computes the pixel_XY location of the centroid of the cell
-		 * @author BLM*/
-		public Point2D.Double getCentroid()
-		{
-			if (Centroid==null && pixelCoordinates!=null)
-			{
+
+		/**
+		 * Computes the pixel_XY location of the centroid of the cell
+		 * 
+		 * @author BLM
+		 */
+		public Point2D.Double getCentroid() {
+			if (Centroid == null && pixelCoordinates != null) {
 				Centroid = new Point2D.Double();
 				int col = 0;
 				int row = 0;
-				for (int i =0; i < numPixels; i++)
-				{
+				for (int i = 0; i < numPixels; i++) {
 					row += pixelCoordinates[i].y;
 					col += pixelCoordinates[i].x;
 				}
-				Centroid.y=row/numPixels;
-				Centroid.x=col/numPixels;
+				Centroid.y = row / numPixels;
+				Centroid.x = col / numPixels;
 			}
 			return Centroid;
 		}
 
-		public void initBoundaryPoints(Pixel[][] pixels)
-		{
-			if (pixelCoordinates==null || pixelCoordinates.length==0)
+		public void initBoundaryPoints(Pixel[][] pixels) {
+			if (pixelCoordinates == null || pixelCoordinates.length == 0)
 				return;
-			//For each pixel in the nucleus, See if any of the neighbors do not belong to this group; if so, then its a boundary pixel
+			// For each pixel in the nucleus, See if any of the neighbors do not
+			// belong to this group; if so, then its a boundary pixel
 			ArrayList arr = new ArrayList();
 			int len = pixelCoordinates.length;
-			for (int i = 0; i < len; i++)
-			{
+			for (int i = 0; i < len; i++) {
 				Point po = pixelCoordinates[i];
 				Pixel p = pixels[po.y][po.x];
 				Pixel[] ne = Pixel.getNeighbors(p, pixels);
 				int num = ne.length;
-				for (int j = 0; j < num; j++)
-				{
-					if (p.getID()!=ne[j].getID())
-					{
+				for (int j = 0; j < num; j++) {
+					if (p.getID() != ne[j].getID()) {
 						arr.add(po);
 						break;
 					}
@@ -1062,374 +1218,353 @@ public class DefaultSegmentor implements CellSegmentor {
 			len = arr.size();
 			boundaryPoints = new Point[len];
 			for (int i = 0; i < len; i++)
-				boundaryPoints[i] = (Point)arr.get(i);
+				boundaryPoints[i] = (Point) arr.get(i);
 		}
-		
-		public void kill()
-		{
-			if (pixelCoordinates!=null)
-			{
+
+		public void kill() {
+			if (pixelCoordinates != null) {
 				for (int i = 0; i < pixelCoordinates.length; i++)
-					pixelCoordinates[i]= null;
+					pixelCoordinates[i] = null;
 				pixelCoordinates = null;
 			}
 		}
 	}
 
 
-	public static class Pixel implements Comparable
-	{
+	public static class Pixel implements Comparable {
 		private int row;
 		private int col;
 		private int value;
 		private int ID;
-		
-		
-		public Pixel(int r, int c, int id)
-		{
+
+		public Pixel(int r, int c, int id) {
 			row = r;
 			col = c;
 			value = -5;
 			ID = id;
 		}
-		public Pixel(int r, int c, int z_, int id)
-		{
+
+		public Pixel(int r, int c, int z_, int id) {
 			row = r;
 			col = c;
 			value = z_;
 			ID = id;
 		}
-		
-		
-		/** Sets the pixel value as an integer
-		 * @author BLM*/
-		public void setValue(int val)
-		{
+
+		/**
+		 * Sets the pixel value as an integer
+		 * 
+		 * @author BLM
+		 */
+		public void setValue(int val) {
 			value = val;
 		}
-		
-		/** Sets the ID of the Pixel
-		 * @author BLM*/
-		public void setID(int id)
-		{
+
+		/**
+		 * Sets the ID of the Pixel
+		 * 
+		 * @author BLM
+		 */
+		public void setID(int id) {
 			ID = id;
 		}
-		
-		/** Returns the pixel value as an integer
-		 * @author BLM*/
-		public int getValue()
-		{
+
+		/**
+		 * Returns the pixel value as an integer
+		 * 
+		 * @author BLM
+		 */
+		public int getValue() {
 			return value;
 		}
-		/** Returns the pixel ID number
-		 * @author BLM*/
-		public int getID()
-		{
+
+		/**
+		 * Returns the pixel ID number
+		 * 
+		 * @author BLM
+		 */
+		public int getID() {
 			return ID;
 		}
-		/** Returns the pixel row where it is found in the image
-		 * @author BLM*/
-		public int getRow()
-		{
+
+		/**
+		 * Returns the pixel row where it is found in the image
+		 * 
+		 * @author BLM
+		 */
+		public int getRow() {
 			return row;
 		}
-		/** Returns the pixel column where it is found in the image
-		 * @author BLM*/
-		public int getColumn()
-		{
+
+		/**
+		 * Returns the pixel column where it is found in the image
+		 * 
+		 * @author BLM
+		 */
+		public int getColumn() {
 			return col;
 		}
-		
-		public double getDistance_L1(Pixel p)
-		{
+
+		public double getDistance_L1(Pixel p) {
 			double dist = 0;
-			dist += Math.abs(p.row-row);
-			dist += Math.abs(p.col-col);
-			
+			dist += Math.abs(p.row - row);
+			dist += Math.abs(p.col - col);
+
 			return dist;
 		}
-		
-		
-		public int compareTo(Object o)
-		{
-			if(!(o instanceof Pixel))
+
+		public int compareTo(Object o) {
+			if (!(o instanceof Pixel))
 				throw new ClassCastException();
-			
-			Pixel obj =  (Pixel) o;
-			
-			if( obj.value < value )
+
+			Pixel obj = (Pixel) o;
+
+			if (obj.value < value)
 				return 1;
-			
-			if( obj.value > value )
+
+			if (obj.value > value)
 				return -1;
-			
+
 			return 0;
 		}
-		
-		
-		/** Says if this pixels is above an intensity threshold
-		 * @author BLM*/
-		static public boolean pixelOn(int[] pix)
-		{
+
+		/**
+		 * Says if this pixels is above an intensity threshold
+		 * 
+		 * @author BLM
+		 */
+		static public boolean pixelOn(int[] pix) {
 			int sum = 0;
-			int len =  pix.length;
-			
+			int len = pix.length;
+
 			for (int i = 1; i < len; i++)
-				sum+=pix[i];
-			
-			
-			if (sum>0)
-			{
-				
+				sum += pix[i];
+
+			if (sum > 0) {
+
 				return true;
 			}
 			return false;
 		}
-		
-		static public boolean pixelOn(int[] pix, float threshold)
-		{
+
+		static public boolean pixelOn(int[] pix, float threshold) {
 			int sum = 0;
-			int len =  pix.length;
-			
+			int len = pix.length;
+
 			for (int i = 1; i < len; i++)
-				sum+=pix[i];
-			
-			if (sum>threshold)
+				sum += pix[i];
+
+			if (sum > threshold)
 				return true;
-			
+
 			return false;
 		}
-		
-		static public void resetIDs(Pixel[][] pixels)
-		{
+
+		static public void resetIDs(Pixel[][] pixels) {
 			int rows = pixels.length;
 			int cols = pixels[0].length;
 			for (int r = 0; r < rows; r++)
 				for (int c = 0; c < cols; c++)
 					pixels[r][c].ID = -1;
 		}
-		
-		static public boolean pixelOn(int pix, float threshold)
-		{
+
+		static public boolean pixelOn(int pix, float threshold) {
 			int sum = 0;
-			
-			if (sum>threshold)
+
+			if (sum > threshold)
 				return true;
-			
+
 			return false;
 		}
-		
-		static public boolean pixelOn_binary(int[] pix)
-		{
+
+		static public boolean pixelOn_binary(int[] pix) {
 			int sum = 0;
-			int len =  pix.length;
-			
+			int len = pix.length;
+
 			for (int i = 0; i < len; i++)
-				sum+=pix[i];
-			
-			if (sum>230)
+				sum += pix[i];
+
+			if (sum > 230)
 				return true;
 			return false;
 		}
-		
-		/** Checks if the given pixel that has the given Euclidean Distance is Surrounded by pixels at a higher level
-		 * @author BLM**/
-		static public float getLargestNeighborEuclidDist(Pixel pix, Pixel[][] pixels,float[][][] distanceMap)
-		{
+
+		/**
+		 * Checks if the given pixel that has the given Euclidean Distance is
+		 * Surrounded by pixels at a higher level
+		 * 
+		 * @author BLM
+		 **/
+		static public float getLargestNeighborEuclidDist(Pixel pix,
+				Pixel[][] pixels, float[][][] distanceMap) {
 			Pixel[] neigh = Pixel.getNeighbors(pix, pixels);
 			int len = neigh.length;
 			float max = -1;
-			for (int i = 0; i < len; i++)
-			{
+			for (int i = 0; i < len; i++) {
 				Pixel p = neigh[i];
 				float val = distanceMap[p.row][p.col][0];
-				if (val>max)
+				if (val > max)
 					max = val;
 			}
-			
+
 			return max;
 		}
-		
-		
-		/** Returns an array of pixels of the given pixel, top to bottom, L->R starting at r-1, c-1
-		 * @author BLM*/
-		static public Pixel[] getNeighbors(Pixel centerPixel, Pixel[][] pixels)
-		{
+
+		/**
+		 * Returns an array of pixels of the given pixel, top to bottom, L->R
+		 * starting at r-1, c-1
+		 * 
+		 * @author BLM
+		 */
+		static public Pixel[] getNeighbors(Pixel centerPixel, Pixel[][] pixels) {
 			int height = pixels.length;
 			int width = pixels[0].length;
 			Pixel[] pixs = null;
-			//top row
-			if (centerPixel.row==0)
-			{
-				if (centerPixel.col == 0)
-				{
-					//top left corner
+			// top row
+			if (centerPixel.row == 0) {
+				if (centerPixel.col == 0) {
+					// top left corner
 					pixs = new Pixel[3];
-					pixs[0] = pixels[centerPixel.row][centerPixel.col+1];
-					pixs[1] = pixels[centerPixel.row+1][centerPixel.col+1];
-					pixs[2] = pixels[centerPixel.row+1][centerPixel.col];
-				}
-				else if (centerPixel.col == width-1)
-				{
-					//top right corner
+					pixs[0] = pixels[centerPixel.row][centerPixel.col + 1];
+					pixs[1] = pixels[centerPixel.row + 1][centerPixel.col + 1];
+					pixs[2] = pixels[centerPixel.row + 1][centerPixel.col];
+				} else if (centerPixel.col == width - 1) {
+					// top right corner
 					pixs = new Pixel[3];
-					pixs[0] = pixels[centerPixel.row][centerPixel.col-1];
-					pixs[1] = pixels[centerPixel.row+1][centerPixel.col-1];
-					pixs[2] = pixels[centerPixel.row+1][centerPixel.col];
+					pixs[0] = pixels[centerPixel.row][centerPixel.col - 1];
+					pixs[1] = pixels[centerPixel.row + 1][centerPixel.col - 1];
+					pixs[2] = pixels[centerPixel.row + 1][centerPixel.col];
 				}
-					
-				else
-				{
-					//general top row
+
+				else {
+					// general top row
 					pixs = new Pixel[5];
-					pixs[0] = pixels[centerPixel.row][centerPixel.col-1];
-					
-					pixs[1] = pixels[centerPixel.row+1][centerPixel.col-1];
-					pixs[2] = pixels[centerPixel.row+1][centerPixel.col];
-					pixs[3] = pixels[centerPixel.row+1][centerPixel.col+1];
-					
-					pixs[4] = pixels[centerPixel.row][centerPixel.col+1];
+					pixs[0] = pixels[centerPixel.row][centerPixel.col - 1];
+
+					pixs[1] = pixels[centerPixel.row + 1][centerPixel.col - 1];
+					pixs[2] = pixels[centerPixel.row + 1][centerPixel.col];
+					pixs[3] = pixels[centerPixel.row + 1][centerPixel.col + 1];
+
+					pixs[4] = pixels[centerPixel.row][centerPixel.col + 1];
 				}
 			}
-				//bottom row pixels
-			else if (centerPixel.row == height-1)
-			{
-				if (centerPixel.col == 0)
-				{
-					//bottom left corner
+			// bottom row pixels
+			else if (centerPixel.row == height - 1) {
+				if (centerPixel.col == 0) {
+					// bottom left corner
 					pixs = new Pixel[3];
-					pixs[0] = pixels[centerPixel.row-1][centerPixel.col];
-					pixs[1] = pixels[centerPixel.row-1][centerPixel.col+1];
-					pixs[2] = pixels[centerPixel.row][centerPixel.col+1];
-				}
-				else if (centerPixel.col == width-1)
-				{
-					//bottom right corner
+					pixs[0] = pixels[centerPixel.row - 1][centerPixel.col];
+					pixs[1] = pixels[centerPixel.row - 1][centerPixel.col + 1];
+					pixs[2] = pixels[centerPixel.row][centerPixel.col + 1];
+				} else if (centerPixel.col == width - 1) {
+					// bottom right corner
 					pixs = new Pixel[3];
-					pixs[0] = pixels[centerPixel.row][centerPixel.col-1];
-					pixs[1] = pixels[centerPixel.row-1][centerPixel.col-1];
-					pixs[2] = pixels[centerPixel.row-1][centerPixel.col];
-				}
-				else
-				{
-					//general bottom row
+					pixs[0] = pixels[centerPixel.row][centerPixel.col - 1];
+					pixs[1] = pixels[centerPixel.row - 1][centerPixel.col - 1];
+					pixs[2] = pixels[centerPixel.row - 1][centerPixel.col];
+				} else {
+					// general bottom row
 					pixs = new Pixel[5];
-					pixs[0] = pixels[centerPixel.row][centerPixel.col-1];
-					
-					pixs[1] = pixels[centerPixel.row-1][centerPixel.col-1];
-					pixs[2] = pixels[centerPixel.row-1][centerPixel.col];
-					pixs[3] = pixels[centerPixel.row-1][centerPixel.col+1];
-					
-					pixs[4] = pixels[centerPixel.row][centerPixel.col+1];
+					pixs[0] = pixels[centerPixel.row][centerPixel.col - 1];
+
+					pixs[1] = pixels[centerPixel.row - 1][centerPixel.col - 1];
+					pixs[2] = pixels[centerPixel.row - 1][centerPixel.col];
+					pixs[3] = pixels[centerPixel.row - 1][centerPixel.col + 1];
+
+					pixs[4] = pixels[centerPixel.row][centerPixel.col + 1];
 				}
 			}
-				
-				
-				
-				//general left column
-			else if (centerPixel.col==0)
-			{
+
+			// general left column
+			else if (centerPixel.col == 0) {
 				pixs = new Pixel[5];
-				pixs[0] = pixels[centerPixel.row-1][centerPixel.col];
-				
-				pixs[1] = pixels[centerPixel.row-1][centerPixel.col+1];
-				pixs[2] = pixels[centerPixel.row][centerPixel.col+1];
-				pixs[3] = pixels[centerPixel.row+1][centerPixel.col+1];
-				
-				pixs[4] = pixels[centerPixel.row+1][centerPixel.col];
+				pixs[0] = pixels[centerPixel.row - 1][centerPixel.col];
+
+				pixs[1] = pixels[centerPixel.row - 1][centerPixel.col + 1];
+				pixs[2] = pixels[centerPixel.row][centerPixel.col + 1];
+				pixs[3] = pixels[centerPixel.row + 1][centerPixel.col + 1];
+
+				pixs[4] = pixels[centerPixel.row + 1][centerPixel.col];
 			}
-				//far right column pixels
-			else if (centerPixel.col == width-1)
-			{
+			// far right column pixels
+			else if (centerPixel.col == width - 1) {
 				pixs = new Pixel[5];
-				pixs[0] = pixels[centerPixel.row-1][centerPixel.col];
-				
-				pixs[1] = pixels[centerPixel.row-1][centerPixel.col-1];
-				pixs[2] = pixels[centerPixel.row][centerPixel.col-1];
-				pixs[3] = pixels[centerPixel.row+1][centerPixel.col-1];
-				
-				pixs[4] = pixels[centerPixel.row+1][centerPixel.col];
+				pixs[0] = pixels[centerPixel.row - 1][centerPixel.col];
+
+				pixs[1] = pixels[centerPixel.row - 1][centerPixel.col - 1];
+				pixs[2] = pixels[centerPixel.row][centerPixel.col - 1];
+				pixs[3] = pixels[centerPixel.row + 1][centerPixel.col - 1];
+
+				pixs[4] = pixels[centerPixel.row + 1][centerPixel.col];
 			}
-				
-				
-			else
-			{
-				//general body pixels
+
+			else {
+				// general body pixels
 				pixs = new Pixel[8];
-				pixs[0] = pixels[centerPixel.row-1][centerPixel.col-1];
-				pixs[1] = pixels[centerPixel.row-1][centerPixel.col];
-				pixs[2] = pixels[centerPixel.row-1][centerPixel.col+1];
-				
-				pixs[3] = pixels[centerPixel.row][centerPixel.col-1];
-				pixs[4] = pixels[centerPixel.row][centerPixel.col+1];
-				
-				pixs[5] = pixels[centerPixel.row+1][centerPixel.col-1];
-				pixs[6] = pixels[centerPixel.row+1][centerPixel.col];
-				pixs[7] = pixels[centerPixel.row+1][centerPixel.col+1];
+				pixs[0] = pixels[centerPixel.row - 1][centerPixel.col - 1];
+				pixs[1] = pixels[centerPixel.row - 1][centerPixel.col];
+				pixs[2] = pixels[centerPixel.row - 1][centerPixel.col + 1];
+
+				pixs[3] = pixels[centerPixel.row][centerPixel.col - 1];
+				pixs[4] = pixels[centerPixel.row][centerPixel.col + 1];
+
+				pixs[5] = pixels[centerPixel.row + 1][centerPixel.col - 1];
+				pixs[6] = pixels[centerPixel.row + 1][centerPixel.col];
+				pixs[7] = pixels[centerPixel.row + 1][centerPixel.col + 1];
 			}
 			return pixs;
 		}
-		
-		
-		static public Pixel[] getFourNeighbors(Pixel centerPixel, Pixel[][] pixels)
-		{
+
+		static public Pixel[] getFourNeighbors(Pixel centerPixel,
+				Pixel[][] pixels) {
 			int height = pixels.length;
 			int width = pixels[0].length;
 			Pixel[] pixs = null;
-			
-			if (centerPixel.row>=height-1 || centerPixel.col>=width-1)
-			{
+
+			if (centerPixel.row >= height - 1 || centerPixel.col >= width - 1) {
+				pixs = new Pixel[0];
+				return pixs;
+			} else if (centerPixel.row <= 1 || centerPixel.col <= 1) {
 				pixs = new Pixel[0];
 				return pixs;
 			}
-			else if (centerPixel.row<=1 || centerPixel.col<=1)
-			{
-				pixs = new Pixel[0];
-				return pixs;
-			}
-			
-			//general body pixels
+
+			// general body pixels
 			pixs = new Pixel[4];
-			
-			pixs[0] = pixels[centerPixel.row-1][centerPixel.col];
-			pixs[1] = pixels[centerPixel.row][centerPixel.col-1];
-			pixs[2] = pixels[centerPixel.row][centerPixel.col+1];
-			pixs[3] = pixels[centerPixel.row+1][centerPixel.col];
-			
+
+			pixs[0] = pixels[centerPixel.row - 1][centerPixel.col];
+			pixs[1] = pixels[centerPixel.row][centerPixel.col - 1];
+			pixs[2] = pixels[centerPixel.row][centerPixel.col + 1];
+			pixs[3] = pixels[centerPixel.row + 1][centerPixel.col];
+
 			return pixs;
 		}
-		
-		
-		
-		public static byte[] convertToByteArray(float[][][] im)
-		{
+
+		public static byte[] convertToByteArray(float[][][] im) {
 			int rows = im.length;
 			int cols = im[0].length;
 			int counter = 0;
-			byte[] arr = new byte[rows*cols];
+			byte[] arr = new byte[rows * cols];
 			for (int r = 0; r < rows; r++)
-				for (int c = 0; c < cols; c++)
-				{
-					arr[counter] = (byte)(im[r][c][0]-128);
+				for (int c = 0; c < cols; c++) {
+					arr[counter] = (byte) (im[r][c][0] - 128);
 					counter++;
 				}
-			
+
 			return arr;
 		}
-		
-		public static byte[] convertToByteArray(int[][][] im)
-		{
+
+		public static byte[] convertToByteArray(int[][][] im) {
 			int rows = im.length;
 			int cols = im[0].length;
 			int counter = 0;
-			byte[] arr = new byte[rows*cols];
+			byte[] arr = new byte[rows * cols];
 			for (int r = 0; r < rows; r++)
-				for (int c = 0; c < cols; c++)
-				{
-					arr[counter] = (byte)(im[r][c][0]-128);
+				for (int c = 0; c < cols; c++) {
+					arr[counter] = (byte) (im[r][c][0] - 128);
 					counter++;
 				}
-			
+
 			return arr;
 		}
 	}

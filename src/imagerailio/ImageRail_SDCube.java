@@ -135,7 +135,9 @@ public class ImageRail_SDCube
 			throws H5IO_Exception {
 		// Does Sample for this well exist already?
 		String indexKey = "p" + plateIndex + "w" + wellIndex;
-		String path = (String) hashtable_indexToPath.get(indexKey);
+		String path = null;
+		if(hashtable_indexToPath!=null)
+			path = (String) hashtable_indexToPath.get(indexKey);
 		String fieldID = indexKey + "f" + fieldIndex;
 		
 
@@ -154,8 +156,10 @@ public class ImageRail_SDCube
 					true, true, true, false);
 
 			// Creating XML sample information
-			ExpDesign_Sample expSample = new ExpDesign_Sample(sampleID);
-			expDesignModel.addSample(expSample);
+			if (expDesignModel != null) {
+				ExpDesign_Sample expSample = new ExpDesign_Sample(sampleID);
+				expDesignModel.addSample(expSample);
+			}
 
 			// init this field
 			String pathToSample = "./Children/" + sampleIndex;

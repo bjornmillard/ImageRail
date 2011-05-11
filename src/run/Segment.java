@@ -20,30 +20,50 @@
 
 package run;
 
-import gui.MainGUI;
+import imagerailio.ImageRail_SDCube;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import models.Model_ParameterSet;
-import models.Model_Plate;
-import models.Model_Well;
-import processors.Processor_SingleCells;
+import sdcubeio.H5IO_Exception;
+import segmentedobject.CellCoordinates;
 import segmentors.DefaultSegmentor;
+import features.Feature;
+import features.FeatureSorter;
 
 public class Segment {
+	static ArrayList<Feature> features;
 
 	/** For commandline segmentation */
 	public static void main(String[] args) {
 		try {
-			if (args.length == 7) {
+			if (args.length == 11) {
+
 				// Reading commandline parameters
+				// ARG_0 --- Project name that we want to process
+				// ARG_1 ---> Path desired for new HDF5 file for stored data
+				// ARG_2 ---> Plate Index
+				// ARG_3 ---> Well Index
+				// ARG_4 ---> Field Index
+				// ARG_5 ---> Channel to use for nuc segmentation
+				// ARG_6 ---> Channel to use for Cyto segmentation
+				// ARG_7 ---> Nucleus Threshold
+				// ARG_8 ---> Cyto Threshold
+				// ARG_9 ---> Bkgd Threshold
+				// ARG_10 ---> CoordsToSave-> "Centroid", "BoundingBox",
+				// "Outlines", "Everything"
+
+				// Init Feature files
+				initFeatures();
 
 				// ARG_0 --- Project name that we want to process
-				File InputDir = null;
+				File in = null;
 				try {
-					InputDir = new File(args[0]);
+					in = new File(args[0]);
 				System.out.println("*****Processing Input Directory: "
-						+ InputDir.getName());
+							+ in.getName());
 				} catch (Exception e) {
 					System.out
 							.println("*****ERROR:  Problem parsing project path given ****** ");
@@ -51,71 +71,188 @@ public class Segment {
 					System.exit(0);
 				}
 
-				// ARG_1
-				int plateIndex = Integer.parseInt(args[1]);
-				int wellIndex = Integer.parseInt(args[2]);
+				// INIT PSET for segmentation
+				Model_ParameterSet pset = new Model_ParameterSet();
+				// (0) init a pset
+				pset.setModified(true);
+				// ProcessType
+				pset.setProcessType(Model_ParameterSet.SINGLECELL);
 
-				// ARG_X-->Z ---> Input parameters for the segmentor being used
-				float NucleusThreshold = Float.parseFloat(args[3]);
-				float CytoThreshold = Float.parseFloat(args[4]);
-				float BkgdThreshold = Float.parseFloat(args[5]);
-				float CoordsToSave = Float.parseFloat(args[6]);
-
-
-				System.out.println("     ------->    Nucleus Threshold: "
-						+ NucleusThreshold);
-				System.out.println("     ------->    Cyto Threshold: "
-						+ CytoThreshold);
-				System.out.println("     ------->    Bkgd Threshold: "
-						+ BkgdThreshold);
-				System.out.println("     ------->    CoordsToSave: "
-						+ CoordsToSave);
-
-				// Creating a new project for this job
-				new MainGUI();
-				MainGUI theGUI = MainGUI.getGUI();
-				theGUI.setVisible(false);
-				theGUI.initFilterManager();
-				// Loading all new plugin files
-				MainGUI.findAndCompileNewJavaFiles("features", null);
-
-				/** Trying to load the project */
+				// ARG_1 ---> Path desired for new HDF5 file for stored data
+				File f_out = new File(args[1]);
+				File newF = new File(f_out.getAbsolutePath() + ".sdc");
+				newF.mkdir();
+				ImageRail_SDCube io = new ImageRail_SDCube(newF
+						.getAbsolutePath());
 				try {
-
-					theGUI.loadProject(InputDir);
-					System.out.println("--->> SUCCESS LOADING PROJECT: "
-							+ InputDir.getAbsolutePath());
-					
-
-					// theGUI.getPlateHoldingPanel().getThePlates()[0].getTheWells()[wellIndex];
-					
-				} catch (Exception e) {
-					System.out
-							.println("*****ERROR:  Problem Loading the given Project ****** ");
+					io.createProject();
+				} catch (H5IO_Exception e) {
 					e.printStackTrace();
-					System.exit(0);
 				}
+				// Attempt To init the hashtable
+				io.initHashtable();
+
+				// ARG_2 ---> Plate Index
+				int plateIndex = Integer.parseInt(args[2]);
+				// ARG_3 ---> Well Index
+				int wellIndex = Integer.parseInt(args[3]);
+				// ARG_4 ---> Field Index
+				int fieldIndex = Integer.parseInt(args[4]);
+				// ARG_5 ---> Channel to use for nuc segmentation
+				int nucChannel_Index = Integer.parseInt(args[5]);
+				pset.setThresholdChannel_nuc_Index(nucChannel_Index);
+				// ARG_6 ---> Channel to use for Cyto segmentation
+				int cytoChannel_Index = Integer.parseInt(args[6]);
+				pset.setThresholdChannel_cyto_Index(cytoChannel_Index);
+				// ARG_7 ---> Nucleus Threshold
+				float NucleusThreshold = Float.parseFloat(args[7]);
+				pset.setThreshold_Nucleus(NucleusThreshold);
+				// ARG_8 ---> Cyto Threshold
+				float CytoThreshold = Float.parseFloat(args[8]);
+				pset.setThreshold_Cell(CytoThreshold);
+				// ARG_9 ---> Bkgd Threshold
+				float BkgdThreshold = Float.parseFloat(args[9]);
+				pset.setThreshold_Background(BkgdThreshold);
+				// ARG_10 ---> CoordsToSave-> "Centroid", "BoundingBox"
+				// ,"Outlines", "Everything"
+				String CoordsToSave = args[10];
+				pset.setCoordsToSaveToHDF(CoordsToSave);
 
 
-				Model_Plate plate = gui.MainGUI.getGUI()
-						.getThePlateHoldingPanel()
-						.getPlates()[plateIndex];
-					Model_Well well = plate.getAllWells()[wellIndex];
 
-					// Now process the images
-					processWell(well, NucleusThreshold,
-							CytoThreshold, BkgdThreshold, (int) CoordsToSave);
+				// (1) Getting all the channel images for this field
+				File[] files = in.listFiles();
+				int numChannels = files.length;
+				// (2) Converting the images files to a raster
+				int[][][] raster = tools.ImageTools
+						.getImageRaster_FromFiles_copy(files);
+				// (3) Computing the background from each channel
+				float[] backgroundValues = new float[numChannels];
+				if (BkgdThreshold > 0)
+					tools.ImageTools.computeBackgroundValues(raster,
+							backgroundValues, pset);
+				// (4) Getting Cell Coordinates (segmenting the cells)
+				ArrayList<CellCoordinates> cellCoords = new DefaultSegmentor()
+						.segmentCells(raster, pset);
 
-			}
+				// (5) Initializing all the data values calculated via the Cell
+				// coordinates, the Raster, and the loaded Feature objects
+				// EX: Now that we have the pixel coordinates that make up each
+				// cell we need to look at the
+				// image and extract the proper values
+				System.out.println("-->> Performing Feature Computations");
+				float[][] cellFeatureMatrix = computeFeatureValues(cellCoords,
+						raster, backgroundValues);
+
+				System.out.println(cellFeatureMatrix.length + "x"
+						+ cellFeatureMatrix[0].length);
+
+				if (cellFeatureMatrix != null && cellFeatureMatrix.length > 0) {
+
+					//
+					// Now writing Cell coordinate data to HDF file
+					System.out
+							.println("------------ Caching cell data Matrix and Coordinates to HDF file: ------------");
+					long time = System.currentTimeMillis();
+
+					// -------------- Store cells in HDF5
+					// -------------------------------------------------------
+					try {
+						int[] fieldDimensions = { raster.length,
+								raster[0].length, raster[0][0].length };
+						String well_ID = "p" + plateIndex + "w" + wellIndex
+								+ "_t"
+								+ imagerailio.ImageRail_SDCube.getTimeStamp();
+						io.createField(well_ID, plateIndex, wellIndex,
+								fieldIndex,
+ fieldDimensions, null);
+
+						// Writing data matrix to HDF
+						io.writeFeatures(plateIndex, wellIndex, fieldIndex,
+								cellFeatureMatrix);
+						// Writing the feature names to file
+
+						String[] fNames = new String[features.size()];
+						for (int i = 0; i < features.size(); i++)
+							fNames[i] = new String(features.get(i).toString());
+						io.writeFeatureNames(plateIndex, wellIndex, fieldIndex,
+								fNames);
+
+						String whatToSave = pset
+								.getCoordsToSaveToHDF();
+						if (whatToSave.equalsIgnoreCase("BoundingBox")) {
+							// Only save the cell BoundingBoxes to file
+							ArrayList<CellCoordinates> bbox = segmentedobject.CellCoordinates
+									.getBoundingBoxOfCoordinates(cellCoords);
+							io.writeCellBoundingBoxes(plateIndex, wellIndex,
+									fieldIndex,
+									bbox);
+
+							killCellCoordinates(bbox);
+							killCellCoordinates(cellCoords);
+						} else if (whatToSave.equalsIgnoreCase("Centroid")) {
+							// Only save the cell Centroids to file
+							ArrayList<CellCoordinates> centroids = segmentedobject.CellCoordinates
+									.getCentroidOfCoordinates(cellCoords);
+							io.writeCellCentroids(plateIndex, wellIndex,
+									fieldIndex,
+									centroids);
+
+							killCellCoordinates(centroids);
+							killCellCoordinates(cellCoords);
+						} else if (whatToSave.equalsIgnoreCase("Outlines")) {
+							// Only save the cell outlines to file
+							ArrayList<CellCoordinates> outlines = segmentedobject.CellCoordinates
+									.getSingleCompartmentCoords(cellCoords,
+											"Outline");
+							io.writeWholeCells(plateIndex, wellIndex,
+									fieldIndex,
+									outlines);
+
+							killCellCoordinates(outlines);
+							killCellCoordinates(cellCoords);
+						} else if (whatToSave.equalsIgnoreCase("Everything")) {
+							io.writeWholeCells(plateIndex, wellIndex,
+									fieldIndex,
+									cellCoords);
+							killCellCoordinates(cellCoords);
+						}
+
+						if (Math.random() > 0.7)
+							System.gc();
+					} catch (Exception e) {
+						// Handle this exception!!!
+						e.printStackTrace();
+					}
+					System.out.println("Done writing: "
+							+ (System.currentTimeMillis() - time));
+					time = System.currentTimeMillis();
+
+				} else
+					System.out
+							.println("-----**No Cells Found in this well with the given parameter **-----");
+
+				raster = null;
+				System.gc();
+				}
  else {
 				String st = "\n\n\n\n";
 				st += "***********************************************\n";
 				st += "***********************************************\n";
-				st += " ERROR:  Incorrect number of parameters\n\n";
-				st += "		Provide the following arguments for commandline processing:\n\n"
-						+ "[PathToProject   PlateIndex   WellIndex  ... \n"
-						+ "	NuclearThreshold   CytoplasmicThreshold  BkgdThreshold ...\n"
-						+ "		CoordsToSave(0=centroids,1=bbox,2=outlines, 3=everything)]\n";
+				st += " ERROR:  " + args.length
+						+ " --> Incorrect number of parameters\n\n";
+				st += "Provide the following arguments for commandline processing:\n\n"
+						+ "ARG_0 --- (String) Path name that we want to process\n"
+						+ "ARG_1 ---> (String) Path desired for new HDF5 file for stored data\n"
+						+ "ARG_2 ---> (int) Plate Index\n"
+						+ "ARG_3 ---> (int) Well Index\n"
+						+ "ARG_4 ---> (int) Field Index\n"
+						+ "ARG_5 ---> (int) Channel to use for nuc segmentation\n"
+						+ "ARG_6 ---> (int) Channel to use for Cyto segmentation\n"
+						+ "ARG_7 ---> (int) Nucleus Threshold\n"
+						+ "ARG_8 ---> (int) Cyto Threshold\n"
+						+ "ARG_9 ---> (int) Bkgd Threshold\n"
+						+ "ARG_10 ---> (String) CoordsToSave-> Centroid, BoundingBox, Outlines, Everything \n";
 				st += "***********************************************\n";
 				st += "***********************************************\n\n\n\n";
 				System.out.println(st);
@@ -127,86 +264,122 @@ public class Segment {
 		}
 	}
 
+
+	/** */
+	static void initFeatures() {
+
+		features = new ArrayList<Feature>();
+		String[] channelNames = { "w460", "w530", "w595", "w685" };
+
+		ArrayList<Feature> arr = new ArrayList<Feature>();
+		try {
+			// Try to load features from src tree, otherwise try deployed
+			// location
+			File f = new File("./src/features");
+			if (!f.exists())
+				f = new File("./features");
+			File[] fs = f.listFiles();
+
+			int len = fs.length;
+
+			for (int i = 0; i < len; i++) {
+				if (fs[i].getAbsolutePath().indexOf(".java") > 0
+						&& !fs[i].getName().equalsIgnoreCase("Feature.java")
+						&& !fs[i].getName().equalsIgnoreCase(
+								"FeatureSorter.java")) {
+					String path = fs[i].getName();
+					int ind = path.indexOf(".java");
+					path = path.substring(0, ind);
+					// System.out.println("Loading Feature: "+ path);
+					Class c = Class.forName("features." + path);
+					arr.add((Feature) c.newInstance());
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		int len = arr.size();
+		features = new ArrayList<Feature>();
+		// System.out.println("Found "+len +" Features");
+		for (int i = 0; i < len; i++) {
+			Feature f = (arr.get(i));
+			f.ChannelName = f.getClass().toString();
+
+			if (f.isMultiSpectralFeature() && channelNames != null) {
+				for (int w = 0; w < channelNames.length; w++) {
+					try {
+						Feature fn = f.getClass().newInstance();
+						fn.setChannelIndex(w);
+						fn.setChannelName(channelNames[w]);
+						features.add(fn);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			} else
+				features.add(f);
+		}
+
+		FeatureSorter sorter = new FeatureSorter();
+		Collections.sort(features, sorter);
+	}
+
+
 	/**
-	 * For commandline image directory processing
+	 * Computes the main data matrix of size NumCells x numFeatures.
 	 * 
+	 * @param ArrayList
+	 *            <Cell_coords> cells
+	 * @param int[][][] raster
 	 * @author BLM
-	 * 
-	 * */
-	static public void processWell(Model_Well well,
-			float Threshold_Nucleus, float Threshold_CellBoundary,
-			float Threshold_Background, int CoordsToSave) {
+	 */
+	static float[][] computeFeatureValues(ArrayList<CellCoordinates> cells,
+			int[][][] raster, float[] backgroundValues) {
 
-		//
-		// INIT parameters
-		//	
-		int NucBoundaryChannel = 0;
-			int CytoBoundaryChannel = 0;
-				Model_ParameterSet pset = well.TheParameterSet;
-				pset.setModified(true);
-				// ProcessType
-				pset.setProcessType(Model_ParameterSet.SINGLECELL);
-				// Threshold Channel Nucleus
-				pset.setThresholdChannel_nuc_Name(MainGUI.getGUI()
-						.getTheChannelNames()[NucBoundaryChannel]);
-				// Threshold Channel Cytoplasm
-				pset.setThresholdChannel_cyto_Name(MainGUI.getGUI()
-						.getTheChannelNames()[CytoBoundaryChannel]);
-				// Nuc bound threshold
-				pset.setThreshold_Nucleus(Threshold_Nucleus);
-				// Cell bound Threshold
-				pset.setThreshold_Cell(Threshold_CellBoundary);
-				// Bkgd threshold
-				pset.setThreshold_Background(Threshold_Background);
 
-				if (CoordsToSave == 0)
-					pset.setCoordsToSaveToHDF("Centroid");
-				else if (CoordsToSave == 1)
-					pset.setCoordsToSaveToHDF("BoundingBox");
-				else if (CoordsToSave == 2)
-					pset.setCoordsToSaveToHDF("Outlines");
-				else if (CoordsToSave == 3)
-					pset.setCoordsToSaveToHDF("Everything");
+		int numFeatures = features.size();
 
-				well.TheParameterSet
-						.setMeanOrIntegrated(well.TheParameterSet.MEAN);
+		if (cells == null || cells.size() == 0)
+			return null;
 
-				// Finding the index of this channel name
-				for (int j = 0; j < MainGUI.getGUI().getTheChannelNames().length; j++)
-					if (MainGUI.getGUI().getTheChannelNames()[j]
-							.equalsIgnoreCase(pset
-									.getThresholdChannel_nuc_Name()))
-						pset.setThresholdChannel_nuc_Index(j);
-				// Finding the index of this channel name
-				for (int j = 0; j < MainGUI.getGUI().getTheChannelNames().length; j++)
-					if (MainGUI.getGUI().getTheChannelNames()[j]
-							.equalsIgnoreCase(pset
-									.getThresholdChannel_cyto_Name()))
-						pset.setThresholdChannel_cyto_Index(j);
+		int numC = cells.size();
+		float[][] data = new float[numC][numFeatures];
 
-			if (Threshold_Background > 0)
-				MainGUI.getGUI().setBackgroundSubtract(true);
-		//
-		//
-		//
+		long[] intTime = new long[numFeatures];
 
-		// Adding the well to process
-		Model_Well[] allWells = new Model_Well[1];
-		allWells[0] = well;
-
-		Processor_SingleCells tasker = new Processor_SingleCells(allWells,
-				new DefaultSegmentor());
-		tasker.start();
-
-		// Now just wait for the tasker Thread to finish its job
-		while (tasker.isAlive()) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+		for (int n = 0; n < numC; n++) {
+			CellCoordinates cell = cells.get(n);
+			for (int f = 0; f < numFeatures; f++) {
+				long time = System.currentTimeMillis();
+				data[n][f] = features.get(f).getValue(cell, raster,
+						backgroundValues);
+				intTime[f] += (System.currentTimeMillis() - time);
 			}
 		}
 
+		return data;
+	}
+
+	/**
+	 * Attempts to free up all the memory that was consumed by the given cells
+	 * 
+	 * @author BLM
+	 */
+	static public void killCellCoordinates(ArrayList<CellCoordinates> cells) {
+		int len = cells.size();
+		for (int i = 0; i < len; i++) {
+			CellCoordinates cell = cells.get(i);
+			for (int j = 0; j < cell.getComSize(); j++) {
+				imagerailio.Point[] pts = cell.getComCoordinates(j);
+				for (int z = 0; z < pts.length; z++)
+					pts[z] = null;
+
+				pts = null;
+			}
+			cell = null;
+		}
+		cells = null;
 	}
 
 }

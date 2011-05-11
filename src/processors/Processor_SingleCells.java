@@ -198,6 +198,10 @@ public class Processor_SingleCells extends Thread implements Processor
 	{
 		ArrayList<Feature> features = gui.MainGUI.getGUI().getTheFeatures();
 		int numFeatures = features.size();
+
+		if (cells == null || cells.size() == 0)
+			return null;
+
 		int numC = cells.size();
 		float[][] data = new float[numC][numFeatures];
 		
@@ -227,8 +231,6 @@ public class Processor_SingleCells extends Thread implements Processor
 	public void processWells(Model_Well[] wells, CellSegmentor theSegmentor)
 	{
 		
-		// -------------- Create Project file --------------------------------------------------------
-		// this contains the height of the images as well as the size of the microtiter plates
 		try
 		{	
 			ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
@@ -286,7 +288,9 @@ public class Processor_SingleCells extends Thread implements Processor
 					
 					// (4) Getting Cell Coordinates (segmenting the cells)
 					ArrayList<CellCoordinates>  cellCoords = theSegmentor.segmentCells(Raster, well.TheParameterSet);
-					
+					// TEMP - DELETE AFTERWARDS
+					// tools.ImageTools.printInterCellLineProfiles(cellCoords,
+					// Raster, 1);
 					
 					// (5) Initializing all the data values calculated via the Cell coordinates, the Raster, and the loaded Feature objects
 					// EX: Now that we have the pixel coordinates that make up each cell we need to look at the
@@ -372,14 +376,19 @@ public class Processor_SingleCells extends Thread implements Processor
 						time = System.currentTimeMillis();
 						
 						
+
 						
 						
-						// If we wanted to store the neighbor cell information
-//				if (MainGUI.StoreNeighborsCheckBox.isSelected())//MainGUI.FindNeighborsCheckBox.isSelected())
-//				{
-//					DelaunayTriangulator dt = new DelaunayTriangulator();
-//					dt.assignNeighbors(cells, Raster[0].length, Raster.length);
-//				}
+
+						// // If we wanted to store the neighbor cell
+						// information
+						// // if
+						// (MainGUI.StoreNeighborsCheckBox.isSelected())//MainGUI.FindNeighborsCheckBox.isSelected())
+						// // {
+						// DelaunayTriangulator dt = new DelaunayTriangulator();
+						// dt.assignNeighbors(cells, Raster[0].length,
+						// Raster.length);
+						// // }
 						
 						//cleaning up
 						Raster = null;

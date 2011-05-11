@@ -99,6 +99,7 @@ public class CellCoordinates
 		int index = -1;
 		int num = getComSize();
 		String[] names = getComNames();
+
 		for (int i = 0; i < num; i++)
 			if (names[i].equalsIgnoreCase(comName))
 			{
@@ -208,6 +209,26 @@ public class CellCoordinates
 		return out;
 	}
 	
+	/**
+	 * Computes the centroid of one subcompartment of this object.
+	 * 
+	 * @return Returns the centroid.
+	 */
+	public Point getCentroid_subcompartment(String comName) {
+		int xM = 0;
+		int yM = 0;
+		int counter = 0;
+
+		Point[] com = getComCoordinates(comName);
+		counter += com.length;
+		for (int r = 0; r < com.length; r++) {
+			xM += com[r].x;
+			yM += com[r].y;
+		}
+
+		return new Point((int) (xM / counter), (int) (yM / counter));
+	}
+
 	/** 
 	 * Computes the centroid of all the points that compose this cellCoords object.
 	 * @return Returns the centroid.
