@@ -55,14 +55,13 @@ public class Segment {
 				// ARG_10 ---> CoordsToSave-> "Centroid", "BoundingBox",
 				// "Outlines", "Everything"
 
-				// Init Feature files
-				initFeatures();
+
 
 				// ARG_0 --- Project name that we want to process
 				File in = null;
 				try {
 					in = new File(args[0]);
-				System.out.println("*****Processing Input Directory: "
+					System.out.println("*****Processing Input Directory: "
 							+ in.getName());
 				} catch (Exception e) {
 					System.out
@@ -119,10 +118,24 @@ public class Segment {
 				pset.setCoordsToSaveToHDF(CoordsToSave);
 
 
-
 				// (1) Getting all the channel images for this field
-				File[] files = in.listFiles();
+				File[] allFiles = in.listFiles();
+				// Calling this method to make sure wavelengths sorted
+				ArrayList<File[]> allFields = tools.ImageTools
+						.getAllSetsOfCorresponsdingChanneledImageFiles(allFiles);
+				File[] files = allFields.get(0);
 				int numChannels = files.length;
+
+				// Init Feature files
+				String[] channelNames = new String[numChannels];
+				for (int i = 0; i < numChannels; i++) {
+					String name = files[i].getName();
+					channelNames[i] = name.substring(name.indexOf("w"), name
+							.indexOf(".tif"));
+					System.out.println(channelNames[i]);
+				}
+				initFeatures(channelNames);
+
 				// (2) Converting the images files to a raster
 				int[][][] raster = tools.ImageTools
 						.getImageRaster_FromFiles_copy(files);
@@ -166,6 +179,7 @@ public class Segment {
 						io.createField(well_ID, plateIndex, wellIndex,
 								fieldIndex,
  fieldDimensions, null);
+						io.writePlateCountAndSizes(1, 96);
 
 						// Writing data matrix to HDF
 						io.writeFeatures(plateIndex, wellIndex, fieldIndex,
@@ -266,10 +280,9 @@ public class Segment {
 
 
 	/** */
-	static void initFeatures() {
+	static void initFeatures(String[] channelNames) {
 
 		features = new ArrayList<Feature>();
-		String[] channelNames = { "w460", "w530", "w595", "w685" };
 
 		ArrayList<Feature> arr = new ArrayList<Feature>();
 		try {
