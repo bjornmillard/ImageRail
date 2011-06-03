@@ -19,44 +19,30 @@
  */
 
 /**
- * ChannelMean_nucleus.java
+ * Num_Nuclei.java
  *
  * @author Bjorn Millard
  */
 
 package features;
 
-import imagerailio.Point;
+
 import segmentedobject.CellCoordinates;
 
-public class Mean_Nucleus extends Feature
-{
-	public float getValue(CellCoordinates cell, int[][][] raster, float[] backgroundValues)
-	{
-		float sum = 0;
-		Point[] coords = cell.getComCoordinates("Nucleus");
-		if (coords == null)
-			return 0;
+public class Num_Nuclei extends Feature {
+	public float getValue(CellCoordinates cell, int[][][] raster,
+			float[] backgroundValues) {
+		int count = 0;
+		String[] names = cell.getComNames();
+		for (int i = 0; i < names.length; i++) {
+			if (names[i].indexOf("Nucleus") >= 0)
+				count++;
+		}
+		return count;
+	}
 
-		int len = coords.length;
-		
-		for (int i = 0; i < len; i++)
-			sum+=raster[coords[i].y][coords[i].x][ChannelIndex];
-		sum = sum/len;
-		//Subtracting precomputed background for this set of field images
-		sum = sum-backgroundValues[ChannelIndex];
-		
-		return sum;
-	}
-	
-	public boolean isMultiSpectralFeature()
-	{
-		return true;
-	}
-	
-	public void setChannelName(String name)
-	{
-		ChannelName = "Nucleus_"+name+" (Mean)";
+	public String toString() {
+		ChannelName = "Num_Nuclei";
+		return ChannelName;
 	}
 }
-

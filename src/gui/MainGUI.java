@@ -100,6 +100,7 @@ import dataSavers.DataSaver_WellMeans_Midas_wMetaData;
 import dialogs.PlateInputDialog;
 import dialogs.SaveFeatures_Dialog;
 import dialogs.ThresholdingBoundsInputDialog_SingleCells;
+import dialogs.ThresholdingBoundsInputDialog_SingleCells_Osteo;
 import dialogs.ThresholdingBoundsInputDialog_WellMeans;
 
 
@@ -1022,6 +1023,26 @@ public class MainGUI extends JFrame {
 					wells[n] = (Model_Well) arr.get(n);
 
 				ThresholdingBoundsInputDialog_SingleCells s = new ThresholdingBoundsInputDialog_SingleCells(
+						wells);
+			}
+
+		});
+		ProcessMenu.add(item);
+
+		item = new JMenuItem("Single Cells - Osteo");
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+
+				// Finding which wells were selected
+				ArrayList<Model_Well> arr = ThePlatePanel.getModel()
+						.getSelectedWells_horizOrder();
+				int num = arr.size();
+
+				Model_Well[] wells = new Model_Well[num];
+				for (int n = 0; n < num; n++)
+					wells[n] = (Model_Well) arr.get(n);
+
+				ThresholdingBoundsInputDialog_SingleCells_Osteo s = new ThresholdingBoundsInputDialog_SingleCells_Osteo(
 						wells);
 			}
 

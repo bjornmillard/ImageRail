@@ -25,7 +25,10 @@ package models;
 
 import imagerailio.ImageRail_SDCube;
 
+import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -46,6 +49,8 @@ public class Model_Field {
 		ROIs = new ArrayList<Shape>();
 		ROIs_selected = new ArrayList<Boolean>();
 		ImageFiles = imageFiles;
+
+
 	}
 
 	public int getIndexInWell() {
@@ -57,7 +62,59 @@ public class Model_Field {
 	}
 
 	public void addROI(Shape roi) {
+		if (roi instanceof Polygon) {
+		//Check this is not a duplicate ROI
+		int len = ROIs.size();
+			for (int i = 0; i < len; i++) {
+				if (ROIs.get(i) instanceof Polygon) {
+					Polygon polyIn = (Polygon) roi;
+					Polygon polyRef = (Polygon) ROIs.get(i);
+					int numRef = polyRef.npoints;
+					int numIn = polyIn.npoints;
+					if (numRef == numIn) {
+						boolean allPtsSame = true;
+						for (int j = 0; j < numIn; j++) {
+							if (polyRef.xpoints[j] != polyIn.xpoints[j]
+									|| polyRef.ypoints[j] != polyIn.ypoints[j]) {
+								allPtsSame = false;
+								break;
+							}
+						}
+						// If all points in this polygon already there, then
+						// return without adding new ROI
+						if (allPtsSame)
+							return;
+					}
+				}
+			}
+		}
+		else if (roi instanceof Rectangle)
+		{
+			int len = ROIs.size();
+			for (int i = 0; i < len; i++) {
+				if (ROIs.get(i) instanceof Rectangle) {
+					Rectangle polyIn = (Rectangle) roi;
+					Rectangle polyRef = (Rectangle) ROIs.get(i);
+					if(polyIn.x==polyRef.x && polyIn.y==polyRef.y && polyIn.width==polyRef.width && polyIn.height==polyRef.height)
+						return;
+				}
+			}
+		}
+		else if (roi instanceof Ellipse2D.Float)
+		{
+			int len = ROIs.size();
+			for (int i = 0; i < len; i++) {
+				if (ROIs.get(i) instanceof Ellipse2D.Float) {
+					Ellipse2D.Float polyIn = (Ellipse2D.Float) roi;
+					Ellipse2D.Float polyRef = (Ellipse2D.Float) ROIs.get(i);
+					if(polyIn.x==polyRef.x && polyIn.y==polyRef.y && polyIn.width==polyRef.width && polyIn.height==polyRef.height)
+						return;
+				}
+			}
+		}
+		
 		ROIs.add(roi);
+		System.out.println("Adding ROI");
 		ROIs_selected.add(new Boolean(false));
 	}
 

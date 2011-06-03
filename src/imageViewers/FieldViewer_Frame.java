@@ -66,9 +66,9 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 	private JCheckBoxMenuItem PlotBackgroundCheckBox;
 	private int Type_Shape;
 	//CONSTANTS
-	static public int RECTANGLE = 0;
-	static public int OVAL = 1;
-	
+	static public int SHAPE_RECTANGLE = 0;
+	static public int SHAPE_OVAL = 1;
+	static public int SHAPE_POLYGON = 2;
 	
 	
 	
@@ -76,7 +76,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 	{
 		super("Image Viewer");
 		setResizable(true);
-		Type_Shape = RECTANGLE;
+		Type_Shape = SHAPE_RECTANGLE;
 		setLayout(new BorderLayout());
 
 		//setting up the menubar
@@ -144,7 +144,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 				ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				if (Type_Shape == RECTANGLE) {
+				if (Type_Shape == SHAPE_RECTANGLE) {
 					Rectangle rect = (Rectangle) TheCurrentViewer
 							.getScaledSelectionBounds(getScaling());
 					if (rect == null || rect.width <= 2 || rect.height <= 2) // nothing
@@ -186,7 +186,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 							   {
 					public void actionPerformed(ActionEvent ae)
 					{
-						if (Type_Shape==RECTANGLE)
+				if (Type_Shape == SHAPE_RECTANGLE)
 						{
 							Rectangle rect = (Rectangle)TheCurrentViewer.getScaledSelectionBounds(getScaling());
 							if (rect==null || rect.width<=2 ||rect.height<=2) //nothing selected
@@ -245,7 +245,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 								 {
 					public void actionPerformed(ActionEvent ae)
 					{
-						Type_Shape = RECTANGLE;
+				Type_Shape = SHAPE_RECTANGLE;
 					}
 				});
 		SelectionShapeMenu.add(square);
@@ -255,15 +255,25 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 							   {
 					public void actionPerformed(ActionEvent ae)
 					{
-						Type_Shape = OVAL;
+				Type_Shape = SHAPE_OVAL;
 					}
 				});
 		SelectionShapeMenu.add(oval);
+		JRadioButtonMenuItem poly = new JRadioButtonMenuItem("Freeform");
+		poly.setSelected(false);
+		poly.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				Type_Shape = SHAPE_POLYGON;
+			}
+		});
+		SelectionShapeMenu.add(poly);
 		ButtonGroup bg = new ButtonGroup();
+		bg.add(poly);
 		bg.add(oval);
 		bg.add(square);
 		
 		
+
 		JMenu SelectionMenu = new JMenu("Selection Area...");
 		OptionsMenu.add(SelectionMenu);
 		
@@ -275,7 +285,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 							   {
 					public void actionPerformed(ActionEvent ae)
 					{
-						if (Type_Shape==RECTANGLE)
+				if (Type_Shape == SHAPE_RECTANGLE)
 						{
 							Rectangle rect = (Rectangle)TheCurrentViewer.getSelectedROI();
 							if (rect==null || rect.width<=2 ||rect.height<=2) //nothing selected
@@ -288,14 +298,16 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 								int len = TheFieldViewers.length;
 								for (int i = 0; i < len; i++)
 								{
-									TheFieldViewers[i].setShape(new Rectangle(rect.x, rect.y, rect.width, rect.height),RECTANGLE);
+							TheFieldViewers[i].setShape(new Rectangle(rect.x,
+									rect.y, rect.width, rect.height),
+									SHAPE_RECTANGLE);
 									
 								}
 							}
 							
 							
 						}
-						else if (Type_Shape==OVAL)
+ else if (Type_Shape == SHAPE_OVAL)
 						{
 							Ellipse2D.Float oval = (Ellipse2D.Float)TheCurrentViewer.getSelectedROI();
 							if (oval==null || oval.width<=2 ||oval.height<=2) //nothing selected
@@ -309,7 +321,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 								for (int i = 0; i < len; i++)
 								{
 									TheFieldViewers[i].setSelectedROI(new Ellipse2D.Float(oval.x, oval.y, oval.width, oval.height));
-									Type_Shape = OVAL;
+							Type_Shape = SHAPE_OVAL;
 									TheFieldViewers[i].setCreateNewBox(false);
 								}
 							}
@@ -323,7 +335,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 							   {
 					public void actionPerformed(ActionEvent ae)
 					{
-						if (Type_Shape==RECTANGLE)
+				if (Type_Shape == SHAPE_RECTANGLE)
 						{
 							float scale = getScaling();
 							Rectangle bounds = (Rectangle)TheCurrentViewer.getScaledSelectionBounds(getScaling());
@@ -338,14 +350,14 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 							for (int i = 0; i < len; i++)
 							{
 								TheFieldViewers[i].setSelectedROI(new Rectangle((int)(bounds.x/scale), (int)(bounds.y/scale), (int)(bounds.width/scale), (int)(bounds.height/scale)));
-								Type_Shape = RECTANGLE;
+						Type_Shape = SHAPE_RECTANGLE;
 								TheFieldViewers[i].setCreateNewBox(false);
 								int channelIndex = 0;
 								TheFieldViewers[i].optimizeXYshapeCoordinatesToHole(channelIndex);
 							}
 							
 						}
-						else if (Type_Shape==OVAL)
+ else if (Type_Shape == SHAPE_OVAL)
 						{
 							Rectangle bounds = (Rectangle)TheCurrentViewer.getScaledSelectionBounds(getScaling());
 							if (bounds==null || bounds.width<=2 ||bounds.height<=2) //nothing selected
@@ -359,7 +371,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 							for (int i = 0; i < len; i++)
 							{
 								TheFieldViewers[i].setSelectedROI(new Ellipse2D.Float((int)(bounds.x/scale), (int)(bounds.y/scale), (int)(bounds.width/scale), (int)(bounds.height/scale)));
-								Type_Shape = OVAL;
+						Type_Shape = SHAPE_OVAL;
 								TheFieldViewers[i].setCreateNewBox(false);
 								int channelIndex = 0;
 								TheFieldViewers[i].optimizeXYshapeCoordinatesToHole(channelIndex);
@@ -384,6 +396,8 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		FieldMenu.add(PrintRIOMenu);
 		
 		item = new JMenuItem("This Field");
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,
+				ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener()
 							   {
 					public void actionPerformed(ActionEvent ae)
@@ -395,8 +409,6 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		SaveROIMenu.add(item);
 		
 		item = new JMenuItem("All Fields");
-		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,
-												   ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener()
 							   {
 					public void actionPerformed(ActionEvent ae)
@@ -412,6 +424,8 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		
 		
 		item = new JMenuItem("This Field");
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X,
+				ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener()
 							   {
 					public void actionPerformed(ActionEvent ae)

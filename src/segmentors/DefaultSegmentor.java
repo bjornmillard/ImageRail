@@ -22,6 +22,7 @@ package segmentors;
 
 import imagerailio.Point;
 
+import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +39,7 @@ public class DefaultSegmentor implements CellSegmentor {
 	private Pixel[][] pixels;
 	private int height;
 	private int width;
-
+	private ArrayList<Shape> ROIs;
 	private ArrayList<Nucleus> allNuclei;
 	private Cell[] cells;
 
@@ -1432,6 +1433,16 @@ public class DefaultSegmentor implements CellSegmentor {
 			
 			return arr;
 		}
+	}
+
+	@Override
+	public void clearROIs() {
+		ROIs = null;
+	}
+
+	@Override
+	public void setROIs(ArrayList<Shape> ROIs) {
+		this.ROIs = ROIs;
 	}
 
 }

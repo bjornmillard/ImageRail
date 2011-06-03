@@ -19,6 +19,7 @@
  */
 
 package segmentors;
+import java.awt.Shape;
 import java.util.ArrayList;
 
 import models.Model_ParameterSet;
@@ -27,5 +28,9 @@ import segmentedobject.CellCoordinates;
 public interface CellSegmentor
 {
 	public ArrayList<CellCoordinates>  segmentCells(int[][][] raster, Model_ParameterSet pset);
+
+	public void clearROIs();
+
+	public void setROIs(ArrayList<Shape> ROIs);
 }
 

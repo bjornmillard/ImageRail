@@ -35,10 +35,10 @@ public class Integrated_Nucleus extends Feature
 	{
 		int sum = 0;
 		Point[] coords = cell.getComCoordinates("Nucleus");
-		int len = coords.length;
-		if (len == 0)
+		if (coords == null || coords.length == 0)
 			return 0;
 		
+		int len = coords.length;
 		for (int i = 0; i < len; i++)
 			sum+=raster[coords[i].y][coords[i].x][ChannelIndex]; 	//TODO - need to account for multiple wavelengths
 		

@@ -22,11 +22,12 @@ package segmentors;
 
 import imagerailio.Point;
 
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
 
 import models.Model_ParameterSet;
@@ -40,7 +41,7 @@ public class Segmentor_Osteo implements CellSegmentor {
 	private Pixel[][] pixels;
 	private int height;
 	private int width;
-
+	private ArrayList<Shape> ROIs;
 	private ArrayList<Nucleus> allNuclei;
 	private Cell[] cells;
 
@@ -56,19 +57,131 @@ public class Segmentor_Osteo implements CellSegmentor {
 		// Reinitializing the variables in case they are used in prior
 		// segmentation
 		pixels = null;
-		height = -1;
-		width = -1;
+		height = raster.length;
+		width = raster[0].length;
 		allNuclei = new ArrayList<Nucleus>();
+		Point2D.Float p = new Point2D.Float(0, 0);
+		// int[][][] iRaster = new int[raster.length][raster[0].length][1];
 
 		// Step 1: Segmenting the nuclei
 		segmentImage_nucleusThresholding_watershed(raster, pset);
-		// Step 2: Growing the nuclear seeds into Cells
-		cells = growSeedsIntoCells(getNuclei(), raster, pset);
+
+		// Step 2: Determine Osteoclast cytoplasm bounds via the user defined
+		// ROIs
+		byte[][] osteoFlags = new byte[height][width];
+		ArrayList<CellCompartment> allOsteoCytos = new ArrayList<CellCompartment>();
+		if (ROIs != null) {
+			int numROIs = ROIs.size();
+			for (int i = 0; i < numROIs; i++) {
+				Shape roi = ROIs.get(i);
+				if (roi != null) {
+				ArrayList<Point> cytoPts = new ArrayList<Point>();
+				Rectangle bounds = roi.getBounds();
+				for (int r = bounds.y; r < (bounds.height + bounds.y); r++)
+					for (int c = bounds.x; c < (bounds.width + bounds.x); c++) {
+						// Check Raster bounds
+						if (r >= 0 && c >= 0 && r < height && c < width) {
+							p.x = c;
+							p.y = r;
+							// If this point is contained within the ROI but
+							// less than nucleus threshold, then add it to the
+							// cytoplasm of this osteoclast
+							if (roi.contains(p)
+									&& raster[r][c][pset
+											.getThresholdChannel_nuc_Index()] < pset
+											.getThreshold_Nucleus()) {
+								cytoPts.add(new Point(c, r));
+									osteoFlags[r][c] = 1;
+							}
+						}
+					}
+					allOsteoCytos
+							.add(new CellCompartment(cytoPts, "Cytoplasm"));
+				}
+			}
+		}
+		System.out.println("osteoCytos: " + allOsteoCytos.size());
+		
+		// Step 3: Compile osteoclasts (put nuclei and cytos together)
+		ArrayList<CellCoordinates> allCellCoords = new ArrayList<CellCoordinates>();
+		int numR = ROIs.size();
+		int numN = allNuclei.size();
+		// Dont include osteo-nuclei in second round segmentation later for
+		// non-osteos
+		boolean[] inclusionList = new boolean[numN];
+		for (int i = 0; i < numN; i++)
+			inclusionList[i] = true;
+
+		if(ROIs!=null && ROIs.size()>0)
+			for (int roi = 0; roi < numR; roi++) {
+				ArrayList<Point> outlinePts = new ArrayList<Point>();
+				ArrayList<CellCompartment> allCompartments = new ArrayList<CellCompartment>();
+				for (int n = 0; n < numN; n++) {
+					Point2D.Double cen = allNuclei.get(n).getCentroid();
+					if (ROIs.get(roi) != null && ROIs.get(roi).contains(cen))
+					{
+						// This nuclei lies within an osteo cytoplasm
+						inclusionList[n] = false;
+						Nucleus nucleus = allNuclei.get(n);
+						Point[] pts = nucleus.getAllPixelCoordinates();
+						CellCompartment nuc = new CellCompartment(pts,
+								"Nucleus_" + allCompartments.size());
+
+						allCompartments.add(nuc);
+						// adding these outline points to the final outline list
+						Point[] boundaryPts = nucleus.getBoundaryPoints();
+
+						int num = boundaryPts.length;
+						for (int i = 0; i < num; i++)
+ {
+							outlinePts.add(boundaryPts[i]);
+							// iRaster[boundaryPts[i].y][boundaryPts[i].x][0] =
+							// 255;
+						}
+					}
+
+				}
+
+				// Adding the cytoplasm points
+				allCompartments.add(allOsteoCytos.get(roi));
+
+				// Adding the cytoplasm ROI outline points to this osteo's
+				// outline compartment for visualization
+				Polygon poly = ((Polygon) ROIs.get(roi));
+				int num = poly.npoints;
+				for (int i = 0; i < num; i++)
+					if (poly.xpoints[i] >= 0 && poly.ypoints[i] >= 0
+							&& poly.ypoints[i] < height
+							&& poly.xpoints[i] < width) {
+
+							outlinePts.add(new Point(poly.xpoints[i],
+								poly.ypoints[i]));
+						// iRaster[poly.ypoints[i]][poly.xpoints[i]][0] = 255;
+
+					}
+					
+				allCompartments.add(new CellCompartment(outlinePts, "Outline"));
+
+				// Adding this osteoclast
+				if (allCompartments != null && allCompartments.size() > 0) {
+
+					CellCoordinates osteo = new CellCoordinates(allCompartments);
+					allCellCoords.add(osteo);
+				}
+			}
+		
+
+		// tools.ImageTools.displayRaster(iRaster);
+
+
+		 // Step 4: Growing the non-osteoclast nuclei seeds into Cells
+		cells = growSeedsIntoCells(getNuclei(inclusionList), raster, pset,
+				osteoFlags);
+		osteoFlags = null;
 
 		// Step3: Since I converted this algorithm from a prior legacy version,
 		// we need to convert the temp_Cells to Cells_coordinates
 		int numC = cells.length;
-		ArrayList<CellCoordinates> coordCells = new ArrayList<CellCoordinates>();
 		for (int i = 0; i < numC; i++) {
 			// Transfering nucleus points
 			Point[] nucPoints = cells[i].getNucleus().getAllPixelCoordinates();
@@ -85,8 +198,8 @@ public class Segmentor_Osteo implements CellSegmentor {
 			Point[] outlinePts = new Point[arr.size()];
 			for (int j = 0; j < arr.size(); j++)
 				outlinePts[j] = arr.get(j);
-
-			// Now constructing the final Cell_coords
+		
+		 // Now constructing the final Cell_coords
 			ArrayList<CellCompartment> allCompartments = new ArrayList<CellCompartment>();
 			CellCompartment nucleus = new CellCompartment(nucPoints, "Nucleus");
 			allCompartments.add(nucleus);
@@ -95,14 +208,64 @@ public class Segmentor_Osteo implements CellSegmentor {
 			allCompartments.add(cytoplasm);
 			CellCompartment outline = new CellCompartment(outlinePts, "Outline");
 			allCompartments.add(outline);
-
-			coordCells.add(new CellCoordinates(allCompartments));
+		
+		 allCellCoords.add(new CellCoordinates(allCompartments));
 		}
 
-		// Merging cells that were within same cytoplasm
-		mergeMultiNucleateCells(raster, pset, coordCells);
+		
+		return allCellCoords;
 
-		return coordCells;
+	}
+
+	/**
+	 * Since the ROI is an incomplete boundary set of points we need to
+	 * interpolate between points to get complete set
+	 * 
+	 * @athor BLM
+	 */
+	private ArrayList<Point> interpolateROIpoints(Polygon poly) {
+		ArrayList<Point> allPts = new ArrayList<Point>();
+		int numP = poly.npoints;
+		for (int i = 0; i < numP - 1; i++) {
+
+			Point p1 = new Point(poly.xpoints[i], poly.ypoints[i]);
+			Point p2 = new Point(poly.xpoints[i + 1], poly.ypoints[i + 1]);
+
+			int xDist = p2.x - p1.x;
+			int yDist = p2.y - p1.y;
+			int yStart = p1.y;
+			int xStart = p1.x;
+			// compute slope btw points
+			float m = ((float) yDist) / ((float) xDist);
+
+			// Need to invert line tracking if slope too
+			// vertical
+			// (ex: walk along y axis not x axis)
+			if (m != Float.NaN || m != 0) {
+				if (Math.abs(m) < 1) {
+					for (int x = 0; x < Math.abs(xDist); x++) {
+						int xI = x;
+						if (xDist < 0)
+							xI = -x;
+						int xP = xStart + xI;
+						int y = (int) (m * xI + yStart);
+						allPts.add(new Point(xP, y));
+					}
+				}
+
+			} else {
+				for (int y = 0; y < Math.abs(yDist); y++) {
+
+					float yI = y;
+					if (yDist < 0)
+						yI = -y;
+					float yP = (float) yStart + yI;
+					int x = (int) (1f / m * yI + xStart);
+					allPts.add(new Point(x, (int) yP));
+				}
+			}
+		}
+		return allPts;
 	}
 
 	private void mergeMultiNucleateCells(int[][][] raster,
@@ -186,53 +349,54 @@ public class Segmentor_Osteo implements CellSegmentor {
 
 		// Hash of Integer cell index pointing to what group it belongs too
 		// (represented as a ArrayList<Integer>)
-		Hashtable<Integer, ArrayList<Integer>> hash = new Hashtable<Integer, ArrayList<Integer>>();
-		ArrayList<Integer> g = null;
-		len = mergers.size();
-		for (int i = 0; i < len; i++) {
-			int[] arr = (int[]) mergers.get(i);
-			System.out.println(arr[0] + "," + arr[1]);
-			// See if this pair is in a group
-			Integer int0 = new Integer(arr[0]);
-			Integer int1 = new Integer(arr[1]);
-			ArrayList<Integer> group_0 = hash.get(int0);
-			ArrayList<Integer> group_1 = hash.get(int1);
+		// Hashtable<Integer, ArrayList<Integer>> hash = new Hashtable<Integer,
+		// ArrayList<Integer>>();
+		// ArrayList<Integer> g = null;
+		// len = mergers.size();
+		// for (int i = 0; i < len; i++) {
+		// int[] arr = (int[]) mergers.get(i);
+		// System.out.println(arr[0] + "," + arr[1]);
+		// // See if this pair is in a group
+		// Integer int0 = new Integer(arr[0]);
+		// Integer int1 = new Integer(arr[1]);
+		// ArrayList<Integer> group_0 = hash.get(int0);
+		// ArrayList<Integer> group_1 = hash.get(int1);
+		//
+		// g = new ArrayList<Integer>();
+		// if (group_0 != null) {
+		// int gSize = group_0.size();
+		// for (int j = 0; j < gSize; j++)
+		// g.add(group_0.get(j));
+		// group_0 = null;
+		// } else
+		// g.add(int0);
+		// if (group_1 != null) {
+		// int gSize = group_1.size();
+		// for (int j = 0; j < gSize; j++)
+		// g.add(group_1.get(j));
+		// group_1 = null;
+		// }
+		// else
+		// g.add(int1);
+		//
+		//
+		// hash.remove(int0);
+		// hash.put(int0, g);
+		// hash.remove(int1);
+		// hash.put(int1, g);
+		// }
 
-				g = new ArrayList<Integer>();
-				if (group_0 != null) {
-					int gSize = group_0.size();
-					for (int j = 0; j < gSize; j++)
-						g.add(group_0.get(j));
-				group_0 = null;
-				} else
-					g.add(int0);
-				if (group_1 != null) {
-					int gSize = group_1.size();
-					for (int j = 0; j < gSize; j++)
-						g.add(group_1.get(j));
-				group_1 = null;
-				}
- else
-					g.add(int1);
-
-
-				hash.remove(int0);
-				hash.put(int0, g);
-				hash.remove(int1);
-				hash.put(int1, g);
-		}
-
-		Enumeration e = hash.elements();
-		while (e.hasMoreElements())
- {
-			ArrayList<Integer> arr = (ArrayList<Integer>) e.nextElement();
-			int num = arr.size();
-			String st = "";
-			for (int j = 0; j < num; j++) {
-				st += arr.get(j).toString() + ",";
-			}
-			System.out.println(st);
-		}
+	// Enumeration e = hash.elements();
+	// while (e.hasMoreElements())
+	// {
+	// ArrayList<Integer> arr = (ArrayList<Integer>) e.nextElement();
+	// int num = arr.size();
+	// String st = "";
+	// for (int j = 0; j < num; j++) {
+	// st += arr.get(j).toString() + ",";
+	// }
+	// System.out.println(st);
+	// }
 	}
 
 	/***
@@ -402,15 +566,25 @@ public class Segmentor_Osteo implements CellSegmentor {
 	}
 
 	/**
-	 * Returns the segmented cells
+	 * Returns the nuclei objects except for those with a "false" in the
+	 * inclusionList index, since those are osteoclasts already used
 	 * 
 	 * @author BLM
 	 */
-	private Nucleus[] getNuclei() {
+	private Nucleus[] getNuclei(boolean[] inclusionList) {
 		int num = allNuclei.size();
-		Nucleus[] temp = new Nucleus[num];
+		int counter = 0;
 		for (int i = 0; i < num; i++)
-			temp[i] = (Nucleus) allNuclei.get(i);
+			if (inclusionList[i])
+				counter++;
+		Nucleus[] temp = new Nucleus[counter];
+		counter = 0;
+		for (int i = 0; i < num; i++)
+			if (inclusionList[i])
+ {
+				temp[counter] = (Nucleus) allNuclei.get(i);
+				counter++;
+			}
 		return temp;
 	}
 
@@ -508,16 +682,23 @@ public class Segmentor_Osteo implements CellSegmentor {
 	}
 
 	public Cell[] growSeedsIntoCells(Nucleus[] nuclei, int[][][] Raster,
-			Model_ParameterSet pset) {
+			Model_ParameterSet pset, byte[][] osteoFlags) {
 
 		int height = Raster.length;
 		int width = Raster[0].length;
 
 		Pixel[][] pixels = new Pixel[height][width];
+		int id = -1;
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++)
-				pixels[r][c] = new Pixel(r, c, -1);
-
+			{
+				if (osteoFlags[r][c] != 1)
+					id = -1;
+				else
+					id = -2;
+				pixels[r][c] = new Pixel(r, c, id);
+			}
+				
 		int numNuc = nuclei.length;
 		cells = new Cell[numNuc];
 		for (int i = 0; i < numNuc; i++) {
@@ -556,14 +737,13 @@ public class Segmentor_Osteo implements CellSegmentor {
 
 		// now going through the cytoplasmic pixels and dilating only those
 		int counter = 0;
-		int diameter = 20;
-		if (pset.getAnnulusSize() != -1)
-			diameter = pset.getAnnulusSize();
+		// if (pset.getAnnulusSize() != -1)
+		// diameter = pset.getAnnulusSize();
 		while (true) {
 			boolean change = false;
 			for (int n = 0; n < numNuc; n++) {
 				Cell cell = cells[n];
-				ArrayList arr = cell.getCytoplasm().getPixelCoordinates();
+				ArrayList<Point> arr = cell.getCytoplasm().getPixelCoordinates();
 				int numPix = arr.size();
 
 				for (int p = 0; p < numPix; p++) {
@@ -585,30 +765,21 @@ public class Segmentor_Osteo implements CellSegmentor {
 									.add(point);
 							neigh.setID(pix.getID());
 						}
-						// else if
-						// (MainGUI.getGUI().getStoreNeighborsCheckBox().isSelected()
-						// && neigh.getID()!=-1 && neigh.getID()!=pix.getID())
-						// {
-						// cell.addNeighborID(neigh.getID());
-						// }
+						
 					}
 				}
 
 			}
 			counter++;
 
-			if (!change) // || counter > diameter)
+			if (!change) 
 				break;
 		}
 
-		// setting neighbors if desired
-		// if (MainGUI.getGUI().getStoreNeighborsCheckBox().isSelected())
-		// for (int n =0; n < numNuc; n++)
-		// cells[n].setNeighborsFromCellIDs(cells);
 
 		for (int i = 0; i < cells.length; i++) {
 			// init the cell boundary pixels now
-			ArrayList arr = cells[i].getCytoplasm().getPixelCoordinates();
+			ArrayList<Point> arr = cells[i].getCytoplasm().getPixelCoordinates();
 			int numPix = arr.size();
 			cells[i].getCytoplasm().setNumPixels(numPix);
 
@@ -1569,4 +1740,14 @@ public class Segmentor_Osteo implements CellSegmentor {
 		}
 	}
 
+	@Override
+	public void clearROIs() {
+		ROIs = null;
+
+	}
+
+	@Override
+	public void setROIs(ArrayList<Shape> ROIs) {
+		this.ROIs = ROIs;
+	}
 }

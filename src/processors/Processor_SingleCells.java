@@ -232,7 +232,7 @@ public class Processor_SingleCells extends Thread implements Processor
 	{
 		
 		try
-		{	
+ {
 			ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
 
 			//Initializing some storage variables
@@ -261,7 +261,6 @@ public class Processor_SingleCells extends Thread implements Processor
 				int wellIndex = (well.getPlate().getNumRows()*well.Column)+well.Row;
 				int plateIndex = well.getPlate().getID();
 				
-				
 				//Now processing all the fields for this well
 				int numFields = well.getFields().length;
 				TotalCells = 0;
@@ -285,12 +284,13 @@ public class Processor_SingleCells extends Thread implements Processor
 						tools.ImageTools.computeBackgroundValues(Raster, backgroundValues, well.TheParameterSet);
 					field.setBackgroundValues(backgroundValues);
 					
-					
 					// (4) Getting Cell Coordinates (segmenting the cells)
-					ArrayList<CellCoordinates>  cellCoords = theSegmentor.segmentCells(Raster, well.TheParameterSet);
-					// TEMP - DELETE AFTERWARDS
-					// tools.ImageTools.printInterCellLineProfiles(cellCoords,
-					// Raster, 1);
+					if (field.getROIs() != null)
+						theSegmentor.setROIs(field.getROIs());
+					ArrayList<CellCoordinates> cellCoords = theSegmentor
+							.segmentCells(Raster, well.TheParameterSet);
+					theSegmentor.clearROIs();
+					
 					
 					// (5) Initializing all the data values calculated via the Cell coordinates, the Raster, and the loaded Feature objects
 					// EX: Now that we have the pixel coordinates that make up each cell we need to look at the

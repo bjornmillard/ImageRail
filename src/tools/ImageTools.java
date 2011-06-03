@@ -1077,7 +1077,6 @@ public class ImageTools
 				arr.add(f);
 		}
 		numFiles = arr.size();
-//		System.out.println("numF: "+numFiles);
 		File[] files = new File[numFiles];
 		for (int i =0; i < numFiles; i++)
 			files[i] = (File)arr.get(i);
@@ -1114,8 +1113,6 @@ public class ImageTools
 				ras.getPixel(c,r,pix);
 				rast[r][c][0] = (int)((float)pix[0]);
 			}
-//
-		
 		
 		//Now doing other files
 		for (int i = 1; i < numFiles; i++)

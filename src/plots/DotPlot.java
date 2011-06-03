@@ -151,8 +151,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 	private Feature FeatureX;
 	private Feature FeatureY;
 
-	private boolean PolygonGate;
 	private boolean AddFilter;
+	private boolean PolygonGate;
 	private Polygon ThePolygonGate;
 	private ArrayList<Point> ThePolygonGate_Points;
 
@@ -2799,7 +2799,6 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 			}
 
 			UpdatePlotImage = false;
-			;
 			repaint();
 		}
 
@@ -3469,12 +3468,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		HighlightInOutButton = null;
 		ContourPlotButton = null;
 		ThePolygonGate = null;
+		ThePolygonGate_Points = null;
 		ComboBoxes = null;
 		nf = null;
 		nf2 = null;
 		TheDensitySorter = null;
 		killDots();
-		ThePolygonGate_Points = null;
 		ThePlot = null;
 		TheDataValues = null;
 		ArrayList<ArrayList<CellCoordinates>> TheCell_coords;

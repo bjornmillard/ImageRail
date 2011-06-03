@@ -19,14 +19,14 @@
  */
 
 /**
- * ThresholdingBoundsInputDialog_SingleCells.java
+ * ThresholdingBoundsInputDialog_SingleCells_Osteo.java
  *
  * @author Bjorn Millard
  */
 
 package dialogs;
 
-import gui.MainGUI;
+   import gui.MainGUI;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -56,9 +56,9 @@ import javax.swing.border.BevelBorder;
 import models.Model_ParameterSet;
 import models.Model_Well;
 import processors.Processor_SingleCells;
-import segmentors.DefaultSegmentor;
+import segmentors.Segmentor_Osteo;
 
-public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
+public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 		implements ActionListener, PropertyChangeListener {
 	private String typedText = null;
 	private JTextField[] textField;
@@ -70,9 +70,9 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 	private JComboBox channelBox_cyto;
 	private int CoordsToSave;
 
-	public ThresholdingBoundsInputDialog_SingleCells(Model_Well[] wells) {
+	public ThresholdingBoundsInputDialog_SingleCells_Osteo(Model_Well[] wells) {
 		int width = 470;
-		int height = 520;
+		int height = 550;
 		// With bottom panel
 		// int height = 600;
 		setTitle("Input");
@@ -146,17 +146,17 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 		group.add(r1);
 		group.add(r0);
 		group.add(r2);
-		// group.add(r3);
+		group.add(r3);
 		CoordsToSave = 1;
 		JPanel radioPanel = new JPanel();
-		radioPanel.setLayout(new GridLayout(4, 1));
+		radioPanel.setLayout(new GridLayout(5, 1));
 		radioPanel.setBorder(BorderFactory
 				.createBevelBorder(BevelBorder.LOWERED));
 		radioPanel.add(new JLabel("Coordinates for HDF Storage:"));
 		radioPanel.add(r1);
 		radioPanel.add(r0);
 		radioPanel.add(r2);
-		// radioPanel.add(r3);
+		radioPanel.add(r3);
 
 		MainGUI.getGUI().setWatershedNucleiCheckBox(
 				new JCheckBoxMenuItem("Watershed Nuclei"));
@@ -409,9 +409,7 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 					for (int i = 0; i < numW; i++)
 						wellsWithImages[i] = wellsWIm.get(i);
 
-					// TODO - need to reinstate multithreading, but till then
-					// dont let them start a new
-					// proces until previous one is complete
+
 					if (gui.MainGUI.getGUI().isProcessing())
  {
 						JOptionPane
@@ -421,36 +419,11 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 										"Be Patient", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
-
 					// Single thread run
-					if (wellsWithImages[0].TheParameterSet.getNumThreads() == 1) {
 						Processor_SingleCells tasker = new Processor_SingleCells(
-								wellsWithImages, new DefaultSegmentor());
-
+								wellsWithImages, new Segmentor_Osteo());
 
 					tasker.start();
-					} else // Multi-thread run
-					{
-						numWells = wellsWithImages.length;
-						int numThreads = wellsWithImages[0].TheParameterSet
-								.getNumThreads();
-						int numWellsPerProcess = (int) (numWells / numThreads);
-						int numOddNumWells = numWells % numThreads;
-						int counter = 0;
-						Model_Well[] arr = null; // new Model_Well[
-						for (int i = 0; i < numThreads; i++) {
-							arr = new Model_Well[numWellsPerProcess + (i < numOddNumWells ? 1 : 0)];
-							for (int j = 0; j < arr.length; j++) {
-								arr[j] = wellsWithImages[counter];
-								counter++;
-							}
-							Processor_SingleCells tasker = new Processor_SingleCells(
-									arr, new DefaultSegmentor());
-							tasker.start();
-
-						}
-					}
-
 
 				} else {
 					JOptionPane

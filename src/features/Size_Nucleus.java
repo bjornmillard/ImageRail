@@ -27,13 +27,17 @@
 package features;
 
 
+import imagerailio.Point;
 import segmentedobject.CellCoordinates;
 
 public class Size_Nucleus extends Feature
 {
 	public float getValue(CellCoordinates cell, int[][][] raster, float[] backgroundValues)
 	{
-		return cell.getComCoordinates("Nucleus").length;
+		Point[] pList = cell.getComCoordinates("Nucleus");
+		if (pList == null)
+			return 0;
+		return pList.length;
 	}
 	public String toString()
 	{

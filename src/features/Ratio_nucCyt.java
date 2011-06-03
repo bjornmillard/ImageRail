@@ -35,9 +35,9 @@ public class Ratio_nucCyt extends Feature
 	{
 		int sumN = 0;
 		Point[] coordsN = cell.getComCoordinates("Nucleus");
-		int len = coordsN.length;
-		if (len == 0)
+		if (coordsN == null || coordsN.length == 0)
 			return 0;
+		int len = coordsN.length;
 		for (int i = 0; i < len; i++)
 			sumN+=raster[coordsN[i].y][coordsN[i].x][ChannelIndex];
 		float meanN =  sumN/len-backgroundValues[ChannelIndex];

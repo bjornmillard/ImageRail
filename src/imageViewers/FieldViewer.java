@@ -26,10 +26,12 @@ import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Composite;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.MouseEvent;
@@ -115,6 +117,10 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	private FieldViewer_Frame HolderFrame;
 	private Model_FieldCellRepository TheCellBank;
 
+	/** Used for polygon ROI selection */
+	private Polygon ThePolygonGate;
+	private ArrayList<Point> ThePolygonGate_Points;
+
 	public FieldViewer(FieldViewer_Frame holderFrame_, Model_Well well, Model_Field field) {
 		HolderFrame = holderFrame_;
 		ImageSelected_index = 0;
@@ -133,7 +139,6 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		LineProfileValues_Y = null;
 
 		ThePanel = this;
-
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		highlightColor = Color.white;
@@ -283,7 +288,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			int radius = (int) (scalingFactor * 5);
 			if (radius < 1)
 				radius = 0;
-			g2.setColor(Color.magenta);
+			g2.setColor(Color.magenta); // TODO-X
 			int leng = 0;
 			if (selectedCells != null)
 				leng = selectedCells.size();
@@ -347,99 +352,89 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 			}
 			
-			//
-			//
-			// TODO DELETE
-			// File outFile = new File("/Users/blm13/Desktop/outTest.csv");
-			// PrintWriter pw = null;
-			// try {
-			// pw = new PrintWriter(outFile);
-			// } catch (FileNotFoundException e) {
-			// e.printStackTrace();
-			// }
-			// String st = "";
 
 			// ----
-			// if (false) {
-			// g2.setColor(Color.magenta);
-			// ArrayList<Cell> selCells = TheCellBank.getSelectedCells();
-			// ArrayList<Cell> allCells = TheCellBank.getCells();
-			// int selLen = selCells.size();
-			// int allLen = allCells.size();
-			// Raster raster = getCurrentRaster();
-			// int numBands = raster.getNumBands();
-			// int[] pix = new int[numBands];
-			// for (int c = 0; c < selLen; c++) {
-			// imagerailio.Point p1 = selCells.get(c).getCoordinates()
-			// .getCentroid_subcompartment("Outline");
-			// for (int r = 0; r < allLen; r++) {
-			// if (c != r) {
-			// imagerailio.Point p2 = allCells.get(r)
-			// .getCoordinates()
-			// .getCentroid_subcompartment("Outline");
-			//
-			// int xDist = p2.x - p1.x;
-			// int yDist = p2.y - p1.y;
-			// int yStart = p1.y;
-			// int xStart = p1.x;
-			// // compute slope btw points
-			// float m = ((float) yDist) / ((float) xDist);
-			//
-			// boolean staysAboveBkgd = true;
-			// int bkgd = (int) TheWell.getParameterSet()
-			// .getThreshold_Background();
-			// // Need to invert line tracking if slope too
-			// // vertical
-			// // (ex: walk along y axis not x axis)
-			// if (m != Float.NaN || m != 0) {
-			// // st = "";
-			// if (Math.abs(m) < 1) {
-			// for (int x = 0; x < Math.abs(xDist); x++) {
-			//
-			// int xI = x;
-			// if (xDist < 0)
-			// xI = -x;
-			//
-			// int xP = xStart + xI;
-			// int y = (int) (m * xI + yStart);
-			//
-			// raster.getPixel(xP, y, pix);
-			//
-			// if (pix[0] < bkgd) {
-			// staysAboveBkgd = false;
-			// break;
-			// }
-			// }
-			//
-			// } else {
-			// for (int y = 0; y < Math.abs(yDist); y++) {
-			//
-			// float yI = y;
-			// if (yDist < 0)
-			// yI = -y;
-			//
-			// float yP = (float) yStart + yI;
-			// int x = (int) (1f / m * yI + xStart);
-			//
-			// raster.getPixel(x, (int) yP, pix);
-			//
-			// if (pix[0] < bkgd) {
-			// staysAboveBkgd = false;
-			// break;
-			// }
-			// }
-			// }
-			// if (staysAboveBkgd)
-			// g2.drawLine((int) (scalingFactor * p2.x),
-			// (int) (scalingFactor * p2.y),
-			// (int) (scalingFactor * p1.x),
-			// (int) (scalingFactor * p1.y));
-			// }
-			//
-			// }
-			// }
-			// }
-			// }
+			// TODO-X
+			if (false) {
+			 g2.setColor(Color.magenta);
+			 ArrayList<Cell> selCells = TheCellBank.getSelectedCells();
+			 ArrayList<Cell> allCells = TheCellBank.getCells();
+			 int selLen = selCells.size();
+			 int allLen = allCells.size();
+			 Raster raster = getCurrentRaster();
+			 int numBands = raster.getNumBands();
+			 int[] pix = new int[numBands];
+			 for (int c = 0; c < selLen; c++) {
+			 imagerailio.Point p1 = selCells.get(c).getCoordinates()
+			 .getCentroid_subcompartment("Outline");
+			 for (int r = 0; r < allLen; r++) {
+			 if (c != r) {
+			 imagerailio.Point p2 = allCells.get(r)
+			 .getCoordinates()
+			 .getCentroid_subcompartment("Outline");
+			
+			 int xDist = p2.x - p1.x;
+			 int yDist = p2.y - p1.y;
+			 int yStart = p1.y;
+			 int xStart = p1.x;
+			 // compute slope btw points
+			 float m = ((float) yDist) / ((float) xDist);
+			
+			 boolean staysAboveBkgd = true;
+			 int bkgd = (int) TheWell.getParameterSet()
+			 .getThreshold_Background();
+			 // Need to invert line tracking if slope too
+			 // vertical
+			 // (ex: walk along y axis not x axis)
+			 if (m != Float.NaN || m != 0) {
+			 // st = "";
+			 if (Math.abs(m) < 1) {
+			 for (int x = 0; x < Math.abs(xDist); x++) {
+			
+			 int xI = x;
+			 if (xDist < 0)
+			 xI = -x;
+			
+			 int xP = xStart + xI;
+			 int y = (int) (m * xI + yStart);
+			
+			 raster.getPixel(xP, y, pix);
+			
+			 if (pix[0] < bkgd) {
+			 staysAboveBkgd = false;
+			 break;
+			 }
+			 }
+			
+			 } else {
+			 for (int y = 0; y < Math.abs(yDist); y++) {
+			
+			 float yI = y;
+			 if (yDist < 0)
+			 yI = -y;
+			
+			 float yP = (float) yStart + yI;
+			 int x = (int) (1f / m * yI + xStart);
+			
+			 raster.getPixel(x, (int) yP, pix);
+			
+			 if (pix[0] < bkgd) {
+			 staysAboveBkgd = false;
+			 break;
+			 }
+			 }
+			 }
+			 if (staysAboveBkgd)
+			 g2.drawLine((int) (scalingFactor * p2.x),
+			 (int) (scalingFactor * p2.y),
+			 (int) (scalingFactor * p1.x),
+			 (int) (scalingFactor * p1.y));
+			 }
+			
+			 }
+			 }
+			 }
+			 }
 			// -----
 			// pw.flush();
 			// pw.close();
@@ -676,6 +671,35 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			}
 		}
 
+
+		/** Drawing polygon ROIs */
+		if (ThePolygonGate_Points != null) {
+
+			g2.setColor(Color.green);
+			len = ThePolygonGate_Points.size();
+			if (len > 0) {
+				Point p = ThePolygonGate_Points.get(0);
+				for (int i = 1; i < len; i++) {
+					Point pLast = p;
+					p = ThePolygonGate_Points.get(i);
+					g2.drawLine((int) (pLast.x * scalingFactor),
+							(int) (pLast.y * scalingFactor),
+							(int) (p.x * scalingFactor),
+							(int) (p.y * scalingFactor));
+				}
+			}
+		} else if (ThePolygonGate != null) {
+			g2.setColor(Color.green);
+			// if (ThePolygonGate.xpoints.length == 1)
+			// g2.drawLine(ThePolygonGate.xpoints[0],
+			// ThePolygonGate.xpoints[0], ThePolygonGate.ypoints[0],
+			// ThePolygonGate.ypoints[0]);
+			// else {
+			drawScaledShape(g2, ThePolygonGate, Color.green);
+				g2.setColor(Color.black);
+			// }
+		}
+
 		// Finally drawing current highlighting
 		paintHighlighting(g2, scalingFactor);
 
@@ -695,6 +719,19 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			shapeToDraw = new Rectangle((int) (scale * rect.x),
 					(int) (scale * rect.y), (int) (scale * rect.width),
 					(int) (scale * rect.height));
+		}
+ else if (shape instanceof Polygon) {
+			Polygon poly = (Polygon) shape;
+			int len = poly.npoints;
+			int[] xp = new int[len];
+			int[] yp = new int[len];
+
+			for (int i = 0; i < len; i++)
+ {
+				xp[i] = (int) (scale * (float) poly.xpoints[i]);
+				yp[i] = (int) (scale * (float) poly.ypoints[i]);
+			}
+			shapeToDraw = new Polygon(xp, yp, len);
 		}
 
 		g2.setColor(color);
@@ -741,6 +778,15 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 						(int) (scale * rect.y), (int) (scale * rect.width),
 						(int) (scale * rect.height));
 			}
+ else if (SelectedROI instanceof Polygon) {
+				Polygon poly = (Polygon) SelectedROI;
+				Polygon copy = new Polygon();
+				int len = poly.npoints;
+				for (int i = 0; i < len; i++)
+					copy.addPoint((int) (scale * poly.xpoints[i]),
+							(int) (scale * poly.ypoints[i]));
+				shapeToDraw = copy;
+			}
 
 			g2.setColor(highlightColor);
 			Composite orig = g2.getComposite();
@@ -759,11 +805,13 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	 * @author BLM
 	 */
 	public Shape getSelectedROI() {
-		if (SelectedROI != null && width_shape * height_shape > 20) {
-			return SelectedROI;
+		if (SelectedROI != null) {
+			if (TheParentContainer.getShapeType() == TheParentContainer.SHAPE_POLYGON)
+				return SelectedROI;
+			else if (width_shape * height_shape > 20)
+				return SelectedROI;
 		}
 		// if no region is selected, return the whole thing
-		else
 			return new Rectangle(0, 0, ThePanel.getWidth(), ThePanel
 					.getHeight());
 	}
@@ -793,7 +841,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			int len = rois.size();
 			for (int i = 0; i < len; i++) {
 				Shape shape = rois.get(i);
-				if (shape.contains(p))
+				if (shape != null && p != null && shape.contains(p))
 					TheField.setROIselected(i, !TheField.isROIselected(i));
 			}
 		}
@@ -937,7 +985,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		Shape shape = null;
 		float scale = FieldViewer_Frame.getScaling();
 		if (SelectedROI != null)
-			if (HolderFrame.getShapeType() == FieldViewer_Frame.OVAL) {
+			if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_OVAL) {
 				Rectangle bounds = getScaledSelectionBounds(scale);
 				Ellipse2D.Float temp = new Ellipse2D.Float();
 				temp.x = bounds.x;
@@ -945,7 +993,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				temp.width = bounds.width;
 				temp.height = bounds.height;
 				shape = temp;
-			} else if (HolderFrame.getShapeType() == FieldViewer_Frame.RECTANGLE) {
+			} else if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_RECTANGLE) {
 				Rectangle bounds = getScaledSelectionBounds(scale);
 				Rectangle temp = new Rectangle();
 				temp.x = bounds.x;
@@ -953,6 +1001,13 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				temp.width = bounds.width;
 				temp.height = bounds.height;
 				shape = temp;
+			}
+		if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_POLYGON) {
+				setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+				ThePolygonGate_Points = new ArrayList<Point>();
+			ThePolygonGate_Points.add(new Point(
+					(int) ((float) p1.getPoint().x / (float) scale),
+					((int) ((float) p1.getPoint().y / (float) scale))));
 			}
 
 		if (shape != null && shape.contains(p1.getPoint())) {
@@ -968,13 +1023,35 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	}
 
 	public void mouseReleased(MouseEvent p1) {
-		if (SelectedROI != null
-				&& SelectedROI.getBounds().width
-						* SelectedROI.getBounds().height > 6) {
-			Raster rast = getCurrentRaster();
-			int mean = getMeanValue(rast, SelectedROI);
-			pixelValue = mean;
-		}
+
+		setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
+		if (TheParentContainer.getShapeType() == TheParentContainer.SHAPE_POLYGON)
+			if (ThePolygonGate_Points != null) {
+				// float scale = TheParentContainer.getScaling();
+				ThePolygonGate = new Polygon();
+				for (int i = 0; i < ThePolygonGate_Points.size(); i++) {
+					Point p = ThePolygonGate_Points.get(i);
+					ThePolygonGate.addPoint((int) ((float) p.x),
+							(int) ((float) p.y));
+				}
+				ThePolygonGate_Points = null;
+				// scaling
+				SelectedROI = ThePolygonGate;
+				// TODO - example of using oval for SelectedROI
+				// new Ellipse2D.Float(tempOval.x / scalingFactor,
+				// tempOval.y / scalingFactor, tempOval.width
+				// / scalingFactor, tempOval.height
+				// / scalingFactor);
+			}
+
+		// if (SelectedROI != null
+		// && SelectedROI.getBounds().width
+		// * SelectedROI.getBounds().height > 6) {
+		// Raster rast = getCurrentRaster();
+		// int mean = getMeanValue(rast, SelectedROI);
+		// pixelValue = mean;
+		// }
 
 		// reseting the highlightbox
 		if (!continuallyDisplayBox) {
@@ -996,7 +1073,19 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	public void mouseDragged(MouseEvent p1) {
 
 		float scalingFactor = FieldViewer_Frame.getScaling();
-		if (CreateNewBox) {
+
+		if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_POLYGON
+				&& ThePolygonGate_Points != null
+				&& ThePolygonGate_Points.size() > 0) {
+			int len = ThePolygonGate_Points.size();
+			Point p = ThePolygonGate_Points.get(len - 1);
+			if (p1.getPoint().distance(p) > 2) {
+				ThePolygonGate_Points.add(new Point((int) ((float) p1
+						.getPoint().x / scalingFactor), ((int) ((float) p1
+						.getPoint().y / scalingFactor))));
+			}
+		}
+ else if (CreateNewBox) {
 			if (p1 == null || p1.getPoint() == null
 					|| startHighlightPoint == null)
 				return;
@@ -1004,7 +1093,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			int yval = p1.getPoint().y - startHighlightPoint.y;
 			//
 
-			if (HolderFrame.getShapeType() == FieldViewer_Frame.RECTANGLE) {
+			if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_RECTANGLE) {
 
 				tempRect = new Rectangle();
 				tempRect.x = startHighlightPoint.x;
@@ -1082,7 +1171,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 																										// for
 																										// scaling
 
-			} else if (HolderFrame.getShapeType() == FieldViewer_Frame.OVAL) {
+			} else if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_OVAL) {
 				tempOval = new Ellipse2D.Float();
 				tempOval.x = startHighlightPoint.x;
 				tempOval.y = startHighlightPoint.y;
@@ -1148,9 +1237,10 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 		} else // dragging extant box
 		{
+
 			if (SelectedROI != null && p1 != null) {
 
-				if (HolderFrame.getShapeType() == FieldViewer_Frame.OVAL) {
+				if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_OVAL) {
 
 					Rectangle bounds = getScaledSelectionBounds(scalingFactor);
 					if (tempOval == null)
@@ -1207,7 +1297,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 																											// for
 																											// scaling
 					repaint();
-				} else if (HolderFrame.getShapeType() == FieldViewer_Frame.RECTANGLE) {
+				} else if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_RECTANGLE) {
 					Rectangle bounds = getScaledSelectionBounds(scalingFactor);
 					if (tempRect == null)
 						tempRect = new Rectangle();
@@ -1274,7 +1364,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		}
 
 		// Only allow this feature with Rectangle
-		if (HolderFrame.getShapeType() == FieldViewer_Frame.RECTANGLE)
+		if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_RECTANGLE)
 			updateLineProfiles((Rectangle) SelectedROI, scalingFactor);
 		else {
 			LineProfileValues_X = null;
@@ -1332,19 +1422,19 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 	public void setShape(Shape shape, int type) {
 
-		if (type == FieldViewer_Frame.RECTANGLE) {
+		if (type == FieldViewer_Frame.SHAPE_RECTANGLE) {
 			SelectedROI = shape;
 			tempRect = (Rectangle) shape;
-			HolderFrame.setShapeType(FieldViewer_Frame.RECTANGLE);
+			HolderFrame.setShapeType(FieldViewer_Frame.SHAPE_RECTANGLE);
 			CreateNewBox = false;
 			x_shape = tempRect.x;
 			y_shape = tempRect.y;
 			width_shape = tempRect.width;
 			height_shape = tempRect.height;
-		} else if (type == FieldViewer_Frame.OVAL) {
+		} else if (type == FieldViewer_Frame.SHAPE_OVAL) {
 			SelectedROI = shape;
 			tempOval = (Ellipse2D.Float) shape;
-			HolderFrame.setShapeType(FieldViewer_Frame.OVAL);
+			HolderFrame.setShapeType(FieldViewer_Frame.SHAPE_OVAL);
 			CreateNewBox = false;
 			x_shape = (int) tempOval.x;
 			y_shape = (int) tempOval.y;
@@ -1685,7 +1775,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		int increment = (int) (raster.getWidth() * 0.1f);
 		Shape tempShape = null;
 
-		if (HolderFrame.getShapeType() == FieldViewer_Frame.OVAL) {
+		if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_OVAL) {
 			// first round --> 10% raster size steps
 			long startTime = System.currentTimeMillis();
 
@@ -1760,7 +1850,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			SelectedROI = shape;
 
 			// System.out.println(System.currentTimeMillis()-startTime);
-		} else if (HolderFrame.getShapeType() == FieldViewer_Frame.RECTANGLE) {
+		} else if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_RECTANGLE) {
 
 			Rectangle bounds1 = getScaledSelectionBounds(FieldViewer_Frame
 					.getScaling());
@@ -1897,6 +1987,13 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			copy.width = (int) (oval.width);
 			copy.height = (int) (oval.height);
 			shape = copy;
+		} else if (SelectedROI instanceof Polygon) {
+			Polygon poly = (Polygon) SelectedROI;
+			Polygon copy = new Polygon();
+			int len = poly.npoints;
+			for (int i = 0; i < len; i++)
+				copy.addPoint(poly.xpoints[i], poly.ypoints[i]);
+			shape = copy;
 		}
 		return shape;
 	}
@@ -1927,5 +2024,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		TheDisplayedImage = null;
 		LineProfileValues_X = null;
 		LineProfileValues_Y = null;
+		ThePolygonGate = null;
+		ThePolygonGate_Points = null;
 	}
 }
