@@ -39,8 +39,8 @@ public class Integrated_WholeCell extends Feature
 		
 		for (int i = 0; i < len; i++)
 			sum+=raster[coords[i].y][coords[i].x][ChannelIndex]; 	//TODO - need to account for multiple wavelengths
-		
-		return sum;
+
+		return sum-(len*backgroundValues[ChannelIndex]);
 	}
 	
 	public boolean isMultiSpectralFeature()
