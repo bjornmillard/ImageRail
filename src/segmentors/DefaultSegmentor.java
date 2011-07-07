@@ -134,10 +134,15 @@ public class DefaultSegmentor implements CellSegmentor {
 				if (raster[r][c][pset.getThresholdChannel_nuc_Index()] > pset
 						.getThreshold_Nucleus())
 					iRaster[r][c][0] = 1e20f;
+
+		tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/beforedt.tif");
 		iRaster = SpatialFilter.distanceTransform(iRaster);
+		//tools.ImageTools.displayRaster(iRaster);		
+		tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterdt.tif");
 		iRaster = SpatialFilter.linearFilter(iRaster, LinearKernals
 				.getLinearSmoothingKernal(5), 0);
-		// tools.ImageTools.displayRaster(iRaster);
+		//tools.ImageTools.displayRaster(iRaster);
+		tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterlsk.tif");
 
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++)
