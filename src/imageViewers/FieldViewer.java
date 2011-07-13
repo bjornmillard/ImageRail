@@ -1999,6 +1999,22 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	}
 
 	/**
+	 * Returns the x,y,channel dimensions for the current raster
+	 * 
+	 * @author Bjorn Millard
+	 * @return int[] dimensions of field
+	 * */
+	public int[] getFieldDimensions() {
+		Raster raster = getCurrentRaster();
+		int height = raster.getHeight();
+		int width = raster.getWidth();
+
+		int bands = gui.MainGUI.getGUI().getNumberOfChannels();
+		int[] dims = new int[] { height, width, bands };
+		return dims;
+	}
+
+	/**
 	 * Free up RAM
 	 * 
 	 * @author BLM

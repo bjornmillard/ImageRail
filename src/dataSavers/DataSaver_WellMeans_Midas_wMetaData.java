@@ -33,9 +33,10 @@ import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
 
-import midasGUI.Measurement;
 import models.Model_Plate;
 import models.Model_Well;
+import sdcubeio.ExpDesign_Description;
+import sdcubeio.ExpDesign_Model;
 import features.Feature;
 import gui.MainGUI;
 
@@ -67,17 +68,17 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 			try
 			{
 				PrintWriter pw = new PrintWriter(outDir);
-				
+
 				//Print headers
-				ArrayList headers = new ArrayList();
-				ArrayList headerValues = new ArrayList();
+				ArrayList<String> headers = new ArrayList<String>();
+				ArrayList<String> headerValues = new ArrayList<String>();
 				headers.add("Well");
 				headers.add("Plate");
 				headers.add("Date");
 				headers.add("Description");
 				
 				//Need to get indicies of the features we want to print
-				ArrayList arr = TheMainGUI.getTheFeatures();
+				ArrayList<Feature> arr = TheMainGUI.getTheFeatures();
 				int counter = 0;
 				int num = arr.size();
 				int len = featuresToSave.length;
@@ -101,13 +102,16 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 						}
 				}
 				
+
 				//Finding the unique treatment headers across all wells of all plates
-				ArrayList uniqueT = new ArrayList();
-				ArrayList uniqueM = new ArrayList();
+				ArrayList<ExpDesign_Description> uniqueT = new ArrayList<ExpDesign_Description>();
+				ArrayList<ExpDesign_Description> uniqueM = new ArrayList<ExpDesign_Description>();
 				int numF = featuresToSave.length;
 				Model_Plate[] thePlates = TheMainGUI.getPlateHoldingPanel()
 						.getModel().getPlates();
 				int numPlates = thePlates.length;
+				ExpDesign_Model io = TheMainGUI.getExpDesignConnector();
+
 				for (int p = 0; p < numPlates; p++)
 				{
 					Model_Plate plate = thePlates[p];
@@ -119,60 +123,69 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 						{
 							if (plate.getWells()[r][c].isSelected())
 							{
-								// TODO - MetaCon
-								// Description[] treats =
-								// plate.getWells()[r][c].getMetaDataConnector().readTreatments(
-								// plate.getWells()[r][c].getWellIndex());
-								// for (int n =0; n < treats.length; n++)
-								// {
-								// boolean unique = true;
-								// len = uniqueT.size();
-								// for (int j =0; j < len; j++)
-								// if(((Description)uniqueT.get(j)).getName().equalsIgnoreCase((treats[n].getName())))
-								// unique = false;
-								// if (unique)
-								// {
-								// headers.add("TR:"+(treats[n].getName()));
-								// uniqueT.add(treats[n]);
-								// }
-								// }
+								ExpDesign_Description[] treats = io
+										.getTreatments(plate.getWells()[r][c]
+												.getID());
+
+								for (int n = 0; n < treats.length; n++) {
+									boolean unique = true;
+									len = uniqueT.size();
+									for (int j = 0; j < len; j++)
+										if (((ExpDesign_Description) uniqueT
+												.get(j)).getName()
+												.equalsIgnoreCase(
+														(treats[n].getName())))
+											unique = false;
+									if (unique) {
+										headers.add("TR:"
+												+ (treats[n].getName()));
+										uniqueT.add(treats[n]);
+									}
+								}
 							}
 						}				
 				}
 
 
-				
+
 				//Finding the unique measurement headers across all wells - NOTE --> Stealing them all from plate 1 since IR requires same features for all plates/wells
 				Model_Plate plate = thePlates[0];
 				int numC = plate.getNumColumns();
 				int numR = plate.getNumRows();
-				Measurement[] meas = new Measurement[numF*2];
+				ExpDesign_Description[] meas = new ExpDesign_Description[numF];
 				for (int i=0; i< numF; i++)
 				{
 					Feature f = featuresToSave[i];
-					meas[i] = new Measurement(f.ChannelName);
+					ExpDesign_Description exd = new ExpDesign_Description();
+					exd.setName(f.ChannelName);
+					meas[i] = exd;
 				}
 				//Adding the Stdev
-				for (int i=0; i< numF; i++)
+				// for (int i=0; i< numF; i++)
+				// {
+				// Feature f = featuresToSave[i];
+				// ExpDesign_Description exd = new ExpDesign_Description();
+				// exd.setName("Stdev_"
+				// + f.ChannelName);
+				//
+				// meas[i + numF] = exd;
+				// }
+				for (int i = 0; i < numF; i++)
 				{
-					Feature f = featuresToSave[i];
-					meas[i+numF] = new Measurement("Stdev_"+f.ChannelName);
-				}
-				for (int i=0; i< 2*numF; i++)
-				{
-					headers.add("DA:"+meas[i].name);
+					headers.add("DA:" + meas[i].getName());
 					uniqueM.add(meas[i]);
 				}
-				
-				
+
 				
 				for (int i = 0; i<uniqueM.size(); i++)
-					headers.add("DV:"+((Measurement)uniqueM.get(i)).name);
+					headers.add("DV:"
+							+ ((ExpDesign_Description) uniqueM.get(i))
+									.getName());
 				
 				//Printing out the headers
 				for(int i =0; i < headers.size()-1; i++)
 					pw.print(((String)headers.get(i))+",");
-				pw.println((String)headers.get(headers.size()-1));
+				pw.println((String) headers.get(headers.size() - 1));
 				
 				
 				//Printing out the real well data
@@ -189,63 +202,61 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 							Model_Well theWell = plate.getWells()[r][c];
 							if (theWell.isSelected())
 							{
-								// TODO - MetaCon
-								// Description[] treats =
-								// theWell.getMetaDataConnector().readTreatments(theWell.getWellIndex());
-								// Description date =
-								// theWell.getMetaDataConnector().readDate(theWell.getWellIndex());
-								// Description desc =
-								// theWell.getMetaDataConnector().readDescription(theWell.getWellIndex());
-								// Description time =
-								// theWell.getMetaDataConnector().readTimePoint(theWell.getWellIndex());
-								//								
-								//
-								// headerValues = new ArrayList();
-								// headerValues.add(theWell.name);
-								// headerValues
-								// .add((theWell.getPlate().getTitle() + ""));
-								// if (date != null)
-								// headerValues.add(date.getValue());
-								// else
-								// headerValues.add("");
-								// if (desc != null)
-								// headerValues.add(desc.getValue());
-								// else
-								// headerValues.add("");
-								//
-								// //for each treatment & measurement here in
+								ExpDesign_Description[] treats = io
+										.getTreatments(theWell.getID());
+								ExpDesign_Description date = io.getDate(theWell
+										.getID());
+								ExpDesign_Description desc = io.getDescription(
+										theWell.getID(), "Description");
+								ExpDesign_Description time = io
+										.getTimePoint(theWell.getID());
+
+								headerValues = new ArrayList<String>();
+								headerValues.add(theWell.name);
+								headerValues
+										.add((theWell.getPlate().getTitle() + ""));
+								if (date != null && date.getValue() != null)
+									headerValues.add(date.getValue());
+								else
+									headerValues.add("");
+								if (desc != null && desc.getValue() != null)
+									headerValues.add(desc.getValue());
+								else
+									headerValues.add("");
+								// if (time != null && time.getValue() != null)
+								// headerValues.add(time.getTimeValue());
+
+								// for each treatment & measurement here in
 								// this well... determine which column to put it
 								// in
-								// for (int i= 0; i < uniqueT.size(); i++)
-								// {
-								// num = treats.length;
-								// boolean foundIt = false;
-								// for (int n= 0; n < num; n++)
-								// {
-								// if
-								// (((Description)uniqueT.get(i)).getName().equalsIgnoreCase((treats[n].getName())))
-								// {
-								// headerValues.add(""+treats[n].getValue());
-								// foundIt = true;
-								// break;
-								// }
-								// }
-								// if (!foundIt)
-								// headerValues.add("");
-								// }
-								//								
-								//								
-								// //adding measurement times (numchannels)*3
-								// <-- numcompartments
-								// String st = "";
-								// if (time!=null)
-								// st+=time.getValue();
-								//								
-								// for (int j = 0; j < numF*2; j++)
-								// if (time==null)
-								// headerValues.add("");
-								// else
-								// headerValues.add(""+st);
+								for (int i = 0; i < uniqueT.size(); i++) {
+									num = treats.length;
+									boolean foundIt = false;
+									for (int n = 0; n < num; n++) {
+										if (((ExpDesign_Description) uniqueT
+												.get(i)).getName()
+												.equalsIgnoreCase(
+														(treats[n].getName()))) {
+											headerValues.add(""
+													+ treats[n].getValue());
+											foundIt = true;
+											break;
+										}
+									}
+									if (!foundIt)
+										headerValues.add("");
+								}
+
+								// Adding measurement times
+								String st = "";
+								if (time != null)
+									st += time.getTimeValue();
+
+								for (int n = 0; n < numF; n++)
+									if (time == null)
+										headerValues.add("");
+									else
+										headerValues.add("" + st);
 								
 								
 								if (theWell.Feature_Means!=null && theWell.Feature_Stdev!=null)
@@ -259,8 +270,8 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 									
 									for (int i=0; i< numF; i++)
 										pw.print(theWell.Feature_Means[indices[i]]+",");
-									for (int i=0; i< numF; i++)
-										pw.print(theWell.Feature_Stdev[indices[i]]+",");
+									// for (int i=0; i< numF; i++)
+									// pw.print(theWell.Feature_Stdev[indices[i]]+",");
 								}
 								pw.println();
 							}

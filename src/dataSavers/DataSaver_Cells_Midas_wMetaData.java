@@ -186,7 +186,7 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 				pw.println((String)headers.get(headers.size()-1));
 				
 				//
-				//		Printing out each well's value
+				// Printing out each cell's value
 				//
 				for (int p = 0; p < numPlates; p++)
 				{

@@ -20,10 +20,6 @@
 
 package gui;
 
-import features.Feature;
-import features.FeatureSorter;
-import filters.DotFilterQueue;
-import filters.FilterManager;
 import imageViewers.FieldViewer;
 import imageViewers.FieldViewer_Frame;
 import imageViewers.HTMLViewer;
@@ -37,6 +33,7 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Polygon;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -53,6 +50,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Enumeration;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -102,6 +100,10 @@ import dialogs.SaveFeatures_Dialog;
 import dialogs.ThresholdingBoundsInputDialog_SingleCells;
 import dialogs.ThresholdingBoundsInputDialog_SingleCells_Osteo;
 import dialogs.ThresholdingBoundsInputDialog_WellMeans;
+import features.Feature;
+import features.FeatureSorter;
+import filters.DotFilterQueue;
+import filters.FilterManager;
 
 
 public class MainGUI extends JFrame {
@@ -1047,7 +1049,7 @@ public class MainGUI extends JFrame {
 			}
 
 		});
-		ProcessMenu.add(item);
+		// ProcessMenu.add(item);
 
 		ProcessMenu.addSeparator();
 		item = new JMenuItem("Stop");
@@ -2244,11 +2246,11 @@ public class MainGUI extends JFrame {
 			initScalingParameters();
 			initFeatures(ChannelNames);
 			updateFeatures();
+			loadFieldROIs();
 			updateAllPlots();
 
 			//
 			//Checking if loaded project features match up 
-			ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
 			StringBuffer[] fNames = new StringBuffer[TheFeatures.size()];
 			for (int j = 0; j < TheFeatures.size(); j++) {
 				fNames[j] = new StringBuffer(((Feature)TheFeatures.get(j)).toString());
@@ -2263,6 +2265,46 @@ public class MainGUI extends JFrame {
 			TheMainGUI.repaint();
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * If fields already exist int he data.h5 file, then see if we should load
+	 * ROIs
+	 * 
+	 * @author Bjorn Millard
+	 * */
+	public void loadFieldROIs() {
+		String h5path = TheProjectDirectory.getAbsolutePath() + File.separator
+				+ "Data.h5";
+		// Iterating through all fields and checking if they have ROIs to load
+		Enumeration<String> keys = TheImageRail_H5IO.getHashtable().keys();
+		while (keys.hasMoreElements()) {
+			String key = keys.nextElement();
+			if (key.indexOf("f") >= 0) {
+				int plateIndex = Integer.parseInt((key.substring(1, key
+						.indexOf("w"))));
+				int wellIndex = Integer.parseInt(key.substring(
+						key.indexOf("w") + 1, key.indexOf("f")));
+				int fieldIndex = Integer.parseInt(key.substring(key
+						.indexOf("f") + 1, key.length()));
+
+				Model_PlateRepository rep = ThePlatePanel.getModel();
+				Model_Well well = rep.getWell(plateIndex, wellIndex);
+
+
+
+				String fieldPath = TheImageRail_H5IO.getHashtable().get(key);
+				ArrayList<Polygon> rois = TheImageRail_H5IO.readROIs(h5path,
+						fieldPath);
+				if (rois != null) {
+					int num = rois.size();
+					for (int i = 0; i < num; i++) {
+						well.getFields()[fieldIndex].setROI(rois.get(i));
+					}
+				}
+			}
+
 		}
 	}
 

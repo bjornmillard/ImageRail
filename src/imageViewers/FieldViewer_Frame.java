@@ -402,7 +402,9 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 							   {
 					public void actionPerformed(ActionEvent ae)
 					{
-						TheCurrentViewer.getTheField().addROI(TheCurrentViewer.getCopyOfROI());
+				TheCurrentViewer.getTheField().addROI(
+						TheCurrentViewer.getCopyOfROI(),
+						TheCurrentViewer.getFieldDimensions());
 						TheCurrentViewer.repaint();
 					}
 				});
@@ -415,7 +417,9 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 					{
 						int len = TheFieldViewers.length;
 						for (int i = 0; i < len; i++)
-							TheFieldViewers[i].getTheField().addROI(TheFieldViewers[i].getCopyOfROI());
+					TheFieldViewers[i].getTheField().addROI(
+							TheFieldViewers[i].getCopyOfROI(),
+							TheCurrentViewer.getFieldDimensions());
 						
 						TheCurrentViewer.repaint();
 					}
@@ -675,7 +679,9 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		
 		if (keyVal == KeyEvent.VK_SPACE)
 		{
-			TheCurrentViewer.getTheField().addROI(TheCurrentViewer.getCopyOfROI());
+			TheCurrentViewer.getTheField().addROI(
+					TheCurrentViewer.getCopyOfROI(),
+					TheCurrentViewer.getFieldDimensions());
 			repaint();
 		}
 		

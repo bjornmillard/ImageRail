@@ -20,6 +20,7 @@
 
 package imagerailio;
 
+import java.awt.Polygon;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
@@ -139,7 +140,7 @@ public class ImageRail_SDCube
 		if(hashtable_indexToPath!=null)
 			path = (String) hashtable_indexToPath.get(indexKey);
 		String fieldID = indexKey + "f" + fieldIndex;
-		
+
 
 		// If not, create a new Sample
 		if (path == null) {
@@ -161,6 +162,10 @@ public class ImageRail_SDCube
 				expDesignModel.addSample(expSample);
 			}
 
+			// Now checking for the path
+			if (hashtable_indexToPath != null)
+				path = (String) hashtable_indexToPath.get(indexKey);
+
 			// init this field
 			String pathToSample = "./Children/" + sampleIndex;
 			createField_skeleton(pathToSample, fieldIndex, fieldID,
@@ -170,17 +175,20 @@ public class ImageRail_SDCube
 			// Close the HDF5 file to prevent multiple process access
 			io.closeHDF5();
 
+
 		}
 		// If so, ask does this field group already exist?
 		else {
 			io.openHDF5(hdfPath);
-			if (!io
-.existsGroup(hdfPath, path + "/Children/"
+			if (!io.existsGroup(hdfPath, path + "/Children/"
 							+ fieldIndex)) {
 
 				// If not, create field group
 				createField_skeleton(path, fieldIndex, fieldID,
 						fieldDimensions, false, true, true, false);
+
+
+
 			} else
 			{
 				// If exists, overwrite?
@@ -190,6 +198,10 @@ public class ImageRail_SDCube
 			}
 			io.closeHDF5();
 		}
+
+		// Hashing this field index/path upon success
+		// write the samples plate/well data
+		hashtable_indexToPath.put(fieldID, path + "/Children/" + fieldIndex);
 	}
 
 	/**
@@ -238,6 +250,7 @@ public class ImageRail_SDCube
 		// Writing Field_ID
 		String[] fID = { fieldID };
 		io.writeDataset(hdfPath, fPath + "/Meta" + "/" + "Field_ID", fID);
+
 	}
 
 	/**
@@ -1733,8 +1746,12 @@ public class ImageRail_SDCube
 				boolean exists = false;
 				for (int j = 0; j < numFields; j++) {
 					// seeing if this field has a "feature_values" dataset
+					// String path = pathToSample + "/Children/" + j
+					// + "/Data/feature_values";
+
+					// seeing if this field has a "feature_values" dataset
 					String path = pathToSample + "/Children/" + j
-							+ "/Data/feature_values";
+							+ "/Meta/Height_Width_Channels";
 
 					try {
 						io.openHDF5(hdfPath);
@@ -1851,5 +1868,118 @@ public class ImageRail_SDCube
 		return null;
 	}
 
+	/**
+	 * Writes the 2D points of a polygon ROI to the metdata group of the given
+	 * field path
+	 * 
+	 * @author Bjorn Millard
+	 * @param String
+	 *            pathToDestinationField
+	 * @param Polygon
+	 *            roi
+	 * @param int ID of ROI
+	 * */
+	public void writeROI(String pathToField, Polygon roi, int ID)
+	{
+		int[][] in = new int[roi.npoints][2];
+		for (int i = 0; i < roi.npoints; i++) {
+			in[i][0] = roi.xpoints[i];
+			in[i][1] = roi.ypoints[i];
+		}
+		try {
+			String path = pathToField + "/Meta/roi_" + ID;
+			System.out.println(path);
+			io.openHDF5(hdfPath);
+			boolean boo = io.existsDataset(path);
+			io.closeHDF5();
+			if (!boo) {
+				io.writeDataset(hdfPath, path, in);
+			} else
+				System.out
+						.println("ERROR: could not write ROI to HDF5 since dataset already exists at: "
+								+ path);
+		} catch (H5IO_Exception e) {
+			System.out.println("ERROR writing ROI to HDF5 file");
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * Reads ROIs from the HDF5 file and returns and ArrayLIst<Polygon>. Note
+	 * all ROIs are stored as polygons even if they were originally Rectangles
+	 * or Ellipses
+	 * 
+	 * @author Bjorn Millard
+	 * */
+	public ArrayList<Polygon> readROIs(String h5path, String fieldPath) {
+		ArrayList<Polygon> rois = new ArrayList<Polygon>();
+		try {	
+			String metaPath = fieldPath + "/Meta";
+			String[] names = io.getGroupChildNames(h5path, metaPath);
+			int len = names.length;
+			io.openHDF5(hdfPath);
+			for (int i = 0; i < len; i++) {
+				if(names[i].indexOf("roi_")>=0)
+				{
+					String roiPath = metaPath+"/"+names[i];
+					Data_2D<Integer> values = (Data_2D<Integer>) io
+							.readDataset(hdfPath, roiPath);
+					if (values != null)
+					{
+						Integer[][] vals = values.getData();
+						int numP = vals.length;
+						int[] xpoints = new int[numP];
+						int[] ypoints = new int[numP];
+
+						for (int j = 0; j < numP; j++) {
+							xpoints[j] = (int) vals[j][0].floatValue();
+							ypoints[j] = (int) vals[j][1].floatValue();
+						}
+						Polygon poly = new Polygon(xpoints, ypoints, numP);
+						rois.add(poly);
+					}
+				}
+
+			}
+			io.closeHDF5();
+
+		} catch (H5IO_Exception e) {
+			System.out.println("ERROR writing ROI to HDF5 file");
+			e.printStackTrace();
+		}
+
+		return rois;
+	}
+
+	/**
+	 * Removes the 2D points of a polygon ROI to the metdata group of the given
+	 * field path and ROI index
+	 * 
+	 * @author Bjorn Millard
+	 * @param String
+	 *            pathToDestinationField
+	 * @param int ID of ROI
+	 * */
+	public void removeROI(String pathToField, int roi_ID) {
+
+		try {
+			String path = pathToField + "/Meta/roi_" + roi_ID;
+			io.openHDF5(hdfPath);
+			boolean boo = io.existsDataset(path);
+			io.closeHDF5();
+			if (boo)
+ {
+				io.openHDF5(hdfPath);
+				io.removeDataset(path);
+				io.closeHDF5();
+
+			}
+		} catch (H5IO_Exception e) {
+			System.out.println("ERROR writing ROI to HDF5 file");
+			e.printStackTrace();
+		}
+
+	}
 
 }

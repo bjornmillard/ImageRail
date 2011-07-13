@@ -52,6 +52,11 @@ public class Model_PlateRepository
 		return ThisGUI;
 	}
 
+	/** Returns well with given indices */
+	public Model_Well getWell(int plateIndex, int wellIndex) {
+		return ThePlates[plateIndex].getWell(wellIndex);
+	}
+
 	/** Returns all wells in this project */
 	public ArrayList<Model_Well> getAllWells() {
 		ArrayList<Model_Well> arrAll = new ArrayList<Model_Well>();

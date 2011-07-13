@@ -32,6 +32,7 @@ import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.util.ArrayList;
 
+import sdcubeio.H5IO_Exception;
 import segmentedobject.Cell;
 
 public class Model_Field {
@@ -49,8 +50,6 @@ public class Model_Field {
 		ROIs = new ArrayList<Shape>();
 		ROIs_selected = new ArrayList<Boolean>();
 		ImageFiles = imageFiles;
-
-
 	}
 
 	public int getIndexInWell() {
@@ -61,10 +60,29 @@ public class Model_Field {
 		return parentWell;
 	}
 
-	public void addROI(Shape roi) {
+	/**
+	 * Adds this ROI to the Model_Fields ROIs arraylist without writing it to
+	 * the HDF5 file. Used for loading ROIs already read from the HDF5 file
+	 * 
+	 * @author Bjorn Millard
+	 * */
+	public void setROI(Shape roi) {
+		if (ROIs == null)
+			ROIs = new ArrayList<Shape>();
+		ROIs.add(roi);
+		ROIs_selected.add(new Boolean(false));
+	}
+
+	/**
+	 * Adds this ROI to the Model_Fields ROIs arraylist and also writes it to
+	 * the HDF5 file
+	 * 
+	 * @author Bjorn Millard
+	 * */
+	public void addROI(Shape roi, int[] fieldDimensions) {
 		if (roi instanceof Polygon) {
 		//Check this is not a duplicate ROI
-		int len = ROIs.size();
+			int len = ROIs.size();
 			for (int i = 0; i < len; i++) {
 				if (ROIs.get(i) instanceof Polygon) {
 					Polygon polyIn = (Polygon) roi;
@@ -87,6 +105,40 @@ public class Model_Field {
 					}
 				}
 			}
+			// Writing ROI To HDF5 file
+			Polygon polyIn = (Polygon) roi;
+			ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+
+			String pathToField = io.getHashtable().get(
+					io.getIndexKey(getParentWell().getPlate().getID(),
+							getParentWell().getWellIndex())
+							+ "f" + getIndexInWell());
+			// Sample doesnt exist yet, so create a sample and field skeleton
+			if (pathToField == null) {
+				try {
+					io.createField(getParentWell().getID(), getParentWell()
+							.getPlate().getID(),
+							getParentWell().getWellIndex(), getIndexInWell(),
+							fieldDimensions, gui.MainGUI.getGUI()
+									.getExpDesignConnector());
+				} catch (H5IO_Exception e) {
+					System.out
+							.println("ERROR creating field in the HDF5 file in order to store ROI***");
+					e.printStackTrace();
+				}
+			}
+			// Try again
+			String key = io.getIndexKey(getParentWell().getPlate().getID(),
+					getParentWell().getWellIndex())
+					+ "f" + getIndexInWell();
+			System.out.println("using key: " + key);
+			pathToField = io.getHashtable().get(key);
+			System.out.println(pathToField);
+			if (pathToField != null)
+				io.writeROI(pathToField, polyIn, ROIs.size());
+			else
+				System.out
+						.println("ERROR - did not create field properly such that the ROI could be encoded in HDF5");
 		}
 		else if (roi instanceof Rectangle)
 		{
@@ -113,6 +165,7 @@ public class Model_Field {
 			}
 		}
 		
+
 		ROIs.add(roi);
 		System.out.println("Adding ROI");
 		ROIs_selected.add(new Boolean(false));
@@ -145,11 +198,30 @@ public class Model_Field {
 	public void deleteROIs() {
 		ROIs = new ArrayList<Shape>();
 		ROIs_selected = new ArrayList<Boolean>();
+
+		// Deleting ROIs from HDF5 file
+		ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+		String pathToField = io.getHashtable().get(
+				io.getIndexKey(getParentWell().getPlate().getID(),
+						getParentWell().getWellIndex())
+						+ "f" + getIndexInWell());
+		if (pathToField != null)
+			for (int i = 0; i < ROIs.size(); i++)
+				io.removeROI(pathToField, i);
 	}
 
 	public void deleteROI(int index) {
 		ROIs.remove(index);
 		ROIs_selected.remove(index);
+
+		// Deleting ROI from HDF5 file
+		ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+		String pathToField = io.getHashtable().get(
+				io.getIndexKey(getParentWell().getPlate().getID(),
+						getParentWell().getWellIndex())
+						+ "f" + getIndexInWell());
+		if (pathToField != null)
+			io.removeROI(pathToField, index);
 	}
 
 	public int getNumberOfChannels() {

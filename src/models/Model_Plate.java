@@ -593,6 +593,23 @@ public class Model_Plate
 		return TheWells[r - 1][c - 1];
 	}
 	
+	/**
+	 * Returns the well within this plate with the given index
+	 * 
+	 * @author BLM
+	 */
+	public Model_Well getWell(int index) {
+		int cols = getNumColumns();
+		int rows = getNumRows();
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				if (TheWells[i][j].getWellIndex() == index)
+					return TheWells[i][j];
+			}
+		}
+		return null;
+	}
+
 	/** Initializes the min/max values of all features within the plate
 	 * @author BLM*/
 	public void initMinMaxFeatureValues()
@@ -646,10 +663,13 @@ public class Model_Plate
 				float[] means = io.readWellMeans(getID(), wellIndex);
 				float[] stdevs = io.readWellStdevs(getID(), wellIndex);
 				if(means!=null & stdevs!=null)
+ {
 					TheWells[r][c].setWellMeansAndStdevs(means, stdevs);
+					}
 				else
+ {
 					System.out.println("**Error: found data for path: "+pathToSample + "  r,c: "+r +","+c +"  but could not load it properly");
-
+					}
 			}
 			 wellIndex++;
 		}
