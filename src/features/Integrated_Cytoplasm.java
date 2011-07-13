@@ -33,12 +33,16 @@ public class Integrated_Cytoplasm extends Feature
 {
 	public float getValue(CellCoordinates cell, int[][][] raster, float[] backgroundValues)
 	{
-		int sum = 0;
+		long sum = 0;
 		Point[] coords = cell.getComCoordinates("Cytoplasm");
-		int len = coords.length;
-		
+		int len = coords == null ? 0 : coords.length;
+		if (len == 0)
+			return 0f;
+
 		for (int i = 0; i < len; i++)
 			sum+=raster[coords[i].y][coords[i].x][ChannelIndex]; 	//TODO - need to account for multiple wavelengths
+		
+		assert sum >= 0;
 		
 		return sum-(len*backgroundValues[ChannelIndex]);
 	}

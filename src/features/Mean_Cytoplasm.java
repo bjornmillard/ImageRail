@@ -33,19 +33,19 @@ public class Mean_Cytoplasm extends Feature
 {
 	public float getValue(CellCoordinates cell, int[][][] raster, float[] backgroundValues)
 	{
-		float sum = 0;
+		long sum = 0;
 		Point[] coords = cell.getComCoordinates("Cytoplasm");
-		int len = coords.length;
+		int len = coords == null ? 0 : coords.length;
 		if (len == 0)
-			return 0;
+			return 0f;
 		
 		for (int i = 0; i < len; i++)
 			sum+=raster[coords[i].y][coords[i].x][ChannelIndex];
-		sum = sum/len;
-		//Subtracting precomputed background for this set of field images
-		sum = sum-backgroundValues[ChannelIndex];
+
+		assert sum >= 0;
 		
-		return sum;
+		//Subtracting precomputed background for this set of field images
+		return ((float) sum)/len - backgroundValues[ChannelIndex];
 	}
 	
 	public boolean isMultiSpectralFeature()
