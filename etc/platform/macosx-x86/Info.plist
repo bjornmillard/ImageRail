@@ -31,6 +31,8 @@
             <string>$JAVAROOT/ImageRail.jar</string>
             <string>$JAVAROOT/jhdf5.jar</string>
             <string>$JAVAROOT/SDCube_API.jar</string>
+            <string>$JAVAROOT/log4j-1.2.16.jar</string>
+            <string>$JAVAROOT/commons-lang3-3.0.jar</string>
         </array>
         <key>WorkingDirectory</key>
         <string>$APP_PACKAGE/Contents/Resources</string>

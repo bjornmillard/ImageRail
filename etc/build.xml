@@ -57,6 +57,9 @@ NOTES
 			<fileset file="${basedir}/../SDCube_API/doc/SDCube Programming Manual.pdf" />
 		</copy>
 		<copy todir="build/${platform}/lib" preservelastmodified="true">
+			<fileset dir="${basedir}/lib" excludes=".svn" />
+		</copy>
+		<copy todir="build/${platform}/lib" preservelastmodified="true">
 			<fileset dir="${basedir}/../SDCube_API/lib" excludes=".svn" />
 		</copy>
 	</target>
