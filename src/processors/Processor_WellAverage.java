@@ -207,7 +207,7 @@ public class Processor_WellAverage extends Thread implements Processor
 				io.writeParentPlateInfo(plateIndex, wellIndex, totNumWells);
 				io.writeSegmentationParameters(plateIndex, wellIndex,
 						(int) well.getParameterSet().getThreshold_Nucleus(),
-						(int) well.getParameterSet().getThreshold_Cell(),
+						(int) well.getParameterSet().getThreshold_Cytoplasm(),
 						(int) well.getParameterSet().getThreshold_Background());
 				
 			}

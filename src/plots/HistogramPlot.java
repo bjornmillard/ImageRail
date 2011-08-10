@@ -59,7 +59,6 @@ import javax.swing.border.BevelBorder;
 
 import models.Model_Well;
 import segmentedobject.Cell;
-import tempObjects.Cell_RAM;
 import tools.SVG_writer;
 import dialogs.CaptureImage_Dialog;
 
@@ -570,42 +569,44 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 		return avgData;
 	}
 	
-	/** Constructs a normalized histogram of numBins bins given the cells and a feature of interest
-	 * @author BLM*/
-	static public float[] getHistogram_normalized(Cell_RAM[] cells , Feature feature, int numBins)
-	{
-		int numC = cells.length;
-		float max = Float.NEGATIVE_INFINITY;
-		float min = Float.POSITIVE_INFINITY;
-		for (int p = 0; p < numC; p++)
-		{
-			//TODO
-//			float val = (float)feature.getValue(cells[p]);
-//			if (val > max)
-//				max = val;
-//			if (val < min)
-//				min = val;
-		}
-		float range = max-min;
-		float step = range/numBins;
-		float[] bins = new float[numBins];
-		for (int p = 0; p < numC; p++)
-		{
-			//TODO
-//			float val = (float)feature.getValue(cells[p]);
-//			int ind = (int)((val-min)/(max-min)*numBins);
-//			System.out.println("ind: "+ind);
-//			if (ind<0)
-//				ind = 0;
-//			if (ind>numBins-1)
-//				ind = numBins-1;
-//			bins[ind]++;
-		}
-		for (int i = 0; i < numBins; i++)
-			bins[i] = bins[i]/(float)numC;
-		
-		return bins;
-	}
+	// /** Constructs a normalized histogram of numBins bins given the cells and
+	// a feature of interest
+	// * @author BLM*/
+	// static public float[] getHistogram_normalized(Cell_RAM[] cells , Feature
+	// feature, int numBins)
+	// {
+	// int numC = cells.length;
+	// float max = Float.NEGATIVE_INFINITY;
+	// float min = Float.POSITIVE_INFINITY;
+	// for (int p = 0; p < numC; p++)
+	// {
+	// //TODO
+	// // float val = (float)feature.getValue(cells[p]);
+	// // if (val > max)
+	// // max = val;
+	// // if (val < min)
+	// // min = val;
+	// }
+	// float range = max-min;
+	// float step = range/numBins;
+	// float[] bins = new float[numBins];
+	// for (int p = 0; p < numC; p++)
+	// {
+	// //TODO
+	// // float val = (float)feature.getValue(cells[p]);
+	// // int ind = (int)((val-min)/(max-min)*numBins);
+	// // System.out.println("ind: "+ind);
+	// // if (ind<0)
+	// // ind = 0;
+	// // if (ind>numBins-1)
+	// // ind = numBins-1;
+	// // bins[ind]++;
+	// }
+	// for (int i = 0; i < numBins; i++)
+	// bins[i] = bins[i]/(float)numC;
+	//
+	// return bins;
+	// }
 	
 	public void captureSVG(PrintWriter pw)
 	{

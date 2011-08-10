@@ -1049,7 +1049,7 @@ public class MainGUI extends JFrame {
 			}
 
 		});
-		// ProcessMenu.add(item);
+		ProcessMenu.add(item);
 
 		ProcessMenu.addSeparator();
 		item = new JMenuItem("Stop");
@@ -1890,7 +1890,7 @@ public class MainGUI extends JFrame {
 							p.setWellName(wellName);
 							p.setProcessType(processType);
 							p.setThreshold_Background(threshold_bkgd);
-							p.setThreshold_Cell(threshold_cell);
+							p.setThreshold_Cytoplasm(threshold_cell);
 							p.setThreshold_Nucleus(threshold_nucleus);
 							p.setAnnulusSize(annulusSize);
 							p.setMeanOrIntegrated(meanOrIntegrated);

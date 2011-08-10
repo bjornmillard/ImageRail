@@ -196,8 +196,9 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 					numR = plate.getNumRows();
 					
 					//printing out each well's value
+					for (int c = 0; c < numC; c++)
+
 					for (int r = 0; r < numR; r++)
-						for (int c =0; c < numC; c++)
 						{
 							Model_Well theWell = plate.getWells()[r][c];
 							if (theWell.isSelected())

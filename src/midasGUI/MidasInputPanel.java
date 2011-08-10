@@ -110,7 +110,8 @@ public class MidasInputPanel extends JPanel
 
 						if (!string.equalsIgnoreCase("")) {
 							ExpDesign_Description desc = new ExpDesign_Description(
-									"Date", null, string, null, null, null);
+									"Date", null, string, null, null, null,
+									"Date");
 
 								TheExpDesign_Model.replaceDescription(theWells[i]
 									.getID(), desc);
@@ -135,7 +136,8 @@ public class MidasInputPanel extends JPanel
 
 						if (!string.equalsIgnoreCase("")) {
 							ExpDesign_Description desc = new ExpDesign_Description(
-									"Date", null, string, null, null, null);
+									"Date", null, string, null, null, null,
+									"Date");
 
 							TheExpDesign_Model.replaceDescription(theWells[i]
 									.getID(), desc);
@@ -160,7 +162,8 @@ public class MidasInputPanel extends JPanel
 
 						if (!string.equalsIgnoreCase("")) {
 							ExpDesign_Description desc = new ExpDesign_Description(
-									"Date", null, string, null, null, null);
+									"Date", null, string, null, null, null,
+									"Date");
 
 							TheExpDesign_Model.replaceDescription(theWells[i]
 									.getID(), desc);
@@ -286,7 +289,7 @@ public class MidasInputPanel extends JPanel
 
 					ExpDesign_Description desc = new ExpDesign_Description(
 								"Measurement_Time", null, null, null, time,
-								time_units);
+									time_units, "Time");
 
 					TheExpDesign_Model.replaceDescription(theWells[i]
 								.getID(), desc);
@@ -326,7 +329,7 @@ public class MidasInputPanel extends JPanel
 
 							ExpDesign_Description desc = new ExpDesign_Description(
 									"Measurement_Time", null, null, null, time,
-									time_units);
+									time_units, "Time");
 
 							TheExpDesign_Model.replaceDescription(theWells[i]
 									.getID(), desc);
@@ -362,7 +365,7 @@ public class MidasInputPanel extends JPanel
 
 							ExpDesign_Description desc = new ExpDesign_Description(
 									"Measurement_Time", null, null, null, time,
-									time_units);
+									time_units, "Time");
 
 							TheExpDesign_Model.replaceDescription(theWells[i]
 									.getID(), desc);
@@ -973,7 +976,7 @@ val_i.getValue()))
 		{
 			TreatmentToEdit = null;
 			int width = 330;
-			int height = 350;
+			int height = 400;
 			setTitle("Add Treatment:");
 			setSize(width,height);
 			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -990,7 +993,7 @@ val_i.getValue()))
 			CurrentTreatments.setEditable(false);
 			
 			
-			textField = new JTextField[5];
+			textField = new JTextField[6];
 			for (int i=0; i < textField.length; i ++)
 				textField[i] = new JTextField(10);
 			
@@ -1001,16 +1004,19 @@ val_i.getValue()))
 			textField[2].setEditable(true);
 			textField[3].setEditable(true);
 			textField[4].setEditable(true);
+			textField[5].setEditable(true);
+
 			textField[0].setEnabled(true);
 			textField[1].setEnabled(true);
-			textField[2].setEditable(true);
-			textField[3].setEditable(true);
-			textField[4].setEditable(true);
+			textField[2].setEnabled(true);
+			textField[3].setEnabled(true);
+			textField[4].setEnabled(true);
+			textField[5].setEnabled(true);
 
 			
 			Object[] array = { "Name:", textField[0], "Value", textField[1],
 					"Units", textField[2], "Time", textField[3], "Time Units",
-					textField[4] };
+					textField[4], "Category", textField[5] };
 			//Create an array specifying the number of dialog buttons
 			//and their text.
 			Object[] options = {btnString1, btnString2};
@@ -1050,7 +1056,7 @@ val_i.getValue()))
 		{
 			TreatmentToEdit = treatmentToEdit;
 			int width = 330;
-			int height = 350;
+			int height = 400;
 			setTitle("Edit Treatment:");
 			setSize(width,height);
 			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -1067,32 +1073,36 @@ val_i.getValue()))
 			CurrentTreatments.setEditable(false);
 			
 			
-			textField = new JTextField[5];
+			textField = new JTextField[6];
 			for (int i=0; i < textField.length; i ++)
 				textField[i] = new JTextField(10);
 			
 			CurrentTreatments.setEnabled(false);
-			CurrentTreatments.setEnabled(false);
+			CurrentTreatments.setEditable(false);
 			textField[0].setEditable(true);
 			textField[1].setEditable(true);
 			textField[2].setEditable(true);
 			textField[3].setEditable(true);
 			textField[4].setEditable(true);
+			textField[5].setEditable(true);
+
 
 			textField[0].setEnabled(true);
 			textField[1].setEnabled(true);
 			textField[2].setEnabled(true);
 			textField[3].setEnabled(true);
 			textField[4].setEnabled(true);
+			textField[5].setEnabled(true);
 			
 			textField[0].setText(treatmentToEdit.getName());
 			textField[1].setText(treatmentToEdit.getValue());
 			textField[2].setText(treatmentToEdit.getUnits());
 			textField[3].setText(treatmentToEdit.getTimeValue());
 			textField[4].setText(treatmentToEdit.getTimeUnits());
+			textField[5].setText(treatmentToEdit.getCategory());
 			
 			Object[] array = {"Name:", textField[0], "Value",textField[1], "Units", textField[2], "Time", textField[3], "Time Units",
-					textField[4] };
+					textField[4], "Category", textField[5] };
 			
 			//Create an array specifying the number of dialog buttons
 			//and their text.
@@ -1166,10 +1176,10 @@ val_i.getValue()))
 					String units = textField[2].getText().trim();
 					String timeValue = textField[3].getText().trim();
 					String timeUnits = textField[4].getText().trim();
+					String category = textField[5].getText().trim();
 					
 					theTreatment = new ExpDesign_Description("Treatment", name,
-							"" + val,
-							units, timeValue, timeUnits);
+							"" + val, units, timeValue, timeUnits, category);
 					
 					treatmentComboBox.addItem(theTreatment);
 					treatmentComboBox.repaint();
@@ -1396,7 +1406,7 @@ val_i.getValue()))
 					String name = textField[0].getText();
 					theMeasurement = new ExpDesign_Description("Measurement",
 							name, null,
-							null, null, null);
+ null, null, null, null);
 
 					
 					measurementComboBox.addItem(theMeasurement);

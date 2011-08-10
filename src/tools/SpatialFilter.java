@@ -134,17 +134,18 @@ public class SpatialFilter
 		return temp;
 	}
 	
-	static public float[][][] erode(float[][][] inputRaster, Pixel[][] pixels, int index)
+	static public float[][][] erode(float[][][] inputRaster, Pixel[] pixels,
+			int index)
 	{
 		final int MARKER = 10;
-		int nRows = inputRaster.length;
-		int nCols = inputRaster[0].length;
+		int height = inputRaster.length;
+		int width = inputRaster[0].length;
 		float[][][] temp = tools.ImageTools.copyRaster(inputRaster);  //TODO - may want to not create this
 		float thresh = 0;
 		boolean change = false;
 		//if one of this guys' neighbors is off... then this guy is off too
-		for (int r = 1; r < nRows-1; r++)
-			for (int c = 1; c < nCols-1; c++)
+		for (int r = 1; r < height - 1; r++)
+			for (int c = 1; c < width - 1; c++)
 			{
 				//checking his neighbors
 				if(inputRaster[r][c][index]>thresh && inputRaster[r][c][index]<MARKER)
@@ -152,9 +153,11 @@ public class SpatialFilter
 					int numNeighborsOff = getNumNeighborsOff(r,c, inputRaster, index, thresh);
 					if (numNeighborsOff>0)
 					{
-						ArrayList path = new ArrayList();
+						ArrayList<Pixel> path = new ArrayList<Pixel>();
 						FoundOne = false;
-						hasAtLeastOneNeighborLandlocked(pixels[r][c], pixels, inputRaster,index, thresh, path);
+						hasAtLeastOneNeighborLandlocked(
+								pixels[r + (c * height)], pixels, inputRaster,
+								index, thresh, path);
 						if(FoundOne)
 						{
 							change = true;
@@ -174,7 +177,9 @@ public class SpatialFilter
 		return temp;
 	}
 	
-	static public void hasAtLeastOneNeighborLandlocked(Pixel pix, Pixel[][] pixels, float[][][] raster,int index, float threshold, ArrayList path)
+	static public void hasAtLeastOneNeighborLandlocked(Pixel pix,
+			Pixel[] pixels, float[][][] raster, int index, float threshold,
+			ArrayList<Pixel> path)
 	{
 		if (pix.getID()!=-1)
 			return;
@@ -185,7 +190,7 @@ public class SpatialFilter
 		pix.setID(1);
 		
 		
-		Pixel[] neighs = Pixel.getNeighbors(pix, pixels);
+		Pixel[] neighs = pix.getNeighbors(pixels);
 		int len = neighs.length;
 		if (len!=8)
 			return;
@@ -235,7 +240,8 @@ public class SpatialFilter
 		return counter;
 	}
 	
-	static public float[][][] findUltimateErodedPoints(float[][][] inputRaster, Pixel[][] pixels, int index)
+	static public float[][][] findUltimateErodedPoints(float[][][] inputRaster,
+			Pixel[] pixels, int index)
 	{
 		
 		//TODO - make copy of raster in temp, that is 2x high, then alternate between the two instead of making new raster each erosion
@@ -307,13 +313,13 @@ public class SpatialFilter
 		return inputRaster;
 	}
 	
-	static public float[][][] linearFilter(float[][][] inputRaster, float[][] kernal, int channelIndex)
+	static public float[][] linearFilter(float[][] inputRaster, float[][] kernal)
 	{
 		int kernalWidth = kernal.length;
 		int halfKernalWidth = (int)(((float)kernalWidth-1f)/2f);
 		int nRows = inputRaster.length;
 		int nCols = inputRaster[0].length;
-		float[][][] temp = new float[nRows][nCols][inputRaster[0][0].length];//tools.ImageTools.copyRaster(inputRaster);
+		float[][] temp = new float[nRows][nCols];
 		
 		for (int r = halfKernalWidth; r < nRows-halfKernalWidth; r++)
 			for (int c = halfKernalWidth; c < nCols-halfKernalWidth; c++)
@@ -326,36 +332,27 @@ public class SpatialFilter
 					for (int k = c-halfKernalWidth; k < c+halfKernalWidth+1; k++)
 					{
 						float w = kernal[kcol][krow];
-						sum+=w*inputRaster[n][k][channelIndex];
+						sum += w * inputRaster[n][k];
 						kcol++;
 					}
 					kcol = 0;
 					krow++;
 				}
 				
-				temp[r][c][channelIndex] =  sum;
+				temp[r][c] = sum;
 			}
-		
-		
-		//now scaling to not have negative numbers
-//		for (int r = 0; r < nRows; r++)
-//			for (int c = 0; c < nCols; c++)
-//			{
-//				temp[r][c][channelIndex] = temp[r][c][channelIndex]/max;
-//			}
-		
 		
 		return temp;
 		
 	}
 	
-	static public int[][][] linearFilter(int[][][] inputRaster, float[][] kernal, int channelIndex)
+	static public int[][] linearFilter(int[][] inputRaster, float[][] kernal)
 	{
 		int kernalWidth = kernal.length;
 		int halfKernalWidth = (int)(((float)kernalWidth-1f)/2f);
 		int nRows = inputRaster.length;
 		int nCols = inputRaster[0].length;
-		int[][][] temp = new int[nRows][nCols][inputRaster[0][0].length];//tools.ImageTools.copyRaster(inputRaster);
+		int[][] temp = new int[nRows][nCols];// tools.ImageTools.copyRaster(inputRaster);
 		int min = Integer.MAX_VALUE;
 		int max = Integer.MIN_VALUE;
 		for (int r = halfKernalWidth; r < nRows-halfKernalWidth; r++)
@@ -369,7 +366,7 @@ public class SpatialFilter
 					for (int k = c-halfKernalWidth; k < c+halfKernalWidth+1; k++)
 					{
 						float w = kernal[kcol][krow];
-						sum+=w*(inputRaster[n][k][channelIndex]);
+						sum += w * (inputRaster[n][k]);
 						kcol++;
 					}
 					kcol = 0;
@@ -381,24 +378,9 @@ public class SpatialFilter
 				else if (sum > max)
 					max = sum;
 				
-				temp[r][c][channelIndex] =  sum;
+				temp[r][c] = sum;
 			}
-		
-		
-		//now scaling to not have negative numbers
-//		for (int r = 0; r < nRows; r++)
-//			for (int c = 0; c < nCols; c++)
-//			{
-//				int val = tools.ImageTools.getPixelIntensity(temp[r][c]);
-//				val = val-min;
-//				val = (int)((float)val*(float)tools.ImageTools.Pixel_maxIntensity/(float)max);
-//				if (val < 0)
-//					val = 0;
-//				if (val>tools.ImageTools.Pixel_maxIntensity)
-//					val = tools.ImageTools.Pixel_maxIntensity;
-//				tools.ImageTools.setIntensityToPixel(temp[r][c], val);
-//			}
-		
+
 		return temp;
 	}
 	
@@ -506,6 +488,79 @@ public class SpatialFilter
 		return temp;
 	}
 	
+	static public int[][] sobelEdgeDetector(int[][][] inputRaster,
+			int channelIndex, float[][] kernal_h, float[][] kernal_v,
+			float[][] kernal_d1, float[][] kernal_d2) {
+		int kernalWidth = kernal_v.length;
+		int halfKernalWidth = (int) (((float) kernalWidth - 1f) / 2f);
+		int nRows = inputRaster.length;
+		int nCols = inputRaster[0].length;
+		int[][] temp = tools.ImageTools.copyRaster_oneChannelOnly(inputRaster,
+				channelIndex);
+		int min = Integer.MAX_VALUE;
+		int max = Integer.MIN_VALUE;
+		for (int r = halfKernalWidth; r < nRows - halfKernalWidth; r++)
+			for (int c = halfKernalWidth; c < nCols - halfKernalWidth; c++) {
+				int sum_h = 0;
+				int sum_v = 0;
+				int sum_d1 = 0;
+				int sum_d2 = 0;
+				int krow = 0;
+				int kcol = 0;
+				for (int n = r - halfKernalWidth; n < r + halfKernalWidth + 1; n++) {
+					for (int k = c - halfKernalWidth; k < c + halfKernalWidth
+							+ 1; k++) {
+						float w = kernal_h[kcol][krow];
+						sum_h += w
+ * inputRaster[n][k][channelIndex];
+						w = kernal_v[kcol][krow];
+						sum_v += w
+ * inputRaster[n][k][channelIndex];
+						w = kernal_d1[kcol][krow];
+						sum_d1 += w
+ * inputRaster[n][k][channelIndex];
+						w = kernal_d2[kcol][krow];
+						sum_d2 += w
+ * inputRaster[n][k][channelIndex];
+
+						kcol++;
+					}
+					kcol = 0;
+					krow++;
+				}
+
+				sum_h = Math.abs(sum_h);
+				sum_v = Math.abs(sum_v);
+				sum_d1 = Math.abs(sum_d1);
+				sum_d2 = Math.abs(sum_d2);
+
+				int sum = sum_h + sum_v + sum_d1 + sum_d2;
+
+				if (sum < min)
+					min = sum;
+				else if (sum > max)
+					max = sum;
+
+				temp[r][c] = sum;
+			}
+
+		// now scaling to not have negative numbers
+		for (int r = 0; r < nRows; r++)
+			for (int c = 0; c < nCols; c++) {
+				int val = temp[r][c];
+				val = val - min;
+				val = (int) ((float) val
+						* (float) tools.ImageTools.Pixel_maxIntensity / (float) max);
+				if (val < 0)
+					val = 0;
+				if (val > tools.ImageTools.Pixel_maxIntensity)
+					val = tools.ImageTools.Pixel_maxIntensity;
+				temp[r][c] = val;
+			}
+
+		return temp;
+	}
+
 	static public int[][][] sobelEdgeDetector(int[][][] inputRaster, float[][] kernal_h, float[][] kernal_v, float[][] kernal_d1,float[][] kernal_d2)
 	{
 		int kernalWidth = kernal_v.length;
@@ -664,7 +719,7 @@ public class SpatialFilter
 
 	
 	/* dt of 2d function using squared distance */
-	static public float[][][] distanceTransform(float[][][] im)
+	static public float[][] distanceTransform(float[][] im)
 	{
 		int rows = im.length;
 		int cols = im[0].length;
@@ -679,11 +734,11 @@ public class SpatialFilter
 		for (int r = 0; r < rows; r++)
 		{
 			for (int c = 0; c < cols; c++)
-				f[c] = im[r][c][0];
+				f[c] = im[r][c];
 			
 			float[] d = dt(f, cols);
 			for (int c = 0; c < cols; c++)
-				im[r][c][0] = d[c];
+				im[r][c] = d[c];
 			d = null;
 		}
 		
@@ -691,18 +746,14 @@ public class SpatialFilter
 		for (int c = 0; c < cols; c++)
 		{
 			for (int r = 0; r < rows; r++)
-				f[r] = im[r][c][0];
+				f[r] = im[r][c];
 			
 			float[] d = dt(f, rows);
 			for (int r = 0; r < rows; r++)
-				im[r][c][0] = d[r];
+				im[r][c] = d[r];
 		}
 		f = null;
 		
-//		for (int c = 0; c < cols; c++)
-//			for (int r = 0; r < rows; r++)
-//				if (im[r][c][0]>0)
-//					System.out.println(""+im[r][c][0]);
 		
 		return im;
 	}

@@ -214,7 +214,7 @@ public class ThresholdWizard extends JFrame {
 							// Nuc bound threshold
 							pset.setThreshold_Nucleus(NucThreshold);
 							// Cell bound Threshold
-							pset.setThreshold_Cell(CytoThreshold);
+							pset.setThreshold_Cytoplasm(CytoThreshold);
 							// Bkgd threshold
 							pset.setThreshold_Background(BkgdThreshold);
 

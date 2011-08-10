@@ -36,6 +36,7 @@ public class CellCompartment
 	
 	private Point[] coordinates;
 	private String name;
+	private int ID;
 	
 	/**
 	 * Constructs and initializes a compartment with its coordinates and name.
@@ -48,8 +49,15 @@ public class CellCompartment
 	{
 		this.coordinates = coordinates;
 		this.name = name;
+		this.ID = -1;
 	}
 	
+	public CellCompartment(Point[] coordinates, String name, int ID) {
+		this.coordinates = coordinates;
+		this.name = name;
+		this.ID = ID;
+	}
+
 	/**
 	 * Constructs and initializes a compartment with its coordinates and name.
 	 * @param coordinates An array of the pixels, which belongs to this compartment. It could be
@@ -59,7 +67,10 @@ public class CellCompartment
 	 */
 	public CellCompartment( ArrayList<Point> coordinates, String name)
 	{
-		this.coordinates = (Point[]) coordinates.toArray( new Point[0]);
+		int len = coordinates.size();
+		this.coordinates = new Point[len];
+		for (int i = 0; i < len; i++)
+			this.coordinates[i] = coordinates.get(i);
 		this.name = name;
 	}
 
@@ -121,4 +132,25 @@ public class CellCompartment
 	{
 		coordinates = null;
 	}
+
+	/**
+	 * Sets the ID of this compartment
+	 * 
+	 * @param int ID
+	 * @author BLM
+	 * */
+	public void setID(int ID) {
+		this.ID = ID;
+	}
+
+	/**
+	 * Gets the ID of this compartment
+	 * 
+	 * @return int ID
+	 * @author BLM
+	 * */
+	public int getID() {
+		return ID;
+	}
+
 }

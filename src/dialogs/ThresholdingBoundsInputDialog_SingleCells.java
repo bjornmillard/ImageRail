@@ -212,7 +212,7 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 			MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(
 					false);
 			textField[0].setText("" + pset.getThreshold_Nucleus());
-			textField[1].setText("" + pset.getThreshold_Cell());
+			textField[1].setText("" + pset.getThreshold_Cytoplasm());
 			textField[2].setText("" + pset.getThreshold_Background());
 
 			// if (pset.getAnnulusSize() != Model_ParameterSet.NOVALUE) {
@@ -361,7 +361,7 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 						// Nuc bound threshold
 						pset.setThreshold_Nucleus(Threshold_Nucleus);
 						// Cell bound Threshold
-						pset.setThreshold_Cell(Threshold_CellBoundary);
+						pset.setThreshold_Cytoplasm(Threshold_CellBoundary);
 						// Bkgd threshold
 						pset.setThreshold_Background( Threshold_Background);
 

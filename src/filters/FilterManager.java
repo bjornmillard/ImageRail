@@ -49,8 +49,6 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import tempObjects.Cell_RAM;
-
 public class FilterManager extends JFrame
 {
 	public MainGUI TheMainGUI;
@@ -260,26 +258,7 @@ public class FilterManager extends JFrame
 		return listModel;
 	}
 	
-	
-	/** Determines if the given cell passes all the defined and selected filters
-	 * @author BLM*/
-	public boolean doesCellPass(Cell_RAM cell)
-	{
-		boolean pass = true;
-		FeatureFilter[] filters = getSelectedFilters();
-		int numF = filters.length;
-		for (int i = 0; i < numF; i++)
-		{
-			FeatureFilter f = filters[i];
-			if(!f.pass(cell))
-			{
-				pass = false;
-				break;
-			}
-		}
-		return pass;
-	}
-	
+
 	
 	public void executeFiters()
 	{

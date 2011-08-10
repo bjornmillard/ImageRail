@@ -119,14 +119,24 @@ public class PlateInputDialog extends JDialog implements ActionListener,Property
 						numCols = 3;
 					}
 				});
+		JRadioButton r5 = new JRadioButton("10 timepoints");
+		r5.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				numRows = 1;
+				numCols = 10;
+			}
+		});
 		//Group the radio buttons.
 		ButtonGroup group = new ButtonGroup();
 		group.add(r0);
 		group.add(r1);
 		group.add(r2);
 		group.add(r3);
+		group.add(r4);
+		group.add(r5);
+
 		JPanel radioPanel = new JPanel();
-		radioPanel.setLayout(new GridLayout(6,1));
+		radioPanel.setLayout(new GridLayout(7, 1));
 		radioPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
 		radioPanel.add(new JLabel("Wells/Model_Plate:"));
 		radioPanel.add(r0);
@@ -134,6 +144,8 @@ public class PlateInputDialog extends JDialog implements ActionListener,Property
 		radioPanel.add(r2);
 		radioPanel.add(r3);
 		radioPanel.add(r4);
+		radioPanel.add(r5);
+
 		r1.setSelected(true);
 		numRows = 8;
 		numCols = 12;

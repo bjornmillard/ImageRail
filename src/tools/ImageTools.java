@@ -63,8 +63,9 @@ import com.sun.media.jai.codec.SeekableStream;
 
 public class ImageTools
 {
-	static final public int Pixel_maxIntensity = 765;
-	
+	// static final public int Pixel_maxIntensity = 765;
+	static final public int Pixel_maxIntensity = 100;
+
 	/**
 	 * Method getWellNamesOfImagesPresent
 	 *
@@ -301,6 +302,83 @@ public class ImageTools
 		return false;
 	}
 	
+	static public void displayRaster(int[][] theData) {
+		int width = theData[0].length;
+		int height = theData.length;
+		float max = 0;
+		// norm
+		for (int r = 0; r < height; r++)
+			for (int c = 0; c < width; c++)
+				if (theData[r][c] > max)
+					max = theData[r][c];
+
+		float[][] newData = new float[height][width];
+		for (int r = 0; r < height; r++)
+			for (int c = 0; c < width; c++)
+				newData[r][c] = (float) theData[r][c] / max;
+
+		// Create a float data sample model.
+		SampleModel sampleModel = RasterFactory.createBandedSampleModel(
+				DataBuffer.TYPE_FLOAT, width, height, 1);
+
+		// Create a compatible ColorModel.
+		ColorModel colorModel = PlanarImage.createColorModel(sampleModel);
+
+		// Create a TiledImage using the float SampleModel.
+		TiledImage tiledImage = new TiledImage(0, 0, width, height, 0, 0,
+				sampleModel, colorModel);
+
+		float[] imageDataSingleArray = new float[width * height];
+		int count = 0;
+		// It is important to have the height/width order here !
+		for (int h = 0; h < height; h++)
+			for (int w = 0; w < width; w++)
+				imageDataSingleArray[count++] = newData[h][w];
+
+		// Create a Data Buffer from the values on the single image array.
+		DataBufferFloat dbuffer = new DataBufferFloat(imageDataSingleArray,
+				width * height);
+
+		// Create a WritableRaster.
+		Raster raster = RasterFactory.createWritableRaster(sampleModel,
+				dbuffer, new Point(0, 0));
+
+		// Set the data of the tiled image to be the raster.
+		tiledImage.setData(raster);
+
+		JFrame window = new JFrame();
+		ScrollingImagePanel panel = new ScrollingImagePanel(tiledImage, width,
+				height);
+		window.add(panel);
+
+		window.pack();
+		window.show();
+	}
+
+	static public float min(int[][] theData) {
+		int width = theData[0].length;
+		int height = theData.length;
+		float min = Float.POSITIVE_INFINITY;
+		// norm
+		for (int r = 0; r < height; r++)
+			for (int c = 0; c < width; c++)
+				if (theData[r][c] < min)
+					min = theData[r][c];
+		return min;
+	}
+
+	static public float max(int[][] theData) {
+		int width = theData[0].length;
+		int height = theData.length;
+		float max = Float.NEGATIVE_INFINITY;
+		// norm
+		for (int r = 0; r < height; r++)
+			for (int c = 0; c < width; c++)
+				if (theData[r][c] > max)
+					max = theData[r][c];
+		return max;
+	}
+
 	static public void displayRaster(int[][][] theData)
 	{
 		int width = theData[0].length;
@@ -1167,6 +1245,17 @@ public class ImageTools
 		return temp;
 	}
 	
+	static public int[][] copyRaster_oneChannelOnly(int[][][] raster,
+			int index) {
+		int nRows = raster.length;
+		int nCols = raster[0].length;
+		int[][] temp = new int[nRows][nCols];
+		for (int r = 0; r < nRows; r++)
+			for (int c = 0; c < nCols; c++)
+				temp[r][c] = raster[r][c][index];
+		return temp;
+	}
+
 	static public float[][][] copyRaster(float[][][] raster)
 	{
 		int nRows = raster.length;

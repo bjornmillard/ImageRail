@@ -138,7 +138,7 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 					channelBox.setSelectedIndex(i);
 			}
 			
-			textField[0].setText("" + pset.getThreshold_Cell());
+			textField[0].setText("" + pset.getThreshold_Cytoplasm());
 			if (pset.getThreshold_Nucleus() != Model_ParameterSet.NOVALUE)
 			{
 				textField[1].setEnabled(true);
@@ -273,7 +273,7 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 							//Nuc bound threshold
 							pset.setThreshold_Nucleus(Threshold_Nucleus);
 							//Cell bound Threshold
-							pset.setThreshold_Cell(Threshold_CellBoundary);
+							pset.setThreshold_Cytoplasm(Threshold_CellBoundary);
 							//Bkgd threshold
 							pset.setThreshold_Background(Threshold_Background);
 							
@@ -316,7 +316,7 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 							//Nuc bound threshold
 							pset.setThreshold_Nucleus(Threshold_Nucleus);
 							//Cell bound Threshold
-							pset.setThreshold_Cell(Threshold_CellBoundary);
+							pset.setThreshold_Cytoplasm(Threshold_CellBoundary);
 							//Bkgd threshold
 							pset.setThreshold_Background(Threshold_Background);
 							

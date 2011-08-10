@@ -33,7 +33,6 @@ import java.util.Iterator;
 import models.Model_ParameterSet;
 import segmentedobject.CellCompartment;
 import segmentedobject.CellCoordinates;
-import tempObjects.Cell_RAM;
 import tools.LinearKernals;
 import tools.SpatialFilter;
 
@@ -418,7 +417,7 @@ public class Segmentor_Osteo implements CellSegmentor {
 			for (int c = 0; c < width; c++)
 				pixels[r][c] = new Pixel(r, c, -1);
 
-		float[][][] iRaster = new float[height][width][1];
+		float[][] iRaster = new float[height][width];
 		float max = 0;
 
 		//
@@ -431,21 +430,21 @@ public class Segmentor_Osteo implements CellSegmentor {
 			for (int c = 0; c < width; c++)
 				if (raster[r][c][pset.getThresholdChannel_nuc_Index()] > pset
 						.getThreshold_Nucleus())
-					iRaster[r][c][0] = 1e20f;
+					iRaster[r][c] = 1e20f;
 		iRaster = SpatialFilter.distanceTransform(iRaster);
 		iRaster = SpatialFilter.linearFilter(iRaster, LinearKernals
-				.getLinearSmoothingKernal(5), 0);
+.getLinearSmoothingKernal(5));
 		// tools.ImageTools.displayRaster(iRaster);
 
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++)
-				if (iRaster[r][c][0] > max)
-					max = iRaster[r][c][0];
+				if (iRaster[r][c] > max)
+					max = iRaster[r][c];
 		Pixel.resetIDs(pixels);
 		ArrayList<Pixel> pixList = new ArrayList<Pixel>(width * height);
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++) {
-				pixels[r][c].setValue((int) iRaster[r][c][0]);
+				pixels[r][c].setValue((int) iRaster[r][c]);
 				if (pixels[r][c].getValue() > 0)
 					pixList.add(pixels[r][c]);
 			}
@@ -480,7 +479,7 @@ public class Segmentor_Osteo implements CellSegmentor {
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++)
 				if (pixels[r][c].getID() == PEAK) {
-					iRaster[r][c][0] = 255f;
+					iRaster[r][c] = 255f;
 
 					// Dilating 1x some pixels
 					Pixel[] neighs = Pixel.getNeighbors(pixels[r][c], pixels);
@@ -492,14 +491,14 @@ public class Segmentor_Osteo implements CellSegmentor {
 							if (neighs2[n].getRow() != r
 									&& neighs2[n].getColumn() != c)
 								if (iRaster[neighs2[n].getRow()][neighs2[n]
-										.getColumn()][0] == 255)
+										.getColumn()] == 255)
 									iRaster[neighs[i].getRow()][neighs[i]
-											.getColumn()][0] = 255f;
+											.getColumn()] = 255f;
 						}
 
 					}
-				} else if (iRaster[r][c][0] != 255)
-					iRaster[r][c][0] = 0;
+				} else if (iRaster[r][c] != 255)
+					iRaster[r][c] = 0;
 
 		// tools.ImageTools.displayRaster(iRaster);
 
@@ -511,14 +510,14 @@ public class Segmentor_Osteo implements CellSegmentor {
 		// and call them the same group
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++)
-				if (iRaster[r][c][0] > 0 && pixels[r][c].getID() == -1) {
+				if (iRaster[r][c] > 0 && pixels[r][c].getID() == -1) {
 					ArrayList<Pixel> allPixels = new ArrayList<Pixel>();
 					pixels[r][c].setID(allNuclei.size());
 					allPixels.add(pixels[r][c]);
 					boolean validNuclei = true;
 					try {
-						assignAllOnNeighbors_nucleusThresholding(pixels[r][c],
-								allPixels, iRaster, 0, 0);
+						assignAllPositiveNeighbors(pixels[r][c], allPixels,
+								iRaster);
 					} catch (StackOverflowError e) {
 						validNuclei = false;
 					}
@@ -547,20 +546,17 @@ public class Segmentor_Osteo implements CellSegmentor {
 		// + (System.currentTimeMillis() - time));
 	}
 
-	private void assignAllOnNeighbors_nucleusThresholding(Pixel pix,
-			ArrayList allPixelsInGroup, float[][][] raster,
-			int index_thresholdingChannel, int threshold) {
+	private void assignAllPositiveNeighbors(Pixel pix,
+			ArrayList<Pixel> allPixelsInGroup, float[][] raster) {
 		Pixel[] neighbors = Pixel.getNeighbors(pix, pixels);
 		int len = neighbors.length;
 		for (int i = 0; i < len; i++) {
 			Pixel p = neighbors[i];
 			if (p.getID() == -1
-					&& raster[p.getRow()][p.getColumn()][index_thresholdingChannel] > threshold) {
+ && raster[p.getRow()][p.getColumn()] > 0) {
 				allPixelsInGroup.add(p);
 				p.setID(pix.getID());
-
-				assignAllOnNeighbors_nucleusThresholding(p, allPixelsInGroup,
-						raster, index_thresholdingChannel, threshold);
+				assignAllPositiveNeighbors(p, allPixelsInGroup, raster);
 			}
 		}
 	}
@@ -607,14 +603,14 @@ public class Segmentor_Osteo implements CellSegmentor {
 			for (int c = 0; c < width; c++) {
 				// if part of cell
 				if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cell()) {
+						.getThreshold_Cytoplasm()) {
 					wholeCounter++;
 					for (int i = 0; i < numChannels; i++)
 						wholeMeanVals[i] += raster_[r][c][i];
 				}
 				// is above cell boundary threshold but not part of nucleus
 				if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cell()
+						.getThreshold_Cytoplasm()
 						&& raster_[r][c][pset.getThresholdChannel_nuc_Index()] < pset
 								.getThreshold_Nucleus()) {
 					cytoCounter++;
@@ -668,7 +664,7 @@ public class Segmentor_Osteo implements CellSegmentor {
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++) {
 				if (rgbRaster[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cell()) {
+						.getThreshold_Cytoplasm()) {
 					pixelCounter++;
 					for (int i = 0; i < numChannels; i++)
 						integValues[i][0] += rgbRaster[r][c][i];
@@ -757,7 +753,7 @@ public class Segmentor_Osteo implements CellSegmentor {
 						if (neigh.getID() == -1
 								&& Raster[neigh.getRow()][neigh.getColumn()][pset
 										.getThresholdChannel_cyto_Index()] > pset
-										.getThreshold_Cell()) {
+										.getThreshold_Cytoplasm()) {
 							change = true;
 							Point point = new Point(neigh.getColumn(), neigh
 									.getRow());
@@ -905,7 +901,6 @@ public class Segmentor_Osteo implements CellSegmentor {
 		private Nucleus nucleus;
 		private Cytoplasm cytoplasm;
 		private ArrayList<Point> boundaryPoints;
-		private Cell_RAM[] allCells;
 
 		private int SourceImage_Width;
 		private int SourceImage_Height;
@@ -1041,24 +1036,6 @@ public class Segmentor_Osteo implements CellSegmentor {
 			nucleus.clearPixelData();
 		}
 
-		/**
-		 * Sets a list of all the cells that were in the same image as this cell
-		 * 
-		 * @author BLM
-		 */
-		public void setAllCells(Cell_RAM[] cells) {
-			allCells = cells;
-		}
-
-		/**
-		 * Returns a list of all the cells that were in the same image as this
-		 * cell
-		 * 
-		 * @author BLM
-		 */
-		public Cell_RAM[] getAllCells() {
-			return allCells;
-		}
 
 		/**
 		 * Sets up the mean value float[] arrays (length==numChannels) to store
@@ -1241,23 +1218,6 @@ public class Segmentor_Osteo implements CellSegmentor {
 			channelValues_integrated = new float[numChannels];
 		}
 
-		public void setChannelValue(float val, int index, int TYPE) {
-			if (TYPE == Cell_RAM.INTEGRATED)
-				channelValues_integrated[index] = val;
-		}
-
-		public double getChannelValue(int index, int TYPE) {
-			if (TYPE == Cell_RAM.MEAN) {
-				if (index >= channelValues_integrated.length)
-					return 0;
-				return channelValues_integrated[index] / (float) numPixels;
-			} else if (TYPE == Cell_RAM.INTEGRATED) {
-				if (index >= channelValues_integrated.length)
-					return 0;
-				return channelValues_integrated[index];
-			}
-			return 0;
-		}
 
 		public void kill() {
 			if (PixelCoordinates != null) {

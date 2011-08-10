@@ -56,7 +56,7 @@ import javax.swing.border.BevelBorder;
 import models.Model_ParameterSet;
 import models.Model_Well;
 import processors.Processor_SingleCells;
-import segmentors.Segmentor_Osteo;
+import segmentors.NucleiDescentAndMerge;
 
 public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 		implements ActionListener, PropertyChangeListener {
@@ -68,13 +68,12 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 	private Model_Well[] TheWells;
 	private JComboBox channelBox_nuc;
 	private JComboBox channelBox_cyto;
+	private JComboBox channelBox_membrane;
 	private int CoordsToSave;
 
 	public ThresholdingBoundsInputDialog_SingleCells_Osteo(Model_Well[] wells) {
 		int width = 470;
-		int height = 550;
-		// With bottom panel
-		// int height = 600;
+		int height = 675;
 		setTitle("Input");
 		setSize(width, height);
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -108,12 +107,19 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 				obX2[i] = list.get(i);
 		channelBox_cyto = new JComboBox(obX2);
 
+		Object[] obX3 = new Object[list.size()];
+		if (list.size() > 0)
+			for (int i = 0; i < list.size(); i++)
+				obX3[i] = list.get(i);
+		channelBox_membrane = new JComboBox(obX3);
+
 		TheWells = wells;
-		textField = new JTextField[4];
+		textField = new JTextField[5];
 		textField[0] = new JTextField(6); // Nuc bound
 		textField[1] = new JTextField(6); // Cell bound
 		textField[2] = new JTextField(6); // Back bound
-		textField[3] = new JTextField(6); // Multi-thread
+		textField[3] = new JTextField(6); // Mem bound
+		textField[4] = new JTextField(6); // merge param
 
 		// Setting up the RaidioButtons for pixel saving selections
 		JRadioButton r0 = new JRadioButton("Bounding Box");
@@ -146,7 +152,7 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 		group.add(r1);
 		group.add(r0);
 		group.add(r2);
-		group.add(r3);
+		// group.add(r3);
 		CoordsToSave = 1;
 		JPanel radioPanel = new JPanel();
 		radioPanel.setLayout(new GridLayout(5, 1));
@@ -156,39 +162,17 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 		radioPanel.add(r1);
 		radioPanel.add(r0);
 		radioPanel.add(r2);
-		radioPanel.add(r3);
+		// radioPanel.add(r3);
 
 		MainGUI.getGUI().setWatershedNucleiCheckBox(
 				new JCheckBoxMenuItem("Watershed Nuclei"));
 		MainGUI.getGUI().getWatershedNucleiCheckBox().setSelected(true);
 
-		// MainGUI.getGUI().setCytoplasmAnnulusCheckBox(
-		// new JCheckBoxMenuItem("Annulus Only"));
-		MainGUI.getGUI().getMultithreadCheckBox().addActionListener(
-				new ActionListener() {
-					public void actionPerformed(ActionEvent ae) {
-						if (MainGUI.getGUI().getMultithreadCheckBox()
-								.isSelected()) {
-							textField[3].setText("1");
-							textField[3].setEnabled(true);
-						} else {
-							textField[3].setText("1");
-							textField[3].setEnabled(false);
-						}
 
-						validate();
-						repaint();
-					}
-				});
-
-		//
-		// Loading parameters if common (pset!=null)
-		//
-		// MainGUI.getGUI().getCytoplasmAnnulusCheckBox().setSelected(false);
 		MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
 		textField[2].setText("0");
-		textField[3].setText("1");
-		textField[3].setEnabled(false);
+		textField[3].setText("65536");
+		textField[4].setText("0.1");
 
 		MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
 
@@ -209,51 +193,43 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 					channelBox_cyto.setSelectedIndex(i);
 			}
 
+			// memBoundChannel
+			num = channelBox_membrane.getItemCount();
+			for (int i = 0; i < num; i++) {
+				String name = (String) channelBox_membrane.getItemAt(i);
+				if (name.equalsIgnoreCase(pset
+						.getThresholdChannel_membrane_Name()))
+					channelBox_membrane.setSelectedIndex(i);
+			}
+
 			MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(
 					false);
 			textField[0].setText("" + pset.getThreshold_Nucleus());
-			textField[1].setText("" + pset.getThreshold_Cell());
+			textField[1].setText("" + pset.getThreshold_Cytoplasm());
 			textField[2].setText("" + pset.getThreshold_Background());
+			textField[3].setText("" + pset.getThreshold_Membrane());
 
-			// if (pset.getAnnulusSize() != Model_ParameterSet.NOVALUE) {
-			// MainGUI.getGUI().getCytoplasmAnnulusCheckBox()
-			// .setSelected(true);
-			// textField[3].setText("" + pset.getAnnulusSize());
-			// textField[3].setEnabled(true);
-			// } else
-			// MainGUI.getGUI().getCytoplasmAnnulusCheckBox().setSelected(
-			// false);
 		}
-		//
+
 
 		// Create an array of the text and components to be displayed.
-		String[] mess = new String[6];
-		mess[0] = "Nucleus Thresholding Channel";
-		mess[1] = "Nucleus Boundary Threshold";
-		mess[2] = "Cytoplasm Thresholding Channel";
-		mess[3] = "Cytoplasm Boundary Threshold";
-		mess[4] = "Background Threshold";
-		mess[5] = "Number of Threads:";
+		String[] mess = new String[8];
+		mess[0] = "Nucleus Channel";
+		mess[1] = "Nucleus Threshold (>)";
+		mess[2] = "Cytoplasm/Bkgd Channel";
+		mess[3] = "Cytoplasm Threshold (>)";
+		mess[4] = "Background Threshold (<)";
+		mess[5] = "Membrane Channel";
+		mess[6] = "Membrane Threshold (>)";
+		mess[7] = "Merge Parameter (fraction common boundary):";
 
 		Object[] array = { mess[0], channelBox_nuc, mess[1], textField[0],
 				mess[2], channelBox_cyto, mess[3], textField[1], mess[4],
-				textField[2],
+				textField[2], mess[5], channelBox_membrane, mess[6],
+				textField[3], mess[7], textField[4],
 				MainGUI.getGUI().getLoadCellsImmediatelyCheckBox(),
 				new JLabel("   "), radioPanel };
-		// TODO - took out multithreading for time being
-		// , new JLabel("   "),
-		// MainGUI.getGUI().getMultithreadCheckBox(), mess[5],
-		// textField[3] };
 
-		// MainGUI.getGUI().getCytoplasmAnnulusCheckBox(), mess[5],
-		// textField[3] };
-		// Object[] array = {mess[0], channelBox_nuc ,mess[1], textField[0],
-		// mess[2], channelBox_cyto , mess[3], textField[1], mess[4],
-		// textField[2],
-		// MainGUI.getGUI().getLoadCellsImmediatelyCheckBox(),
-		// new JLabel("   "),
-		// new JLabel("   "), MainGUI.getGUI().getCytoplasmAnnulusCheckBox(),
-		// mess[5], textField[3]};
 
 		// Create an array specifying the number of dialog buttons
 		// and their text.
@@ -318,31 +294,25 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 			if (btnString1.equals(value)) {
 				String[] strings = null;
 
-				if (MainGUI.getGUI().getMultithreadCheckBox().isSelected()) {
-					strings = new String[4];
+				strings = new String[5];
 					strings[0] = textField[0].getText(); // Nuc thresh
 					strings[1] = textField[1].getText(); // Cyt Thresh
 					strings[2] = textField[2].getText(); // Bkgd thresh
-					strings[3] = textField[3].getText(); // Multithread
-				} else {
-					strings = new String[3];
-					strings[0] = textField[0].getText();
-					strings[1] = textField[1].getText();
-					strings[2] = textField[2].getText();
-				}
+				strings[3] = textField[3].getText(); // Membrane thresh
+				strings[4] = textField[4].getText(); // mergeParam
 
 				// make sure the inputed values are numbers only
 				if (tools.MathOps.areNumbers(strings)) {
 					int NucBoundaryChannel = channelBox_nuc.getSelectedIndex();
 					int CytoBoundaryChannel = channelBox_cyto
 							.getSelectedIndex();
+					int MembraneBoundaryChannel = channelBox_membrane
+							.getSelectedIndex();
 					float Threshold_Nucleus = Float.parseFloat(strings[0]);
 					float Threshold_CellBoundary = Float.parseFloat(strings[1]);
 					float Threshold_Background = Float.parseFloat(strings[2]);
-					float NumThreads = -1;
-					if (MainGUI.getGUI().getMultithreadCheckBox()
-							.isSelected())
-						NumThreads = Float.parseFloat(strings[3]);
+					float Threshold_Membrane = Float.parseFloat(strings[3]);
+					float MergeFactor = Float.parseFloat(strings[4]);
 
 					// Storing the Parameters for each Model_Well
 					int len = TheWells.length;
@@ -361,9 +331,14 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 						// Nuc bound threshold
 						pset.setThreshold_Nucleus(Threshold_Nucleus);
 						// Cell bound Threshold
-						pset.setThreshold_Cell(Threshold_CellBoundary);
+						pset.setThreshold_Cytoplasm(Threshold_CellBoundary);
 						// Bkgd threshold
 						pset.setThreshold_Background( Threshold_Background);
+						// Thresh channel Membrane
+						pset.setThresholdChannel_membrane_Name(MainGUI.getGUI()
+								.getTheChannelNames()[MembraneBoundaryChannel]);
+						// Mem threshold
+						pset.setThreshold_Membrane(Threshold_Membrane);
 
 						if (CoordsToSave == 0)
 							pset.setCoordsToSaveToHDF("BoundingBox");
@@ -373,11 +348,10 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 							pset.setCoordsToSaveToHDF("Outlines");
 						else if (CoordsToSave == 3)
 							pset.setCoordsToSaveToHDF("Everything");
+						well.TheParameterSet.setNumThreads(1);
 
-						// Annulus size
-						if (NumThreads > 0)
-							well.TheParameterSet
-									.setNumThreads((int) NumThreads);
+						pset.clearGeneralParameters();
+						pset.addGeneralParameter("MergeFactor", MergeFactor);
 
 						well.TheParameterSet.setMeanOrIntegrated(well.TheParameterSet.MEAN);
 
@@ -393,6 +367,13 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 							if (MainGUI.getGUI().getTheChannelNames()[j]
 									.equalsIgnoreCase(pset.getThresholdChannel_cyto_Name()))
 								pset.setThresholdChannel_cyto_Index (j);
+						// Finding the index of this channel name
+						for (int j = 0; j < MainGUI.getGUI()
+								.getTheChannelNames().length; j++)
+							if (MainGUI.getGUI().getTheChannelNames()[j]
+									.equalsIgnoreCase(pset
+											.getThresholdChannel_membrane_Name()))
+								pset.setThresholdChannel_membrane_Index(j);
 					}
 					if (Threshold_Background > 0)
 						MainGUI.getGUI().setBackgroundSubtract(true);
@@ -421,7 +402,7 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 					}
 					// Single thread run
 						Processor_SingleCells tasker = new Processor_SingleCells(
-								wellsWithImages, new Segmentor_Osteo());
+							wellsWithImages, new NucleiDescentAndMerge());
 
 					tasker.start();
 

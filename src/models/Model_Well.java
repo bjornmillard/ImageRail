@@ -818,7 +818,7 @@ public class Model_Well
 				+ TheParameterSet.getThreshold_Nucleus()
 				+ "' "
 				+ "  Threshold_Cell='"
-				+ TheParameterSet.getThreshold_Cell()
+				+ TheParameterSet.getThreshold_Cytoplasm()
 				+ "' "
 				+ "  Threshold_Background='"
 				+ TheParameterSet.getThreshold_Background()

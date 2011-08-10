@@ -108,7 +108,7 @@ public class Segment {
 				pset.setThreshold_Nucleus(NucleusThreshold);
 				// ARG_8 ---> Cyto Threshold
 				float CytoThreshold = Float.parseFloat(args[8]);
-				pset.setThreshold_Cell(CytoThreshold);
+				pset.setThreshold_Cytoplasm(CytoThreshold);
 				// ARG_9 ---> Bkgd Threshold
 				float BkgdThreshold = Float.parseFloat(args[9]);
 				pset.setThreshold_Background(BkgdThreshold);

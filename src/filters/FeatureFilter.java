@@ -30,7 +30,6 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import tempObjects.Cell_RAM;
 import features.Feature;
 import gui.MainGUI;
 
@@ -129,17 +128,6 @@ public class FeatureFilter
 				});
 	}
 	
-	public boolean pass(Cell_RAM cell)
-	{
-		if (TheFeature==null)
-			return true;
-		
-//		double val = TheFeature.getValue(cell);
-//		if (val<lowerBound || TheFeature.getValue(cell)>upperBound)
-//			return false;
-		
-		return true;
-	}
 	
 	public String toString()
 	{

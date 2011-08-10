@@ -22,21 +22,28 @@ package models;
 
 import gui.MainGUI;
 
+import java.util.ArrayList;
+
 public class Model_ParameterSet {
 	private String WellName;
 	private String ThresholdChannel_nuc_Name;
 	private String ThresholdChannel_cyto_Name;
+	private String ThresholdChannel_membrane_Name;
 	private int ThresholdChannel_nuc_Index;
 	private int ThresholdChannel_cyto_Index;
+	private int ThresholdChannel_membrane_Index;
 	private float Threshold_Nucleus;
-	private float Threshold_Cell;
+	private float Threshold_Cytoplasm;
 	private float Threshold_Background;
+	private float Threshold_Membrane;
 	private int AnnulusSize;
 	private String MeanOrIntegrated;
 	private boolean Modified;
 	private String ProcessType;
 	private String CoordsToSaveToHDF;
 	private int NumThreads;
+	private ArrayList<Float> GeneralParameters;
+	private ArrayList<String> GeneralParameters_names;
 
 	static public String MEAN = "MEAN";
 	static public String INTEGRATED = "INTEGRATED";
@@ -51,13 +58,17 @@ public class Model_ParameterSet {
 		ProcessType = UNPROCESSED;
 		ThresholdChannel_nuc_Name = null;
 		ThresholdChannel_cyto_Name = null;
+		ThresholdChannel_membrane_Name = null;
 		Threshold_Nucleus = NOVALUE;
-		Threshold_Cell = NOVALUE;
+		Threshold_Cytoplasm = NOVALUE;
 		Threshold_Background = NOVALUE;
+		Threshold_Membrane = NOVALUE;
 		AnnulusSize = NOVALUE;
 		CoordsToSaveToHDF = "BoundingBox"; // Default
 		NumThreads = 1;
 		MeanOrIntegrated = null;
+		GeneralParameters = new ArrayList<Float>();
+		GeneralParameters_names = new ArrayList<String>();
 	}
 
 	/**
@@ -101,8 +112,10 @@ public class Model_ParameterSet {
 		out.ProcessType = in.ProcessType;
 		out.ThresholdChannel_nuc_Name = in.ThresholdChannel_nuc_Name;
 		out.ThresholdChannel_cyto_Name = in.ThresholdChannel_cyto_Name;
+		out.ThresholdChannel_membrane_Name = in.ThresholdChannel_membrane_Name;
 		out.Threshold_Nucleus = in.Threshold_Nucleus;
-		out.Threshold_Cell = in.Threshold_Cell;
+		out.Threshold_Cytoplasm = in.Threshold_Cytoplasm;
+		out.Threshold_Membrane = in.Threshold_Membrane;
 		out.Threshold_Background = in.Threshold_Background;
 		out.AnnulusSize = in.AnnulusSize;
 		out.MeanOrIntegrated = in.MeanOrIntegrated;
@@ -132,11 +145,18 @@ public class Model_ParameterSet {
 				&& !p1.ThresholdChannel_cyto_Name
 						.equalsIgnoreCase(p2.ThresholdChannel_cyto_Name))
 			return false;
+		if (p1.ThresholdChannel_membrane_Name != null
+				&& p2.ThresholdChannel_membrane_Name != null
+				&& !p1.ThresholdChannel_membrane_Name
+						.equalsIgnoreCase(p2.ThresholdChannel_membrane_Name))
+			return false;
 		if (p1.Threshold_Nucleus != p2.Threshold_Nucleus)
 			return false;
-		if (p1.Threshold_Cell != p2.Threshold_Cell)
+		if (p1.Threshold_Cytoplasm != p2.Threshold_Cytoplasm)
 			return false;
 		if (p1.Threshold_Background != p2.Threshold_Background)
+			return false;
+		if (p1.Threshold_Membrane != p2.Threshold_Membrane)
 			return false;
 		if (p1.AnnulusSize != p2.AnnulusSize)
 			return false;
@@ -152,9 +172,12 @@ public class Model_ParameterSet {
 		st += "ThresholdChannel_nuc_Index=" + ThresholdChannel_nuc_Index + "\n";
 		st += "ThresholdChannel_cyto_Index=" + ThresholdChannel_cyto_Index
 				+ "\n";
+		st += "ThresholdChannel_membrane_Index="
+				+ ThresholdChannel_membrane_Index + "\n";
 		st += "Threshold_Nucleus=" + Threshold_Nucleus + "\n";
-		st += "Threshold_Cell=" + Threshold_Cell + "\n";
+		st += "Threshold_Cytoplasm=" + Threshold_Cytoplasm + "\n";
 		st += "Threshold_Bkgd=" + Threshold_Background + "\n";
+		st += "Threshold_Membrane=" + Threshold_Membrane + "\n";
 		st += "AnnulusSize=" + AnnulusSize + "\n";
 		st += "MeanOrIntegrated=" + MeanOrIntegrated + "\n";
 		st += "StoreCells="
@@ -193,6 +216,15 @@ public class Model_ParameterSet {
 		ThresholdChannel_cyto_Name = thresholdChannelCytoName;
 	}
 
+	public String getThresholdChannel_membrane_Name() {
+		return ThresholdChannel_membrane_Name;
+	}
+
+	public void setThresholdChannel_membrane_Name(
+			String thresholdChannelMembraneName) {
+		ThresholdChannel_membrane_Name = thresholdChannelMembraneName;
+	}
+
 	public int getThresholdChannel_nuc_Index() {
 		return ThresholdChannel_nuc_Index;
 	}
@@ -209,6 +241,15 @@ public class Model_ParameterSet {
 		ThresholdChannel_cyto_Index = thresholdChannelCytoIndex;
 	}
 
+	public int getThresholdChannel_membrane_Index() {
+		return ThresholdChannel_membrane_Index;
+	}
+
+	public void setThresholdChannel_membrane_Index(
+			int thresholdChannelMembraneIndex) {
+		ThresholdChannel_membrane_Index = thresholdChannelMembraneIndex;
+	}
+
 	public float getThreshold_Nucleus() {
 		return Threshold_Nucleus;
 	}
@@ -217,12 +258,20 @@ public class Model_ParameterSet {
 		Threshold_Nucleus = thresholdNucleus;
 	}
 
-	public float getThreshold_Cell() {
-		return Threshold_Cell;
+	public float getThreshold_Cytoplasm() {
+		return Threshold_Cytoplasm;
 	}
 
-	public void setThreshold_Cell(float thresholdCell) {
-		Threshold_Cell = thresholdCell;
+	public void setThreshold_Cytoplasm(float thresholdCell) {
+		Threshold_Cytoplasm = thresholdCell;
+	}
+
+	public void setThreshold_Membrane(float thresholdMembrane) {
+		Threshold_Membrane = thresholdMembrane;
+	}
+
+	public float getThreshold_Membrane() {
+		return Threshold_Membrane;
 	}
 
 	public float getThreshold_Background() {
@@ -282,4 +331,21 @@ public class Model_ParameterSet {
 		return NumThreads;
 	}
 
+	public void clearGeneralParameters() {
+		GeneralParameters = new ArrayList<Float>();
+		GeneralParameters_names = new ArrayList<String>();
+	}
+
+	public void addGeneralParameter(String name, Float val) {
+		GeneralParameters.add(val);
+		GeneralParameters_names.add(name);
+	}
+
+	public float getGeneralParameter(int index) {
+		return GeneralParameters.get(index).floatValue();
+	}
+
+	public String getGeneralParameter_name(int index) {
+		return GeneralParameters_names.get(index);
+	}
 }

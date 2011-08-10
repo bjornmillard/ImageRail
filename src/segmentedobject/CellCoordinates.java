@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import segmentors.NucleiDescentAndMerge.Pixel;
+
 /**
  * This class contains all the coordinates (pixels), which belongs to cell. The coordinates
  * are separated to the different compartments; for example the nucleus, cytoplasm or ER. 
@@ -36,8 +38,28 @@ import java.util.Hashtable;
  */
 public class CellCoordinates
 {
+	private int ID;
 	private CellCompartment[] com;
 	
+	/**
+	 * Constructs and initializes cell coordinates with no compartments.
+	 */
+	public CellCoordinates() {
+		this.com = null;
+		this.ID = -1;
+	}
+
+	/**
+	 * Constructs and initializes cell coordinates with no compartments, but
+	 * with and ID.
+	 * 
+	 * @param int ID
+	 */
+	public CellCoordinates(int ID) {
+		this.com = null;
+		this.ID = ID;
+	}
+
 	/**
 	 * Constructs and initializes cell coordinates with all compartments.
 	 * @param com All the compartments.
@@ -45,6 +67,13 @@ public class CellCoordinates
 	public CellCoordinates(CellCompartment[] com)
 	{
 		this.com = com;
+		// If ID is not defined, then a random ID gets assigned
+		this.ID = (int) (1000000000 * Math.random());
+	}
+
+	public CellCoordinates(CellCompartment[] com, int ID) {
+		this.com = com;
+		this.ID = ID;
 	}
 
 	/**
@@ -54,11 +83,50 @@ public class CellCoordinates
 	public CellCoordinates(ArrayList<CellCompartment> com)
 	{
 		this.com = (CellCompartment[]) com.toArray(new CellCompartment[0]);
+		// If ID is not defined, then a random ID gets assigned
+		this.ID = (int) (1000000000 * Math.random());
+	}
+
+	public CellCoordinates(ArrayList<CellCompartment> com, int ID) {
+		this.com = (CellCompartment[]) com.toArray(new CellCompartment[0]);
+		this.ID = ID;
 	}
 	
 	/**
+	 * Adds a new compartment.
+	 * 
+	 * @param CellCompartment
+	 *            compartment to add
+	 */
+	public void addCompartment(CellCompartment compartment) {
+		int len = com.length;
+		CellCompartment[] newComs = new CellCompartment[len + 1];
+		for (int i = 0; i < len; i++)
+			newComs[i] = com[i];
+		newComs[len] = compartment;
+		com = newComs;
+	}
+
+	/**
+	 * Adds a new compartment.
+	 * 
+	 * @param CellCompartment
+	 *            compartment to add
+	 */
+	public void addCompartment(ArrayList<Point> coords, String name) {
+		int len = com.length;
+		CellCompartment[] newComs = new CellCompartment[len + 1];
+		for (int i = 0; i < len; i++)
+			newComs[i] = com[i];
+		newComs[len] = new CellCompartment(coords, name);
+		com = newComs;
+	}
+
+	/**
 	 * Get a specific compartment.
-	 * @param i The index of the compartment (starts with 0).
+	 * 
+	 * @param i
+	 *            The index of the compartment (starts with 0).
 	 * @return Returns the specific compartment.
 	 */
 	public CellCompartment getCompartment (int i)
@@ -66,6 +134,24 @@ public class CellCoordinates
 		return com[i];
 	}
 	
+	/**
+	 * Sets the ID
+	 * 
+	 * @param int ID
+	 * @author BLM
+	 * */
+	public void setID(int ID) {
+		this.ID = ID;
+	}
+
+	/**
+	 * Gets the ID Return int ID
+	 * 
+	 * @author BLM
+	 * */
+	public int getID() {
+		return ID;
+	}
 	
 	/**
 	 * Get names of all compartments.
@@ -370,5 +456,85 @@ public class CellCoordinates
 			st += getComNames()[j] + "  " + getComCoordinates(j).length + "\n";
 		}
 		return st;
+	}
+
+	/**
+	 * Merges these two cells' coordinates into a combined larger cell. Note it
+	 * adopts the ID of cell1
+	 * 
+	 * @author Bjorn Millard
+	 */
+	static public CellCoordinates mergeCells(ArrayList<CellCoordinates> cells,
+			Pixel[] pixels, int height) {
+
+		if (cells == null || cells.size() == 0)
+			return null;
+
+		int numCells = cells.size();
+		CellCoordinates cell1 = cells.get(0);
+		int ID = cell1.getID();
+
+		// Adding the first nucleus as a CellCompartment Object
+		ArrayList<CellCompartment> cellComps = new ArrayList<CellCompartment>();
+		ArrayList<Point> outlinePts = new ArrayList<Point>();
+		ArrayList<Point> cytoPts = new ArrayList<Point>();
+
+		for (int c = 0; c < numCells; c++) {
+			// Adding all the nuclei compartments for the new cell
+			Point[] pts = cells.get(c).getComCoordinates("Nucleus");
+			cellComps.add(new CellCompartment(pts, "Nucleus_0"));
+			// Reassigning the pixels IDs
+			int num = pts.length;
+			for (int i = 0; i < num; i++)
+				pixels[pts[i].y + pts[i].x * height].setID(ID);
+
+			// Adding the outlines of this nucleus to outline compartment
+			pts = cells.get(c).getComCoordinates("NucBoundary");
+			int len = pts.length;
+			for (int i = 0; i < len; i++)
+				outlinePts.add(pts[i]);
+			// Reassigning the pixels IDs
+			num = pts.length;
+			for (int i = 0; i < num; i++)
+				pixels[pts[i].y + pts[i].x * height].setID(ID);
+
+			// Adding the cytoplasms to a single cellCompartment
+			pts = cells.get(c).getComCoordinates("Cytoplasm");
+			len = pts.length;
+			for (int i = 0; i < len; i++)
+				cytoPts.add(pts[i]);
+			// Reassigning the pixels IDs
+			num = pts.length;
+			for (int i = 0; i < num; i++)
+				pixels[pts[i].y + pts[i].x * height].setID(ID);
+		}
+
+		//
+		// Init the new cell boundary pixels now
+		int numPix = cytoPts.size();
+		for (int p = 0; p < numPix; p++) {
+			Point po = (Point) cytoPts.get(p);
+			Pixel pix = pixels[po.y + po.x * height];
+			Pixel[] neighbors = pix.getNeighbors(pixels);
+			int len = neighbors.length;
+			for (int j = 0; j < len; j++) {
+				Pixel neigh = neighbors[j];
+				if (neigh.getID() != pix.getID()) {
+					// cytoBoundary.add(po);
+					outlinePts.add(po);
+					break;
+				}
+			}
+		}
+
+		// Creating the Cytoplasm
+		CellCompartment cytoFinal = new CellCompartment(cytoPts, "Cytoplasm");
+		cellComps.add(cytoFinal);
+
+		// Creating the Outline compartment
+		CellCompartment outline = new CellCompartment(outlinePts, "Outline");
+		cellComps.add(outline);
+
+		return new CellCoordinates(cellComps);
 	}
 }
