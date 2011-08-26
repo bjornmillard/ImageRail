@@ -23,8 +23,6 @@ package tools;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import segmentors.DefaultSegmentor.Pixel;
-
 public class SpatialFilter
 {
 	static public boolean FoundOne;

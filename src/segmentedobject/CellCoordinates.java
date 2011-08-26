@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import segmentors.NucleiDescentAndMerge.Pixel;
+import tools.Pixel;
 
 /**
  * This class contains all the coordinates (pixels), which belongs to cell. The coordinates
@@ -465,7 +465,7 @@ public class CellCoordinates
 	 * @author Bjorn Millard
 	 */
 	static public CellCoordinates mergeCells(ArrayList<CellCoordinates> cells,
-			Pixel[] pixels, int height) {
+			tools.Pixel[] pixels, int height) {
 
 		if (cells == null || cells.size() == 0)
 			return null;

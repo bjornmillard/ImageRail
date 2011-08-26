@@ -54,7 +54,6 @@ import models.Model_ParameterSet;
 import models.Model_Plate;
 import models.Model_Well;
 import segmentedobject.CellCoordinates;
-import segmentors.DefaultSegmentor.Pixel;
 
 import com.sun.media.jai.codec.FileSeekableStream;
 import com.sun.media.jai.codec.ImageCodec;

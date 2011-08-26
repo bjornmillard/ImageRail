@@ -29,12 +29,15 @@ public class Model_ParameterSet {
 	private String ThresholdChannel_nuc_Name;
 	private String ThresholdChannel_cyto_Name;
 	private String ThresholdChannel_membrane_Name;
+	private String ThresholdChannel_marker_Name;
 	private int ThresholdChannel_nuc_Index;
 	private int ThresholdChannel_cyto_Index;
+	private int ThresholdChannel_marker_Index;
 	private int ThresholdChannel_membrane_Index;
 	private float Threshold_Nucleus;
 	private float Threshold_Cytoplasm;
 	private float Threshold_Background;
+	private float Threshold_Marker;
 	private float Threshold_Membrane;
 	private int AnnulusSize;
 	private String MeanOrIntegrated;
@@ -59,10 +62,12 @@ public class Model_ParameterSet {
 		ThresholdChannel_nuc_Name = null;
 		ThresholdChannel_cyto_Name = null;
 		ThresholdChannel_membrane_Name = null;
+		ThresholdChannel_marker_Name = null;
 		Threshold_Nucleus = NOVALUE;
 		Threshold_Cytoplasm = NOVALUE;
 		Threshold_Background = NOVALUE;
 		Threshold_Membrane = NOVALUE;
+		Threshold_Marker = NOVALUE;
 		AnnulusSize = NOVALUE;
 		CoordsToSaveToHDF = "BoundingBox"; // Default
 		NumThreads = 1;
@@ -111,9 +116,11 @@ public class Model_ParameterSet {
 		out.WellName = in.WellName;
 		out.ProcessType = in.ProcessType;
 		out.ThresholdChannel_nuc_Name = in.ThresholdChannel_nuc_Name;
+		out.ThresholdChannel_marker_Name = in.ThresholdChannel_marker_Name;
 		out.ThresholdChannel_cyto_Name = in.ThresholdChannel_cyto_Name;
 		out.ThresholdChannel_membrane_Name = in.ThresholdChannel_membrane_Name;
 		out.Threshold_Nucleus = in.Threshold_Nucleus;
+		out.Threshold_Marker = in.Threshold_Marker;
 		out.Threshold_Cytoplasm = in.Threshold_Cytoplasm;
 		out.Threshold_Membrane = in.Threshold_Membrane;
 		out.Threshold_Background = in.Threshold_Background;
@@ -150,7 +157,14 @@ public class Model_ParameterSet {
 				&& !p1.ThresholdChannel_membrane_Name
 						.equalsIgnoreCase(p2.ThresholdChannel_membrane_Name))
 			return false;
+		if (p1.ThresholdChannel_marker_Name != null
+				&& p2.ThresholdChannel_marker_Name != null
+				&& !p1.ThresholdChannel_marker_Name
+						.equalsIgnoreCase(p2.ThresholdChannel_marker_Name))
+			return false;
 		if (p1.Threshold_Nucleus != p2.Threshold_Nucleus)
+			return false;
+		if (p1.Threshold_Marker != p2.Threshold_Marker)
 			return false;
 		if (p1.Threshold_Cytoplasm != p2.Threshold_Cytoplasm)
 			return false;
@@ -172,12 +186,15 @@ public class Model_ParameterSet {
 		st += "ThresholdChannel_nuc_Index=" + ThresholdChannel_nuc_Index + "\n";
 		st += "ThresholdChannel_cyto_Index=" + ThresholdChannel_cyto_Index
 				+ "\n";
+		st += "ThresholdChannel_marker_Index=" + ThresholdChannel_marker_Index
+				+ "\n";
 		st += "ThresholdChannel_membrane_Index="
 				+ ThresholdChannel_membrane_Index + "\n";
 		st += "Threshold_Nucleus=" + Threshold_Nucleus + "\n";
 		st += "Threshold_Cytoplasm=" + Threshold_Cytoplasm + "\n";
 		st += "Threshold_Bkgd=" + Threshold_Background + "\n";
 		st += "Threshold_Membrane=" + Threshold_Membrane + "\n";
+		st += "Threshold_Marker=" + Threshold_Marker + "\n";
 		st += "AnnulusSize=" + AnnulusSize + "\n";
 		st += "MeanOrIntegrated=" + MeanOrIntegrated + "\n";
 		st += "StoreCells="
@@ -208,6 +225,14 @@ public class Model_ParameterSet {
 		ThresholdChannel_nuc_Name = thresholdChannelNucName;
 	}
 
+	public void setThresholdChannel_marker_Name(String name) {
+		ThresholdChannel_marker_Name = name;
+	}
+
+	public String getThresholdChannel_marker_Name() {
+		return ThresholdChannel_marker_Name;
+	}
+
 	public String getThresholdChannel_cyto_Name() {
 		return ThresholdChannel_cyto_Name;
 	}
@@ -233,6 +258,14 @@ public class Model_ParameterSet {
 		ThresholdChannel_nuc_Index = thresholdChannelNucIndex;
 	}
 
+	public int getThresholdChannel_marker_Index() {
+		return ThresholdChannel_marker_Index;
+	}
+
+	public void setThresholdChannel_marker_Index(int index) {
+		ThresholdChannel_marker_Index = index;
+	}
+
 	public int getThresholdChannel_cyto_Index() {
 		return ThresholdChannel_cyto_Index;
 	}
@@ -256,6 +289,14 @@ public class Model_ParameterSet {
 
 	public void setThreshold_Nucleus(float thresholdNucleus) {
 		Threshold_Nucleus = thresholdNucleus;
+	}
+
+	public float getThreshold_Marker() {
+		return Threshold_Marker;
+	}
+
+	public void setThreshold_Marker(float thresh) {
+		Threshold_Marker = thresh;
 	}
 
 	public float getThreshold_Cytoplasm() {

@@ -35,11 +35,12 @@ import tools.LinearKernals;
 import tools.Pixel;
 import tools.SpatialFilter;
 
-public class NucleiDescentAndMerge implements CellSegmentor {
+public class NucleiDescentAndMerge_OC implements CellSegmentor {
 	private int height;
 	private int width;
 	private int numChannels;
 	private ArrayList<Shape> ROIs;
+	boolean[] nucleiIsOC;
 
 	/**
 	 * The Basic ImageRail Segmentation occurs in two parts:
@@ -67,10 +68,64 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 				pixels[r + c * height] = new Pixel(r, c, -1, height, width);
 
 		// Step 1: Segmenting the nuclei
+		// 1) Identify all nuclei using the DNA channel above threshold in given
+		// channel
 		CellCompartment[] nuclei = segmentNuclei(Raster_Linear, pixels, pset);
-		// Step 2: Growing the nuclear seeds into Cells
-		ArrayList<CellCoordinates> cellCoords = growSeedsIntoCells(nuclei,
+
+		// Identify OC's:
+		// 2) Grow cytoplasms only for nuclei that are aVb3 positive (above a
+		// user defined threshold and channel)
+		// 3) Don't let cytoplasms grow over regions with high-membrane stain as
+		// defined by a user threshold and channel designation (Actin works
+		// sometimes, but we should keep exploring better options - you realize
+		// that this is a complex problem of merging some cells but not merging
+		// others right?... its complicated)
+		// 4) Merge all the resulting cytoplasms that are in contact with each
+		// other with a common border greater than (X%)
+
+		nucleiIsOC = new boolean[nuclei.length];
+		ArrayList<CellCoordinates> cellCoords_OCs = growOsteoclastNucleiIntoCells(
+				nuclei,
 				Raster_Linear, pixels, pset);
+
+		// Precursor identification:
+		// 1) Go back to remaining non-OC nuclei and grow those out to their
+		// cytoplasm border (User defined cyto/bkg threshold in a defined
+		// channel), but dont let precursor cells merge with other cells. (this
+		// is just like the old ImageRail algorithm).
+
+		int counter = 0;
+		// Getting leftover nuclei that belong to precursor cells
+		for (int i = 0; i < nucleiIsOC.length; i++)
+			if (!nucleiIsOC[i])
+				counter++;
+		CellCompartment[] pNucs = new CellCompartment[counter];
+		counter = 0;
+		for (int i = 0; i < nucleiIsOC.length; i++)
+			if (!nucleiIsOC[i]) {
+				pNucs[counter] = nuclei[i];
+				counter++;
+			}
+
+		// Resetting precursor cell IDs in the Pixel matrix
+		int rs = pixels.length;
+		for (int r = 0; r < rs; r++)
+			if (pixels[r].getID() != -1 && !nucleiIsOC[pixels[r].getID()])
+				pixels[r].setID(-1);
+
+		// Now growing the precursor cells
+		ArrayList<CellCoordinates> cellCoords_precursors = growPrecursorNucleiIntoCells(
+				pNucs, Raster_Linear, pixels, pset);
+
+		// Combinging all cells into single ArrayList
+		ArrayList<CellCoordinates> cellCoords = new ArrayList<CellCoordinates>();
+		for (int i = 0; i < cellCoords_OCs.size(); i++)
+			cellCoords.add(cellCoords_OCs.get(i));
+		 for (int i = 0; i < cellCoords_precursors.size(); i++)
+			cellCoords.add(cellCoords_precursors.get(i));
+		// Clean up
+		cellCoords_OCs = null;
+		cellCoords_precursors = null;
 
 		return cellCoords;
 	}
@@ -114,7 +169,6 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 
 		ArrayList<CellCompartment> allNuclei = new ArrayList<CellCompartment>();
 
-
 		float[][] iRaster = new float[height][width];
 		float max = 0;
 
@@ -131,22 +185,21 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 						.getThreshold_Nucleus())
 					iRaster[r][c] = 1e20f;
 
-		//tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/beforedt.tif");
+		// tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/beforedt.tif");
 		iRaster = SpatialFilter.distanceTransform(iRaster);
-		//tools.ImageTools.displayRaster(iRaster);		
-		//tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterdt.tif");
-		iRaster = SpatialFilter.linearFilter(iRaster, LinearKernals
-.getLinearSmoothingKernal(5));
-		//tools.ImageTools.displayRaster(iRaster);
-		//tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterlsk.tif");
+		// tools.ImageTools.displayRaster(iRaster);
+		// tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterdt.tif");
+		iRaster = SpatialFilter.linearFilter(iRaster,
+				LinearKernals.getLinearSmoothingKernal(5));
+		// tools.ImageTools.displayRaster(iRaster);
+		// tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterlsk.tif");
 
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++)
 				if (iRaster[r][c] > max)
 					max = iRaster[r][c];
 		pixels[0].resetIDs(pixels);
-		ArrayList<Pixel> pixList = new ArrayList<Pixel>(width
-				* height);
+		ArrayList<Pixel> pixList = new ArrayList<Pixel>(width * height);
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++) {
 				pixels[r + (c * height)].setValue((int) iRaster[r][c]);
@@ -170,8 +223,7 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 				boolean hasUphillNeighbor = false;
 				for (int i = 0; i < num; i++)
 					if (pixels[neighs[i].getRow()
-							+ (neighs[i].getColumn() * height)]
-							.getValue() > thisVal) {
+							+ (neighs[i].getColumn() * height)].getValue() > thisVal) {
 						hasUphillNeighbor = true;
 						break;
 					}
@@ -188,8 +240,7 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 
 					// Dilating 1x some pixels
 					Pixel[] neighs = pixels[r + c * height]
-							.getNeighbors(
-							pixels);
+							.getNeighbors(pixels);
 					int num = neighs.length;
 					for (int i = 0; i < num; i++) {
 						Pixel[] neighs2 = neighs[i].getNeighbors(pixels);
@@ -225,12 +276,10 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 					boolean validNuclei = true;
 					try {
 						assignAllPositiveNeighbors(pixels[r + c * height],
-								pixels, allPixels,
-								iRaster);
+								pixels, allPixels, iRaster);
 					} catch (StackOverflowError e) {
 						validNuclei = false;
 					}
-
 
 					// only want nuclei > certain size to prevent noise being
 					// classified as a nuclei
@@ -256,8 +305,10 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 		int num = allNuclei.size();
 		CellCompartment[] temp = new CellCompartment[num];
 		for (int i = 0; i < num; i++)
+ {
 			temp[i] = (CellCompartment) allNuclei.get(i);
-		;
+			temp[i].setID(i);
+		}
 
 		// Cleanning up the big mess in memory we just created
 		pixels = null;
@@ -273,8 +324,7 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 		int len = neighbors.length;
 		for (int i = 0; i < len; i++) {
 			Pixel p = neighbors[i];
-			if (p.getID() == -1
- && raster[p.getRow()][p.getColumn()] > 0) {
+			if (p.getID() == -1 && raster[p.getRow()][p.getColumn()] > 0) {
 				allPixelsInGroup.add(p);
 				p.setID(pix.getID());
 
@@ -282,8 +332,6 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 			}
 		}
 	}
-
-
 
 	public float[][] getMeanChannelValuesOverMask_Compartmented(
 			int[][][] raster_, Model_ParameterSet pset) {
@@ -378,16 +426,16 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 		return integValues;
 	}
 
-	public ArrayList<CellCoordinates> growSeedsIntoCells(
-			CellCompartment[] nuclei,
- int[] raster, Pixel[] pixels,
+	public ArrayList<CellCoordinates> growOsteoclastNucleiIntoCells(
+			CellCompartment[] nuclei, int[] raster, Pixel[] pixels,
 			Model_ParameterSet pset) {
 
 		// The Array of CellCoordinate objects to return
 		ArrayList<CellCoordinates> cells_final = new ArrayList<CellCoordinates>();
 
 		// Hashing neighbor cell's relative border pixel count
-		// EX: will hash "Cell_ID1-Cell_ID2" --> numberPixelsThatTheseShareInCommon
+		// EX: will hash "Cell_ID1-Cell_ID2" -->
+		// numberPixelsThatTheseShareInCommon
 		Hashtable<String, Integer> hash_neighborsBorderLength = new Hashtable<String, Integer>();
 
 		pixels[0].resetIDs(pixels);
@@ -396,27 +444,40 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 		ArrayList<CellCoordinates> cells = new ArrayList<CellCoordinates>(
 				numNuc);
 
+		// Only operating on the OC nucs == nuclei with mean OC stain above
+		// threshold
+		CellCompartment[] nucs_OC = getNuceliWithOCstaining(nuclei, raster,
+				pset);
+		int numN = nucs_OC.length;
 		ArrayList<ArrayList<Point>> tempCytoPointArrays = new ArrayList<ArrayList<Point>>();
-		for (int i = 0; i < numNuc; i++) {
-			int ID = i;
-			Point[] pts = nuclei[i].getCoordinates();
+
+		for (int i = 0; i < numN; i++) {
+
+			Point[] pts = nucs_OC[i].getCoordinates();
 			int numPix = pts.length;
-			for (int p = 0; p < numPix; p++) {
-				pixels[pts[p].y + (pts[p].x * height)].setID(ID);
-			}
+			for (int p = 0; p < numPix; p++)
+				pixels[pts[p].y + (pts[p].x * height)]
+						.setID(nucs_OC[i].getID());
+
 			// creating a corresponding cell to go with this nucleus
 			ArrayList<CellCompartment> comps = new ArrayList<CellCompartment>();
-			comps.add(nuclei[i]);
-			cells.add(new CellCoordinates(comps, ID));
+			comps.add(nucs_OC[i]);
+			cells.add(new CellCoordinates(comps, nucs_OC[i].getID()));
+
+			nucleiIsOC[nucs_OC[i].getID()] = true;
+
 		}
+
+
+
 
 		// initially dialating nuclear pixels and calling them the first
 		// cytoplasmic pixels of that cell
-		for (int n = 0; n < numNuc; n++) {
+		for (int n = 0; n < numN; n++) {
 			// NOTE cytoplasm needs to be the second compartment after nucleus
 			ArrayList<Point> cytoNewPts = new ArrayList<Point>();
 			ArrayList<Point> nucBoundPts = new ArrayList<Point>();
-			Point[] nucPts = nuclei[n].getCoordinates();
+			Point[] nucPts = nucs_OC[n].getCoordinates();
 			int numPix = nucPts.length;
 			for (int p = 0; p < numPix; p++) {
 				Pixel pix = pixels[nucPts[p].y + (nucPts[p].x * height)];
@@ -429,8 +490,7 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 						cytoNewPts.add(pt);
 						nucBoundPts.add(pt);
 						neigh.setID(pix.getID());
-					}
- else if (neigh.getID() != pix.getID())
+					} else if (neigh.getID() != pix.getID())
 						nucBoundPts
 								.add(new Point(pix.getColumn(), pix.getRow()));
 				}
@@ -443,23 +503,11 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 			tempCytoPointArrays.add(cytoNewPts);
 		}
 
-		// System.out.println(pset);
-		//Getting the Sobel edge detected image
-		// int[][] edge = tools.SpatialFilter.sobelEdgeDetector(Raster,
-		// pset.getThresholdChannel_cyto_Index(),
-		// tools.LinearKernals.getSobel_h(),
-		// tools.LinearKernals.getSobel_h(),
-		// tools.LinearKernals.getSobel_d1(),
-		// tools.LinearKernals.getSobel_d2());
 
-		// tools.ImageTools.displayRaster(ras);
-		// System.out.println("min: " + tools.ImageTools.min(ras) + " max: "
-		// + tools.ImageTools.max(ras));
-
-		// now going through the cytoplasmic pixels and dilating only those
+		// Now going through the cytoplasmic pixels and dilating only those
 		while (true) {
 			boolean change = false;
-			for (int n = 0; n < numNuc; n++) {
+			for (int n = 0; n < numN; n++) {
 				ArrayList<Point> arr = tempCytoPointArrays.get(n);
 				int numPix = arr.size();
 				for (int p = 0; p < numPix; p++) {
@@ -472,21 +520,19 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 						if (neigh.getID() == -1
 								&& raster[getLinearRasterIndex(neigh.getRow(),
 										neigh.getColumn(),
-										pset.getThresholdChannel_cyto_Index())] > pset
-										.getThreshold_Cytoplasm()) {
+										pset.getThresholdChannel_marker_Index())] > pset
+										.getThreshold_Marker()) {
 							// Adding restraints on whether the cell should keep
 							// grown (ex: Membrane detection)
 							if (raster[getLinearRasterIndex(neigh.getRow(),
 									neigh.getColumn(),
 									pset.getThresholdChannel_membrane_Index())] < pset
-									.getThreshold_Membrane())
- {
-								// System.out.println(edge[neigh.getRow()][neigh
-								// .getColumn()]);
+									.getThreshold_Membrane()) {
 								change = true;
 								arr.add(new Point(neigh.getColumn(), neigh
 										.getRow()));
 								neigh.setID(pix.getID());
+
 							}
 						}
 
@@ -495,10 +541,9 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 
 			}
 
-			if (!change) 
+			if (!change)
 				break;
 		}
-
 
 		// init the Cytoplasm boundary pixels now
 		for (int i = 0; i < cells.size(); i++) {
@@ -535,7 +580,7 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 					Pixel neigh = neighbors[n];
 					if // Got a neighbor - keeping track of how big their border
 						// is to each other
-					(neigh.getID() != -1 && neigh.getID() != pix.getID()) {
+					(neigh.getID() != -1 && neigh.getID() != pix.getID() && nucleiIsOC[neigh.getID()] && nucleiIsOC[pix.getID()]) {
 						int thisID = pix.getID();
 						int thatID = neigh.getID();
 						int minID = -1;
@@ -567,9 +612,8 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 				}
 			}
 
-
 		}
-		
+
 		/**
 		 * 
 		 * 
@@ -618,8 +662,14 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 
 			// Getting neighbor border size
 			int size0 = hash_neighborsBorderLength.get(key).intValue();
-			int size1 = cell1.getComCoordinates("CytoBoundary").length;
-			int size2 = cell2.getComCoordinates("CytoBoundary").length;
+			int size1 = 0;
+			int size2 = 0;
+			if (cell1 != null && cell2 != null
+					&& cell1.getComCoordinates("CytoBoundary") != null
+					&& cell2.getComCoordinates("CytoBoundary") != null) {
+				size1 = cell1.getComCoordinates("CytoBoundary").length;
+				size2 = cell2.getComCoordinates("CytoBoundary").length;
+			}
 			float fraction1 = (float) size0 / (float) size1;
 			float fraction2 = (float) size0 / (float) size2;
 
@@ -668,28 +718,19 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 				if (!foundIt)
 					idList2.add(ID1);
 
-				//
-				// System.out.println("Merging cells with ID's: " +
-				// cell1.getID()
-				// + "," + cell2.getID());
-				// System.out.println("fx: " + fraction1 + "," + fraction2);
-				// System.out.println("x: " + size0 + "," + size1 + "," +
-				// size2);
-
 			}
-
 
 		}
 		// Now adding the rest of the cells that didn't have any neighbors:
 		// NOTE: need to create the outline compartment
 		for (int i = 0; i < cells.size(); i++) {
 			CellCoordinates cell = cells.get(i);
-			if (hash_id.get(cell.getID()) == null)
+			if (hash_id.get(cell.getID()) == null && nucleiIsOC[cell.getID()])
 				cells_final.add(cell);
 
 			Point[] NucB = cell.getComCoordinates("NucBoundary");
 			Point[] CytB = cell.getComCoordinates("CytoBoundary");
-			int numN = NucB.length;
+			numN = NucB.length;
 			int numC = CytB.length;
 			Point[] outlinePts = new Point[numN + numC];
 			for (int j = 0; j < numN; j++)
@@ -718,55 +759,17 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 					allGroups.add(group);
 			}
 		}
-		
-		
+
 		// Now merging groups of cells
 		int numMergedCells = allGroups.size();
 		for (int i = 0; i < numMergedCells; i++) {
 			// Doing the actual merging now
 			ArrayList<CellCoordinates> arrC = allGroups.get(i);
-			CellCoordinates cellMerge = CellCoordinates
-.mergeCells(arrC,
+			CellCoordinates cellMerge = CellCoordinates.mergeCells(arrC,
 					pixels, height);
 			cells_final.add(cellMerge);
 		}
 
-
-		//
-		//
-		// Step3: Since I converted this algorithm from a prior legacy version,
-		// we need to convert the temp_Cells to Cells_coordinates
-		// int numC = cells_final.size();
-		// for (int i = 0; i < numC; i++) {
-		// CellCoordinates cell = cells_final.get(i);
-		// // Transfering nucleus points
-		// Point[] nucPoints = cell.getNucleus().getAllPixelCoordinates();
-		//
-		// // Transfering cytoplasm points
-		// ArrayList<Point> arr = cell.getCytoplasm().getPixelCoordinates();
-		// Point[] cytPoints = new Point[arr.size()];
-		// for (int j = 0; j < arr.size(); j++)
-		// cytPoints[j] = arr.get(j);
-		//
-		// // Transfering outline points
-		// arr = cell.getOutlinePoints();
-		// Point[] outlinePts = new Point[arr.size()];
-		// for (int j = 0; j < arr.size(); j++)
-		// outlinePts[j] = arr.get(j);
-		//
-		// // Now constructing the final Cell_coords
-		// ArrayList<CellCompartment> allCompartments = new
-		// ArrayList<CellCompartment>();
-		// CellCompartment nucleus = new CellCompartment(nucPoints, "Nucleus");
-		// allCompartments.add(nucleus);
-		// CellCompartment cytoplasm = new CellCompartment(cytPoints,
-		// "Cytoplasm");
-		// allCompartments.add(cytoplasm);
-		// CellCompartment outline = new CellCompartment(outlinePts, "Outline");
-		// allCompartments.add(outline);
-		//
-		// cellCoords.add(new CellCoordinates(allCompartments));
-		// }
 
 		return cells_final;
 	}
@@ -813,8 +816,7 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 	 * @author BLM
 	 */
 	public ArrayList<CellCompartment> expandNucleiFromSeeds(
-			ArrayList<CellCompartment> nucSeeds, Pixel[] pixels,
- int[] raster,
+			ArrayList<CellCompartment> nucSeeds, Pixel[] pixels, int[] raster,
 			Model_ParameterSet pset) {
 		int numNuc = nucSeeds.size();
 
@@ -831,8 +833,7 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 				return null;
 			}
 			int num = coords.length;
-			for (int j = 0; j < num; j++)
- {
+			for (int j = 0; j < num; j++) {
 				arr.add(pixels[coords[j].y + (coords[j].x * height)]);
 			}
 			arrAllNuc.add(arr);
@@ -847,8 +848,7 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 				int numPix = nuc.size();
 				for (int p = 0; p < numPix; p++) {
 					Pixel pix = (Pixel) nuc.get(p);
-					Pixel[] neighbors = pix.getNeighbors(
-							pixels);
+					Pixel[] neighbors = pix.getNeighbors(pixels);
 					int len = neighbors.length;
 					for (int i = 0; i < len; i++) {
 						Pixel neigh = neighbors[i];
@@ -879,8 +879,7 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 				ArrayList<Pixel> ar = (ArrayList<Pixel>) arrAllNuc.get(i);
 				int size = ar.size();
 				ArrayList<Point> nucPts = new ArrayList<Point>(size);
-				for (int j = 0; j < size; j++)
- {
+				for (int j = 0; j < size; j++) {
 					Pixel px = ((Pixel) ar.get(j));
 					px.setID(counter);
 					nucPts.add(new Point(px.getColumn(), px.getRow()));
@@ -911,7 +910,7 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 		return vals;
 	}
 
-	
+
 
 	@Override
 	public void clearROIs() {
@@ -921,6 +920,169 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 	@Override
 	public void setROIs(ArrayList<Shape> ROIs) {
 		this.ROIs = ROIs;
+	}
+	
+	
+	public ArrayList<CellCoordinates> growPrecursorNucleiIntoCells(
+			CellCompartment[] nuclei, int[] raster, Pixel[] pixels,
+			Model_ParameterSet pset) {
+
+		// The Array of CellCoordinate objects to return
+		ArrayList<CellCoordinates> cells_final = new ArrayList<CellCoordinates>();
+
+		int numNuc = nuclei.length;
+		ArrayList<CellCoordinates> cells = new ArrayList<CellCoordinates>(
+				numNuc);
+
+		ArrayList<ArrayList<Point>> tempCytoPointArrays = new ArrayList<ArrayList<Point>>();
+		for (int i = 0; i < numNuc; i++) {
+			Point[] pts = nuclei[i].getCoordinates();
+			int numPix = pts.length;
+			for (int p = 0; p < numPix; p++) {
+				pixels[pts[p].y + (pts[p].x * height)].setID(nuclei[i].getID());
+			}
+			// creating a corresponding cell to go with this nucleus
+			ArrayList<CellCompartment> comps = new ArrayList<CellCompartment>();
+			comps.add(nuclei[i]);
+			cells.add(new CellCoordinates(comps, nuclei[i].getID()));
+		}
+
+		// initially dialating nuclear pixels and calling them the first
+		// cytoplasmic pixels of that cell
+		for (int n = 0; n < numNuc; n++) {
+			// NOTE cytoplasm needs to be the second compartment after nucleus
+			ArrayList<Point> cytoNewPts = new ArrayList<Point>();
+			ArrayList<Point> nucBoundPts = new ArrayList<Point>();
+			Point[] nucPts = nuclei[n].getCoordinates();
+			int numPix = nucPts.length;
+			for (int p = 0; p < numPix; p++) {
+				Pixel pix = pixels[nucPts[p].y + (nucPts[p].x * height)];
+				Pixel[] neighbors = pix.getNeighbors(pixels);
+				int len = neighbors.length;
+				for (int i = 0; i < len; i++) {
+					Pixel neigh = neighbors[i];
+					if (neigh.getID() == -1) {
+						Point pt = new Point(neigh.getColumn(), neigh.getRow());
+						cytoNewPts.add(pt);
+						nucBoundPts.add(pt);
+						neigh.setID(pix.getID());
+					} else if (neigh.getID() != pix.getID())
+						nucBoundPts
+								.add(new Point(pix.getColumn(), pix.getRow()));
+				}
+			}
+			CellCompartment nucBoundary = new CellCompartment(nucBoundPts,
+					"NucBoundary");
+			cells.get(n).addCompartment(nucBoundary);
+			// Saving these to represent the boundary of nucleus
+			// Saving these for next growth phase
+			tempCytoPointArrays.add(cytoNewPts);
+		}
+
+
+		// Now going through the cytoplasmic pixels and dilating only those
+		while (true) {
+			boolean change = false;
+			for (int n = 0; n < numNuc; n++) {
+				ArrayList<Point> arr = tempCytoPointArrays.get(n);
+				int numPix = arr.size();
+				for (int p = 0; p < numPix; p++) {
+					Point po = (Point) arr.get(p);
+					Pixel pix = pixels[po.y + po.x * height];
+					Pixel[] neighbors = pix.getNeighbors(pixels);
+					int len = neighbors.length;
+					for (int i = 0; i < len; i++) {
+						Pixel neigh = neighbors[i];
+						if (neigh.getID() == -1
+								&& raster[getLinearRasterIndex(neigh.getRow(),
+										neigh.getColumn(),
+										pset.getThresholdChannel_cyto_Index())] > pset
+										.getThreshold_Cytoplasm()) {
+							// Adding restraints on whether the cell should keep
+							// grown (ex: Membrane detection)
+							change = true;
+							arr.add(new Point(neigh.getColumn(), neigh.getRow()));
+							neigh.setID(pix.getID());
+
+						}
+
+					}
+				}
+
+			}
+
+			if (!change)
+				break;
+		}
+
+		// init the Cytoplasm boundary pixels now
+		for (int i = 0; i < cells.size(); i++) {
+			ArrayList<Point> cytoBoundary = new ArrayList<Point>();
+			ArrayList<Point> cytoPts = tempCytoPointArrays.get(i);
+			int numPix = cytoPts.size();
+			for (int p = 0; p < numPix; p++) {
+				Point po = (Point) cytoPts.get(p);
+				Pixel pix = pixels[po.y + po.x * height];
+
+				Pixel[] neighbors = pix.getNeighbors(pixels);
+				int len = neighbors.length;
+				for (int j = 0; j < len; j++) {
+					Pixel neigh = neighbors[j];
+					if (neigh.getID() != pix.getID()) {
+						cytoBoundary.add(po);
+						break;
+					}
+				}
+			}
+
+			cells.get(i).addCompartment(cytoPts, "Cytoplasm");
+			cells.get(i).addCompartment(cytoBoundary, "CytoBoundary");
+		}
+
+		// Now adding the rest of the cells that didn't have any neighbors:
+		// NOTE: need to create the outline compartment
+		for (int i = 0; i < cells.size(); i++) {
+			CellCoordinates cell = cells.get(i);
+			cells_final.add(cell);
+			Point[] NucB = cell.getComCoordinates("NucBoundary");
+			Point[] CytB = cell.getComCoordinates("CytoBoundary");
+			int numN = NucB.length;
+			int numC = CytB.length;
+			Point[] outlinePts = new Point[numN + numC];
+			for (int j = 0; j < numN; j++)
+				outlinePts[j] = NucB[j];
+			for (int j = 0; j < numC; j++)
+				outlinePts[j + numN] = CytB[j];
+			cell.addCompartment(new CellCompartment(outlinePts, "Outline"));
+		}
+
+		return cells_final;
+	}
+
+	/**
+	 * Returns a the list of nuclei that have an mean OC staining above the OC
+	 * threshold
+	 * */
+	private CellCompartment[] getNuceliWithOCstaining(
+			CellCompartment[] allNucs, int[] raster_linear,
+			Model_ParameterSet pset) {
+		ArrayList<CellCompartment> nucs = new ArrayList<CellCompartment>();
+		int len = allNucs.length;
+		for (int i = 0; i < len; i++) {
+			Point[] pts = allNucs[i].getCoordinates();
+			int num = pts.length;
+			int sum = 0;
+			for (int j = 0; j < num; j++)
+				sum += raster_linear[getLinearRasterIndex(pts[j].y, pts[j].x,
+						pset.getThresholdChannel_marker_Index())];
+			if (sum / num > pset.getThreshold_Marker())
+				nucs.add(allNucs[i]);
+		}
+		int num = nucs.size();
+		CellCompartment[] arr = new CellCompartment[num];
+		for (int i = 0; i < num; i++)
+			arr[i] = nucs.get(i);
+		return arr;
 	}
 
 }
