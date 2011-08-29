@@ -6,8 +6,9 @@ SetCompressor /SOLID lzma
 # Defines
 !define REGKEY "SOFTWARE\$(^Name)"
 !define VERSION 1.2
-!define PATCH_LEVEL 1
-!define FULL_VERSION "${VERSION}.${PATCH_LEVEL}"
+!define PATCH_LEVEL 2
+!define PATCH_EXTRA "pre1"
+!define FULL_VERSION "${VERSION}.${PATCH_LEVEL}_${PATCH_EXTRA}"
 !define COMPANY ""
 !define URL ""
 !define PLATFORM "windows-x86"
@@ -72,7 +73,7 @@ Section -post SEC0002
     WriteUninstaller $INSTDIR\uninstall.exe
     WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" DisplayName "$(^Name)"
     WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" DisplayVersion "${FULL_VERSION}"
-    WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" DisplayIcon $INSTDIR\uninstall.exe
+    WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" DisplayIcon $INSTDIR\ImageRail.ico
     WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" UninstallString $INSTDIR\uninstall.exe
     WriteRegDWORD HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" NoModify 1
     WriteRegDWORD HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" NoRepair 1
