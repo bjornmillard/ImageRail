@@ -22,7 +22,9 @@ package segmentors;
 
 import imagerailio.Point;
 
+import java.awt.Polygon;
 import java.awt.Shape;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -35,11 +37,16 @@ import tools.LinearKernals;
 import tools.Pixel;
 import tools.SpatialFilter;
 
+/**
+ * @author blm13
+ * 
+ */
 public class NucleiDescentAndMerge_OC implements CellSegmentor {
 	private int height;
 	private int width;
 	private int numChannels;
 	private ArrayList<Shape> ROIs;
+	private boolean[][] ROIs_raster;
 	boolean[] nucleiIsOC;
 
 	/**
@@ -66,6 +73,113 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 		for (int c = 0; c < width; c++)
 			for (int r = 0; r < height; r++)
 				pixels[r + c * height] = new Pixel(r, c, -1, height, width);
+
+		// Creating a ROI no-grow boundary mapping so cells cant grown into them
+		// based on ROI designation
+		ROIs_raster = null;
+		ROIs_raster = new boolean[height][width];
+
+		if (ROIs != null && ROIs.size() > 0) {
+			int len = ROIs.size();
+			for (int i = 0; i < len; i++) {
+				if (ROIs.get(i) instanceof Polygon) {
+					
+					//Bresenham's line algorithm around each polygon
+					Polygon roi = (Polygon) ROIs.get(i);
+					int[] xp = roi.xpoints;
+					int[] yp = roi.ypoints;
+					int nump = xp.length;
+					int lastXval = 0;
+					int lastYval = 0;
+
+					for (int n = 0; n < nump; n++) {
+						int x1 = 0;
+						int x2 = 0;
+						int y1 = 0;
+						int y2 = 0;
+						// This time we wrap around from last point to first
+						// point
+						if (n == nump - 1) {
+							x1 = lastXval;
+							x2 = xp[0];
+							y1 = lastYval;
+							y2 = yp[0];
+							System.out.println(x1 + "," + y1 + "," + x2 + ","
+									+ y2);
+						} else // all other points
+						{
+							x1 = xp[n];
+							x2 = xp[n + 1];
+							y1 = yp[n];
+							y2 = yp[n + 1];
+						}
+
+						if (x1 > 0 && x1 < width && x2 > 0 && x2 < width
+								&& y1 > 0 && y1 < width && y2 > 0
+								&& y2 < width) {
+
+						ROIs_raster[y1][x1] = true;
+						ROIs_raster[y2][x2] = true;
+
+							lastXval = x2;
+							lastYval = y2;
+
+						 int xDist = x2 - x1;
+						 int yDist = y2 - y1;
+						 int yStart = y1;
+						 int xStart = x1;
+						 // compute slope btw points
+						 float m = ((float) yDist) / ((float) xDist);
+						
+						 if (m != Float.NaN || m != 0) {
+							if (Math.abs(m) < 1) {
+								for (int x = 0; x < Math.abs(xDist); x++) {
+
+									int xI = x;
+									if (xDist < 0)
+										xI = -x;
+
+									int xP = xStart + xI;
+									int y = (int) (m * xI + yStart);
+
+									ROIs_raster[y][xP] = true;
+										ROIs_raster[y + 1][xP] = true;
+								}
+							} else {
+								for (int y = 0; y < Math.abs(yDist); y++) {
+
+									float yI = y;
+									if (yDist < 0)
+										yI = -y;
+
+									float yP = (float) yStart + yI;
+									int x = (int) (1f / m * yI + xStart);
+
+									ROIs_raster[(int)yP][x] = true;
+										ROIs_raster[(int) yP][x + 1] = true;
+
+
+								}
+							}
+		
+					}
+
+					}
+					}
+				}
+			}
+		}
+			 float[][] test = new float[height][width];
+			 for (int r = 0; r < height; r++) {
+			 for (int c = 0; c < width; c++) {
+			 if (ROIs_raster[r][c])
+			 test[r][c] = 255;
+			 }
+			 }
+			 tools.ImageTools.displayRaster(test);
+
+
+
 
 		// Step 1: Segmenting the nuclei
 		// 1) Identify all nuclei using the DNA channel above threshold in given
@@ -128,6 +242,21 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 		cellCoords_precursors = null;
 
 		return cellCoords;
+	}
+
+	/**
+	 * Tests whether the neighbor points of the given point are contained within
+	 * the given polygon
+	 * */
+	private boolean allNeighborsWithinROI(Point2D.Float p, Polygon poly,
+			Pixel[] pixels) {
+		Pixel pix = pixels[getLinearRasterIndex((int) p.y, (int) p.x)];
+		Pixel[] neighs = pix.getNeighbors(pixels);
+		for (int i = 0; i < neighs.length; i++) {
+			if (!poly.contains(neighs[i].getColumn(), neighs[i].getRow()))
+				return false;
+		}
+		return true;
 	}
 
 	/**
@@ -485,14 +614,32 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 				int len = neighbors.length;
 				for (int i = 0; i < len; i++) {
 					Pixel neigh = neighbors[i];
-					if (neigh.getID() == -1) {
-						Point pt = new Point(neigh.getColumn(), neigh.getRow());
-						cytoNewPts.add(pt);
-						nucBoundPts.add(pt);
-						neigh.setID(pix.getID());
-					} else if (neigh.getID() != pix.getID())
-						nucBoundPts
-								.add(new Point(pix.getColumn(), pix.getRow()));
+					
+					// Dont grow into ROI boundary regions
+					if (ROIs_raster != null) {
+						if (!ROIs_raster[neigh.getRow()][neigh
+									.getColumn()]) {
+								if (neigh.getID() == -1) {
+									Point pt = new Point(neigh.getColumn(), neigh.getRow());
+									cytoNewPts.add(pt);
+									nucBoundPts.add(pt);
+									neigh.setID(pix.getID());
+								} else if (neigh.getID() != pix.getID())
+									nucBoundPts
+											.add(new Point(pix.getColumn(), pix.getRow()));
+						}
+					}
+ else // No ROI regions exist
+						{
+							if (neigh.getID() == -1) {
+								Point pt = new Point(neigh.getColumn(), neigh.getRow());
+								cytoNewPts.add(pt);
+								nucBoundPts.add(pt);
+								neigh.setID(pix.getID());
+							} else if (neigh.getID() != pix.getID())
+								nucBoundPts
+										.add(new Point(pix.getColumn(), pix.getRow()));
+						}
 				}
 			}
 			CellCompartment nucBoundary = new CellCompartment(nucBoundPts,
@@ -513,7 +660,7 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 				for (int p = 0; p < numPix; p++) {
 					Point po = (Point) arr.get(p);
 					Pixel pix = pixels[po.y + po.x * height];
-					Pixel[] neighbors = pix.getNeighbors(pixels);
+					Pixel[] neighbors = pix.getFourNeighbors(pixels);
 					int len = neighbors.length;
 					for (int i = 0; i < len; i++) {
 						Pixel neigh = neighbors[i];
@@ -528,10 +675,22 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 									neigh.getColumn(),
 									pset.getThresholdChannel_membrane_Index())] < pset
 									.getThreshold_Membrane()) {
-								change = true;
-								arr.add(new Point(neigh.getColumn(), neigh
-										.getRow()));
-								neigh.setID(pix.getID());
+								// In case we have ROI boundaries that we dont
+								// want to grow into
+								if (ROIs_raster != null) {
+									if (!ROIs_raster[neigh.getRow()][neigh
+												.getColumn()]) {
+										change = true;
+										arr.add(new Point(neigh.getColumn(),
+												neigh.getRow()));
+										neigh.setID(pix.getID());
+									}
+								} else {
+									change = true;
+									arr.add(new Point(neigh.getColumn(), neigh
+											.getRow()));
+									neigh.setID(pix.getID());
+								}
 
 							}
 						}

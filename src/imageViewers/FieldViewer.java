@@ -846,48 +846,13 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			}
 		}
 
-		// if (TheCells!=null)
-		// {
-		// int inCell = getCellIndex(p1);
-		// Cell_RAM cell = null;
-		// if (inCell!=-1)
-		// {
-		// SelectedROI = null;
-		// startHighlightPoint = null;
-		// /** Things get messy when the user double/triple clicks, so lets just
-		// consider single clicks*/
-		// if (p1.getClickCount()!=1)return;
-		// cell = TheCells[inCell];
-		// cell.setSelected(!cell.isSelected());
-		// inCell = -1;
-		//
-		// }
-		// //checking to see if only one cell is selected
-		// int len = TheCells.length;
-		// boolean foundOne = false;
-		// for (int i = 0; i < len; i++)
-		// {
-		// if (TheCells[i].isSelected())
-		// {
-		// if (foundOne)//found more than one selected cell
-		// {
-		// foundOne = false;
-		// break;
-		// }
-		// else
-		// foundOne = true;
-		// }
-		// }
-		// if (foundOne)
-		// {
-		// foundOne=false;
-		// if (cell!=null)
-		// {
-		// areaValue = cell.getPixelArea_wholeCell();
-		// }
-		//
-		// repaint();
-		// }
+		// // Seeing if clicked on a cell to toggle highlighting
+		// if (p1.getClickCount() != 1)
+		// if (TheCellBank != null) {
+		// Cell inCell = getClickedOnCell(p1.getPoint());
+		// System.out.println(inCell);
+		// if (inCell != null)
+		// inCell.setSelected(!inCell.isSelected());
 		// }
 
 		// Seeing if clicked on the little plate in upper right corner in order
@@ -1002,13 +967,15 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				temp.height = bounds.height;
 				shape = temp;
 			}
-		if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_POLYGON) {
+		if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_POLYGON
+				|| HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_LINE) {
 				setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 				ThePolygonGate_Points = new ArrayList<Point>();
 			ThePolygonGate_Points.add(new Point(
 					(int) ((float) p1.getPoint().x / (float) scale),
 					((int) ((float) p1.getPoint().y / (float) scale))));
 			}
+
 
 		if (shape != null && shape.contains(p1.getPoint())) {
 			dX = p1.getX() - x_shape;
@@ -1027,8 +994,8 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
 		if (TheParentContainer.getShapeType() == TheParentContainer.SHAPE_POLYGON)
+ {
 			if (ThePolygonGate_Points != null) {
-				// float scale = TheParentContainer.getScaling();
 				ThePolygonGate = new Polygon();
 				for (int i = 0; i < ThePolygonGate_Points.size(); i++) {
 					Point p = ThePolygonGate_Points.get(i);
@@ -1038,20 +1005,30 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				ThePolygonGate_Points = null;
 				// scaling
 				SelectedROI = ThePolygonGate;
-				// TODO - example of using oval for SelectedROI
-				// new Ellipse2D.Float(tempOval.x / scalingFactor,
-				// tempOval.y / scalingFactor, tempOval.width
-				// / scalingFactor, tempOval.height
-				// / scalingFactor);
-			}
 
-		// if (SelectedROI != null
-		// && SelectedROI.getBounds().width
-		// * SelectedROI.getBounds().height > 6) {
-		// Raster rast = getCurrentRaster();
-		// int mean = getMeanValue(rast, SelectedROI);
-		// pixelValue = mean;
-		// }
+			}
+		} else if (TheParentContainer.getShapeType() == TheParentContainer.SHAPE_LINE) {
+			if (ThePolygonGate_Points != null) {
+				ThePolygonGate = new Polygon();
+				for (int i = 0; i < ThePolygonGate_Points.size(); i++) {
+					Point p = ThePolygonGate_Points.get(i);
+					ThePolygonGate.addPoint((int) ((float) p.x),
+							(int) ((float) p.y));
+				}
+				// Adding mirror points to create a line
+				for (int i = ThePolygonGate_Points.size() - 1; i >= 0; i--) {
+					Point p = ThePolygonGate_Points.get(i);
+					ThePolygonGate.addPoint((int) ((float) p.x),
+							(int) ((float) p.y));
+				}
+
+				ThePolygonGate_Points = null;
+				// scaling
+				SelectedROI = ThePolygonGate;
+			}
+		}
+
+
 
 		// reseting the highlightbox
 		if (!continuallyDisplayBox) {
@@ -1074,7 +1051,8 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 		float scalingFactor = FieldViewer_Frame.getScaling();
 
-		if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_POLYGON
+		if ((HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_POLYGON || HolderFrame
+				.getShapeType() == FieldViewer_Frame.SHAPE_LINE)
 				&& ThePolygonGate_Points != null
 				&& ThePolygonGate_Points.size() > 0) {
 			int len = ThePolygonGate_Points.size();
@@ -2013,6 +1991,33 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		int[] dims = new int[] { height, width, bands };
 		return dims;
 	}
+
+	// /**
+	// * Returns a single-cell that has been clicked on in the image. If none,
+	// * then returns null
+	// *
+	// * @param Point
+	// * @return Cell
+	// */
+	// private Cell getClickedOnCell(Point p) {
+	// if (TheCellBank == null)
+	// return null;
+	// ArrayList<Cell> cells = TheCellBank.getCells();
+	// int len = cells.size();
+	// for (int i = 0; i < len; i++) {
+	// Rectangle bbox = cells.get(i).getCoordinates().getBoundingBox();
+	//
+	// System.out.println(bbox);
+	// System.out.println(p.x + "," + p.y);
+	//
+	// if (bbox != null && bbox.contains(p))
+	// {
+	// System.out.println(bbox);
+	// return cells.get(i);
+	// }
+	// }
+	// return null;
+	// }
 
 	/**
 	 * Free up RAM

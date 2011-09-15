@@ -235,7 +235,6 @@ public class Gui_Well {
 		// Checking to see if any HDF files are available for this well
 		if (MainGUI.getGUI().shouldDisplayHDFicons()) {
 			int numHDF = TheModel.getHDFcount();
-			// int numHDF = 0;
 
 			if (numHDF > 0) {
 				int xS = outline.x + 5;
@@ -259,8 +258,6 @@ public class Gui_Well {
 					int xEnd = xStart + hdfIco_width;
 					int yEnd = yStart + hdfIco_height;
 					drawHDFicon(g2, xStart, yStart, xEnd, yEnd);
-					// g2.setColor(Color.white);
-					// g2.fillOval(xStart, yStart, 3,3);
 					xCounter++;
 				}
 			}
@@ -283,20 +280,16 @@ public class Gui_Well {
 				if (plotSVG)
 				{
 					g2.fillPolygon(histo.xpoints, histo.ypoints, histo.npoints);
-					// if (TheModel.getPlate().getGUI().shouldDisplayCV())
-					{
 					g2.setColor(Color.black);
 					g2.drawPolygon(histo.xpoints, histo.ypoints, histo.npoints);
-					}
+
 				}
 				else
 				{
 					g2.fill(histo);
-					// if (TheModel.getPlate().getGUI().shouldDisplayCV())
-					{
 					g2.setColor(Color.black);
 					g2.draw(histo);
-					}
+
 				}
 				
 
@@ -344,25 +337,24 @@ public class Gui_Well {
 
 		// Getting the min/max pre-stored values
 		if (!MainGUI.getGUI().getPlateHoldingPanel().isLogScaled()) {
-			if (TheModel.getPlate().getMinMaxFeatureValues() != null) {
+			if (TheModel.getPlate().getMinMaxFeatureValues() != null
+					&& TheModel.getPlate().getMinMaxFeatureValues().length > 0
+					&& TheModel.getPlate().getMinMaxFeatureValues()[0].length > 0) {
 				minVal = TheModel.getPlate().getMinMaxFeatureValues()[0][MainGUI
 						.getGUI()
 						.getTheSelectedFeature_Index()];
 				maxVal = TheModel.getPlate().getMinMaxFeatureValues()[1][MainGUI
 						.getGUI()
 						.getTheSelectedFeature_Index()];
-				// System.out.println("LINEAR - minMax: " + minVal + " , "
-				// + maxVal);
-
 			}
 		} else {
-			if (TheModel.getPlate().getMinMaxFeatureValues_log() != null) {
+			if (TheModel.getPlate().getMinMaxFeatureValues_log() != null
+					&& TheModel.getPlate().getMinMaxFeatureValues_log().length > 0
+					&& TheModel.getPlate().getMinMaxFeatureValues_log()[0].length > 0) {
 				minVal = TheModel.getPlate().getMinMaxFeatureValues_log()[0][MainGUI
 						.getGUI().getTheSelectedFeature_Index()];
 				maxVal = TheModel.getPlate().getMinMaxFeatureValues_log()[1][MainGUI
 						.getGUI().getTheSelectedFeature_Index()];
-				// System.out.println("LOG - minMax: " + minVal + " , " +
-				// maxVal);
 			}
 		}
 

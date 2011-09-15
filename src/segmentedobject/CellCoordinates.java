@@ -442,10 +442,33 @@ public class CellCoordinates
 	 */
 	public Rectangle getBoundingBox()
 	{
+		//see if we already have a bbox
+		Point[] pts = getComCoordinates("BoundingBox");
+		if (pts!=null && pts.length==2)
+			return new Rectangle(pts[0].x, pts[0].y, (pts[1].x - pts[0].x),
+					(pts[1].y - pts[0].y));
+		
+		// else compute a bbox based on all points available
 		imagerailio.Point[] com = getComCoordinates_AllUnique();
-		if(com.length==2)
-			return 	new Rectangle(com[0].x, com[0].y, (com[1].x-com[0].x), (com[1].y-com[0].y));
-		return null;
+		int len = com.length;
+		int xMin = Integer.MAX_VALUE;
+		int xMax = Integer.MIN_VALUE;
+		int yMin = Integer.MAX_VALUE;
+		int yMax = Integer.MIN_VALUE;
+		for (int i = 0; i < len; i++) {
+			if (com[i].x < xMin)
+				xMin = com[i].x;
+			if (com[i].x > xMax)
+				xMax = com[i].x;
+			if (com[i].y < yMin)
+				yMin = com[i].y;
+			if (com[i].y > yMax)
+				yMax = com[i].y;
+		}
+		if (xMin == Integer.MAX_VALUE || xMax == Integer.MIN_VALUE
+				|| yMin == Integer.MAX_VALUE || yMax == Integer.MIN_VALUE)
+			return null;
+		return new Rectangle(xMin, yMin, (xMax - xMin), (yMax - yMin));
 	}
 
 	public String toString() {

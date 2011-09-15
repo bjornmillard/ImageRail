@@ -272,9 +272,6 @@ public class Model_Well
 	 * @author BLM*/
 	public void purgeSelectedCellsAndRecomputeWellMeans()
 	{
-		
-//		int totCells = getCell_coords().size();
-//		System.out.println("TOTcells: "+totCells);
 		//Now deleting selected cells from the CellRepository
 		int numF = TheFields.length;
 		for (int i = 0; i < numF; i++)
@@ -309,39 +306,8 @@ public class Model_Well
 						fvals);
 			}
 		}
-		
-//		System.out.println("selected Cells: "+counter);
 
-		
-		//
-		//
-		//
-		//Adding unselected cells to the keep list
-//		ArrayList<CellCoordinates> cells = getCell_coords();
 		float[][] cellData = getCell_values();
-//		if (cells==null)
-//			return;
-//		int len = cells.size();
-//		ArrayList<float[]> temp= new ArrayList<float[]>();
-//		for (int i = 0; i < len; i++)
-//			if (!cells.get(i).isSelected())
-//			{
-//				temp.add(cellData[i]);
-//			}
-//			else
-//				System.out.println("Selected_1");
-//		int num = temp.size();
-//		if(num<1)
-//			return;
-		
-		//copying keeper cells' feature array values
-//		float[][] newVals = new float[num][temp.get(0).length];
-//		for (int i = 0; i < num; i++)
-//		{
-//			float[] oneCellVals = temp.get(i);
-//			for (int j = 0; j < oneCellVals.length; j++)
-//				newVals[i][j] = oneCellVals[j];
-//		}
 		
 		ArrayList<float[][]> tempArr = new ArrayList<float[][]>();
 		tempArr.add(cellData);
@@ -350,18 +316,10 @@ public class Model_Well
 		if (data==null)
 			return;
 		
-		
-//		float val = Feature_Means[0];
 		Feature_Means = null;
 		Feature_Stdev = null;
 		Feature_Means = data[0];
 		Feature_Stdev = data[1];
-//		System.out.println("Means: "+val+"   "+Feature_Means[0]);
-
-//		tempArr = null;
-//		temp_vals = null;
-//		temp = null;
-//		newVals = null;
 	}
 	
 	

@@ -69,7 +69,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 	static public int SHAPE_RECTANGLE = 0;
 	static public int SHAPE_OVAL = 1;
 	static public int SHAPE_POLYGON = 2;
-	
+	static public int SHAPE_LINE = 3;
 	
 	
 	public FieldViewer_Frame()
@@ -129,16 +129,6 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		
 		
 		
-//		item = new JMenuItem("Delete Selected Cells");
-//		item.addActionListener(new ActionListener()
-//							   {
-//					public void actionPerformed(ActionEvent ae)
-//					{
-//						deleteSelectedCells(TheCurrentViewer.getTheWell());
-//					}
-//				});
-//		OptionsMenu.add(item);
-		
 		item = new JMenuItem("Threshold Wizard");
 		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B,
 				ActionEvent.CTRL_MASK));
@@ -176,6 +166,18 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 						}
 
 				}
+			}
+		});
+		OptionsMenu.add(item);
+		OptionsMenu.addSeparator();
+		item = new JMenuItem("Delete Selected Cells");
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X,
+				ActionEvent.CTRL_MASK));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				deleteSelectedCells(TheCurrentViewer.getTheWell());
+				TheCurrentViewer.updatePanel();
+				TheCurrentViewer.updateAllImages();
 			}
 		});
 		OptionsMenu.add(item);
@@ -259,7 +261,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 					}
 				});
 		SelectionShapeMenu.add(oval);
-		JRadioButtonMenuItem poly = new JRadioButtonMenuItem("Freeform");
+		JRadioButtonMenuItem poly = new JRadioButtonMenuItem("Freeform Polygon");
 		poly.setSelected(false);
 		poly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -267,10 +269,20 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 			}
 		});
 		SelectionShapeMenu.add(poly);
+		JRadioButtonMenuItem line = new JRadioButtonMenuItem("Freeform Line");
+		line.setSelected(false);
+		line.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				Type_Shape = SHAPE_LINE;
+			}
+		});
+		SelectionShapeMenu.add(line);
+
 		ButtonGroup bg = new ButtonGroup();
 		bg.add(poly);
 		bg.add(oval);
 		bg.add(square);
+		bg.add(line);
 		
 		
 
@@ -330,67 +342,14 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 				});
 		SelectionMenu.add(item);
 		
-		item = new JMenuItem("Optimize XY to fit hole in each Model_Field");
-		item.addActionListener(new ActionListener()
-							   {
-					public void actionPerformed(ActionEvent ae)
-					{
-				if (Type_Shape == SHAPE_RECTANGLE)
-						{
-							float scale = getScaling();
-							Rectangle bounds = (Rectangle)TheCurrentViewer.getScaledSelectionBounds(getScaling());
-							if (bounds==null || bounds.width<=2 ||bounds.height<=2) //nothing selected
-							{
-								JOptionPane.showMessageDialog(null,"No selection made. \nPlease highlight a region and try again.",
-															  "",JOptionPane.ERROR_MESSAGE);
-								return;
-							}
-							
-							int len = TheFieldViewers.length;
-							for (int i = 0; i < len; i++)
-							{
-								TheFieldViewers[i].setSelectedROI(new Rectangle((int)(bounds.x/scale), (int)(bounds.y/scale), (int)(bounds.width/scale), (int)(bounds.height/scale)));
-						Type_Shape = SHAPE_RECTANGLE;
-								TheFieldViewers[i].setCreateNewBox(false);
-								int channelIndex = 0;
-								TheFieldViewers[i].optimizeXYshapeCoordinatesToHole(channelIndex);
-							}
-							
-						}
- else if (Type_Shape == SHAPE_OVAL)
-						{
-							Rectangle bounds = (Rectangle)TheCurrentViewer.getScaledSelectionBounds(getScaling());
-							if (bounds==null || bounds.width<=2 ||bounds.height<=2) //nothing selected
-							{
-								JOptionPane.showMessageDialog(null,"No selection made. \nPlease highlight a region and try again.",
-															  "",JOptionPane.ERROR_MESSAGE);
-								return;
-							}
-							float scale = getScaling();
-							int len = TheFieldViewers.length;
-							for (int i = 0; i < len; i++)
-							{
-								TheFieldViewers[i].setSelectedROI(new Ellipse2D.Float((int)(bounds.x/scale), (int)(bounds.y/scale), (int)(bounds.width/scale), (int)(bounds.height/scale)));
-						Type_Shape = SHAPE_OVAL;
-								TheFieldViewers[i].setCreateNewBox(false);
-								int channelIndex = 0;
-								TheFieldViewers[i].optimizeXYshapeCoordinatesToHole(channelIndex);
-							}
-							
-						}
-					}
-				});
-		// SelectionMenu.add(item);
-		
-		
 		
 		OptionsMenu.addSeparator();
-		JMenu FieldMenu = new JMenu("Field Options...");
+		JMenu FieldMenu = new JMenu("ROI Options...");
 		OptionsMenu.add(FieldMenu);
 		
-		JMenu SaveROIMenu = new JMenu("Save...");
-		JMenu DeleteROIMenu = new JMenu("Delete...");
-		JMenu PrintRIOMenu = new JMenu("Print...");
+		JMenu SaveROIMenu = new JMenu("Save ROI...");
+		JMenu DeleteROIMenu = new JMenu("Delete ROI...");
+		JMenu PrintRIOMenu = new JMenu("Export...");
 		FieldMenu.add(SaveROIMenu);
 		FieldMenu.add(DeleteROIMenu);
 		FieldMenu.add(PrintRIOMenu);
@@ -688,6 +647,21 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		
 	}
 	
+	/**
+	 * Deletes all cells that are currently highlighted in the image and saves
+	 * these changes to the HDF5 file
+	 * 
+	 * @author Bjorn Millard
+	 * @param Model_Well
+	 *            well
+	 */
+	private void deleteSelectedCells(Model_Well well) {
+		well.setCellsModified(true);
+		well.purgeSelectedCellsAndRecomputeWellMeans();
+		gui.MainGUI.getGUI().getPlateHoldingPanel().getModel()
+				.updateMinMaxValues();
+	}
+
 	/** Free up RAM
 	 * @author BLM*/
 	public void kill()
