@@ -33,19 +33,21 @@ public class Mean_Nucleus extends Feature
 {
 	public float getValue(CellCoordinates cell, int[][][] raster, float[] backgroundValues)
 	{
+		long counter = 0;
 		long sum = 0;
-		Point[] coords = cell.getComCoordinates("Nucleus");
-		int len = coords == null ? 0 : coords.length;
-		if (len == 0)
-			return 0f;
-
-		for (int i = 0; i < len; i++)
-			sum+=raster[coords[i].y][coords[i].x][ChannelIndex];
-
-		assert sum >= 0;
-
+		String[] names = cell.getComNames();
+		for (int i = 0; i < names.length; i++)
+			if (names[i].indexOf("Nucleus") >= 0) {
+				Point[] coords = cell.getComCoordinates(names[i]);
+				int len = coords == null ? 0 : coords.length;
+				counter += len;
+				for (int j = 0; j < len; j++)
+					sum += raster[coords[j].y][coords[j].x][ChannelIndex];
+			}
+		if (sum <= 0 || counter <= 0)
+			return 0;
 		//Subtracting precomputed background for this set of field images
-		return ((float) sum)/len - backgroundValues[ChannelIndex];
+		return ((float) sum) / counter - backgroundValues[ChannelIndex];
 	}
 	
 	public boolean isMultiSpectralFeature()

@@ -34,10 +34,16 @@ public class Size_Nucleus extends Feature
 {
 	public float getValue(CellCoordinates cell, int[][][] raster, float[] backgroundValues)
 	{
-		Point[] pList = cell.getComCoordinates("Nucleus");
-		if (pList == null)
-			return 0;
-		return pList.length;
+		int sum = 0;
+		String[] names = cell.getComNames();
+		for (int i = 0; i < names.length; i++) {
+			if (names[i].indexOf("Nucleus") >= 0) {
+				Point[] pList = cell.getComCoordinates(names[i]);
+				if (pList != null)
+					sum += pList.length;
+			}
+		}
+		return sum;
 	}
 	public String toString()
 	{

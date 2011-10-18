@@ -33,23 +33,29 @@ public class Ratio_nucCyt extends Feature
 {
 	public float getValue(CellCoordinates cell, int[][][] raster, float[] backgroundValues)
 	{
-		int sumN = 0;
-		Point[] coordsN = cell.getComCoordinates("Nucleus");
-		if (coordsN == null || coordsN.length == 0)
-			return 0;
-		int len = coordsN.length;
-		for (int i = 0; i < len; i++)
-			sumN+=raster[coordsN[i].y][coordsN[i].x][ChannelIndex];
-		float meanN =  sumN/len-backgroundValues[ChannelIndex];
-		
+		long counter = 0;
+		long sum = 0;
+		String[] names = cell.getComNames();
+		// Accounting for possibility of multiple nuclei
+		for (int i = 0; i < names.length; i++)
+			if (names[i].indexOf("Nucleus") >= 0) {
+				Point[] coords = cell.getComCoordinates(names[i]);
+				int len = coords == null ? 0 : coords.length;
+				counter += len;
+				for (int j = 0; j < len; j++)
+					sum += raster[coords[j].y][coords[j].x][ChannelIndex];
+			}
+		float meanN = ((float) sum) / counter - backgroundValues[ChannelIndex];
+
 		int sumC = 0;
 		Point[] coordsC = cell.getComCoordinates("Cytoplasm");
-		len = coordsC.length;
+		int len = coordsC.length;
 		if (len == 0)
 			return 0;
 		for (int i = 0; i < len; i++)
 			sumC+=raster[coordsC[i].y][coordsC[i].x][ChannelIndex];
-		float meanC = sumC/len-backgroundValues[ChannelIndex];
+		float meanC = (float) sumC / (float) len
+				- backgroundValues[ChannelIndex];
 		if (meanC == 0)
 			return 0;
 		
