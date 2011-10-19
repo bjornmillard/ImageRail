@@ -169,15 +169,18 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 				}
 			}
 		}
-			 float[][] test = new float[height][width];
-			 for (int r = 0; r < height; r++) {
-			 for (int c = 0; c < width; c++) {
-			 if (ROIs_raster[r][c])
-			 test[r][c] = 255;
-			 }
-			 }
-			 tools.ImageTools.displayRaster(test);
 
+		// if(false)
+		// {
+		// float[][] test = new float[height][width];
+		// for (int r = 0; r < height; r++) {
+		// for (int c = 0; c < width; c++) {
+		// if (ROIs_raster[r][c])
+		// test[r][c] = 255;
+		// }
+		// }
+		// tools.ImageTools.displayRaster(test);
+		// }
 
 
 

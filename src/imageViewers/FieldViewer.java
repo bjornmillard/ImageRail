@@ -734,14 +734,15 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			shapeToDraw = new Polygon(xp, yp, len);
 		}
 
-		g2.setColor(color);
-		Composite orig = g2.getComposite();
-		g2.setComposite(translucComposite);
+
 
 		if (shapeToDraw != null) {
+			g2.setColor(color);
+			Composite orig = g2.getComposite();
+			g2.setComposite(translucComposite);
 			g2.fill(shapeToDraw);
-			g2.draw(shapeToDraw);
 			g2.setComposite(orig);
+			g2.draw(shapeToDraw);
 		}
 	}
 
