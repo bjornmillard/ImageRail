@@ -215,8 +215,10 @@ public class DotFilter {
 		g2.setComposite(transComposite);
 		g2.fill(roi);
 
-		g2.setColor(lightBlue);
+		// g2.setComposite(comp);
+		g2.setColor(Color.white);
 		g2.fill(arrow);
+		// g2.setComposite(transComposite);
 
 		g2.draw(arrow);
 		if (highlight == 0)
@@ -259,6 +261,7 @@ public class DotFilter {
 				executeBox_allHDF.y + 15);
 
 		// Add to filter queue
+		if (false) {
 		g2.setColor(ivory);
 		g2.fill(box_addToFilterQueue);
 		if (highlight == 4)
@@ -268,6 +271,7 @@ public class DotFilter {
 		g2.draw(box_addToFilterQueue);
 		g2.drawString("Add To Fitler Queue", box_addToFilterQueue.x + 7,
 				box_addToFilterQueue.y + 15);
+		}
 		g2.setComposite(comp);
 	}
 
@@ -316,11 +320,9 @@ public class DotFilter {
 				System.out.println("Processing: " + well.name);
 				well.purgeSelectedCellsAndRecomputeWellMeans();
 			}
-
-			TheMainGUI.getPlateHoldingPanel().getModel().updateMinMaxValues();
-			TheMainGUI.updateDotPlot();
 		}
-
+		TheMainGUI.getPlateHoldingPanel().getModel().updateMinMaxValues();
+		TheMainGUI.updateDotPlot();
 	}
 
 	public void execute_allWells() {

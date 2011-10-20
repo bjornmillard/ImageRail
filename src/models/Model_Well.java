@@ -272,6 +272,8 @@ public class Model_Well
 	 * @author BLM*/
 	public void purgeSelectedCellsAndRecomputeWellMeans()
 	{
+
+
 		//Now deleting selected cells from the CellRepository
 		int numF = TheFields.length;
 		for (int i = 0; i < numF; i++)
@@ -284,6 +286,9 @@ public class Model_Well
 				ArrayList<float[]> temp_vals = new ArrayList<float[]> ();
 				ArrayList<Integer> ids = new ArrayList<Integer>();
 				int numC = cells.size();
+
+				long time2 = System.currentTimeMillis();
+
 				for (int j = 0; j < numC; j++)
 				{
 					Cell cell = cells.get(j);
@@ -301,11 +306,16 @@ public class Model_Well
 				for (int v = 0; v < temp_vals.size(); v++)
 					fvals[v] = temp_vals.get(v);
 			
+
 				TheFields[i].getCellRepository()
 .setCellData(ids, temp_coords,
 						fvals);
+
 			}
 		}
+
+
+
 
 		float[][] cellData = getCell_values();
 		
@@ -320,6 +330,8 @@ public class Model_Well
 		Feature_Stdev = null;
 		Feature_Means = data[0];
 		Feature_Stdev = data[1];
+
+
 	}
 	
 	

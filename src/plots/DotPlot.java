@@ -93,7 +93,7 @@ import dialogs.CaptureImage_Dialog;
 
 public class DotPlot extends JPanel implements ImageCapturePanel {
 	private AlphaComposite transComposite = AlphaComposite.getInstance(
-			AlphaComposite.SRC_OVER, 0.30f);
+			AlphaComposite.SRC_OVER, 0.70f);
 	private Font SmallFont = new Font("Helvetca", Font.BOLD, 9);
 	private Font StandardFont = new Font("Helvetca", Font.PLAIN, 8);
 	private JSlider transparencySlider;
@@ -571,8 +571,10 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		// }
 		// });
 
-		transparencySlider = new JSlider(0, 100, (int) (transComposite
-				.getAlpha() * 100f));
+		// transparencySlider = new JSlider(0, 100, (int) (transComposite
+		// .getAlpha() * 100f));
+		transparencySlider = new JSlider(0, 100, 80);
+
 		transparencySlider.addChangeListener(new SliderListener_Alpha());
 		transparencySlider.setToolTipText("Dot Transparancey");
 		// topPanel.add(transparencySlider,1);
@@ -1451,7 +1453,13 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 
 				int numDeleted = deleteSelectedDots();
 				if (numDeleted > 0) {
-					MainGUI.getGUI().updateAllPlots();
+
+					updatePlot(TheWells, FeatureX.toString(),
+							FeatureY.toString());
+					validate();
+					repaint();
+
+					// MainGUI.getGUI().updateAllPlots();
 					MainGUI.getGUI().setCellsModified(true);
 				}
 			}
@@ -1500,7 +1508,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		return TheDots;
 	}
 
+	//
+	//
+	//
 	public int deleteSelectedDots() {
+		long time = System.currentTimeMillis();
+
 		int numToDelete = 0;
 		int numP = TheDots.length;
 		for (int p = 0; p < numP; p++) {
@@ -1521,13 +1534,23 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 
 		int num = TheWells.length;
 		for (int i = 0; i < num; i++) {
-			System.out.println("Processing: " + TheWells[i].name);
+			System.out.println("Processing Well: " + TheWells[i].name);
 			TheWells[i].purgeSelectedCellsAndRecomputeWellMeans();
 		}
-
 		TheMainGUI.getPlateHoldingPanel().getModel().updateMinMaxValues();
+
+		// Clean up a bit
+		System.gc();
+
+		// System.out.println("Time to Delete Dots"
+		// + (System.currentTimeMillis() - time));
+
 		return numToDelete;
 	}
+
+	//
+	//
+	//
 
 	private int getFeatureIndex(String fname) {
 		Feature[] fs = gui.MainGUI.getGUI().getFeatures();
@@ -1589,10 +1612,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 			try {
 				// finding which wells have cells
 				numPlots = wells.length;
+
 				// Counts how many cells total are in each well --> ex: bc of
 				// multiple fields
 				int counter = 0;
-				if (TheDataValues == null) {
+				if (true) {// TheDataValues == null) {
+
 					// Clear prior data
 					TheDataValues = null;
 					TheCells = null;
@@ -1760,7 +1785,11 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		public void draw(Graphics2D ge, boolean plotToSVG, boolean plotTOImage) {
 			updateDimensions();
 
+
+
 			if (UpdatePlotImage || plotToSVG || plotTOImage) {
+				long time = System.currentTimeMillis();
+
 				ThePlotImage = new BufferedImage(getWidth(), getHeight(),
 						BufferedImage.TYPE_INT_RGB);
 				int width = ThePlotImage.getWidth();
@@ -1824,6 +1853,9 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 
 				UpdatePlotImage = false;
 
+				// System.out.println("Time to Plot"
+				// + (System.currentTimeMillis() - time));
+
 			}
 
 			if (!plotToSVG)
@@ -1862,58 +1894,6 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 				double plotBufferX = 0;
 				double axisLenX = axisLength_X / numPlots - plotBufferX;
 
-				//
-				// Performing and drawing the linear regression
-				//
-				// for (int p = 0; p < numPlots; p++)
-				// {
-				// if(Button_linearRegression.isSelected())
-				// {
-				// double[] data = computeLinearRegression(TheDots[p]);
-				//						
-				// double m = data[0];
-				// double b = data[1];
-				// double N = data[2];
-				// double xMin = data[3];
-				// double xMax = data[4];
-				// double yMin = data[5];
-				// double yMax = data[6];
-				//						
-				// double xs = xMin;
-				// double xe = xMax;
-				// double ys = (m*xMin+b);
-				// double ye = (m*xMax+b);
-				//						
-				// xs =
-				// (int)((xStart+axisLenX*p+plotBufferX)+(xs-Bounds_X.Lower)/(Bounds_X.Upper-Bounds_X.Lower)*axisLenX);
-				// xe =
-				// (int)((xStart+axisLenX*p+plotBufferX)+(xe-Bounds_X.Lower)/(Bounds_X.Upper-Bounds_X.Lower)*axisLenX);
-				// ys =
-				// (int)(yStart-(ys-Bounds_Y.Lower)/(Bounds_Y.Upper-Bounds_Y.Lower)*axisLength_Y);
-				// ye =
-				// (int)(yStart-(ye-Bounds_Y.Lower)/(Bounds_Y.Upper-Bounds_Y.Lower)*axisLength_Y);
-				//						
-				// //Draw the linear regression
-				// ge.setColor(Color.RED);
-				// ge.drawLine((int)xs, (int)ys, (int)xe, (int)ye);
-				//						
-				// String st = "y = "+nf.format(m)+" (x) + "+nf.format(b);
-				// int sLen = st.length();
-				// if (ys>yStart-10)
-				// ys = yStart-20;
-				// if (ys<yStart-axisLength_Y)
-				// ys = yStart-axisLength_Y+12;
-				//						
-				// ge.setColor(Color.white);
-				// ge.fillRect((int)xs+6, (int)ys-10, (int)((float)sLen*4.5f),
-				// 13);
-				// ge.setColor(Color.darkGray);
-				// ge.drawRect((int)xs+6, (int)ys-10, (int)((float)sLen*4.5f),
-				// 13);
-				// ge.setColor(Color.RED);
-				// ge.drawString(st, (int)xs+10, (int)ys);
-				// }
-				// }
 
 				// Drawing all gates
 				int num = TheWells.length;
@@ -1977,6 +1957,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 			}
 			super.paintHighlighting(ge);
 			validate();
+
+
 		}
 
 		/**
@@ -2251,20 +2233,21 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 				//
 				// Now drawing all the well dots
 				//
-				long time = System.currentTimeMillis();
 
 				float progressIncrement = 1f / (float) numPlots;
 				double[] lastCentroid = null;
 				for (int p = 0; p < numPlots; p++) {
+
+
 					Dot[] theseDots = TheDots[p];
 
 					double[] centroid = { 0, 0 };
 					int numValidDots = 0;
 					int numD = theseDots.length;
 
+
 					DensityScatter densityMap = null;
 					if (displayDensityMap) {
-						transparencySlider.setValue(80);
 						//
 						// Computing the density map
 						//
@@ -2274,12 +2257,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 							xVals[i] = TheDots[p][i].point.x;
 							yVals[i] = TheDots[p][i].point.y;
 						}
-
 						densityMap = new DensityScatter(xVals, yVals, 50);
 						TheDensitySorter.densityScatter = densityMap;
 						Arrays.sort(TheDots[p], TheDensitySorter);
-					} else
-						transparencySlider.setValue(20);
+					}
+
+
 
 					// Drawing how many dots there are
 					int xBuffer = (int) ((xStart + axisLenX * p + plotBufferX));
@@ -2289,9 +2272,16 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 					g2.drawString("" + numD, xBuffer + 9, yStart - axisLength_Y
 							+ 23);
 
+
 					//
 					// Drawing the dots
 					//
+
+					g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+							RenderingHints.VALUE_ANTIALIAS_ON);
+					Composite com = g2.getComposite();
+					g2.setComposite(transComposite);
+
 					for (int i = 0; i < numD; i++) {
 
 						if (TheDots[p][i].point.x >= Bounds_X.Lower
@@ -2315,29 +2305,6 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 
 							// System.out.println("Percent: "+percentToPlot);
 							if (Math.random() < percentToPlot) {
-								// int density =
-								// densityMap.getNumInBin(TheDots[p][i].point.x,
-								// TheDots[p][i].point.y);
-								//							
-								// only plot dots that have density less than a
-								// particular value
-								// if (d == 0)
-								// {
-								// int plotDensity = 0;
-								// if (numPlots <= 3)
-								// plotDensity = 30;
-								// else
-								// plotDensity = 20;
-								//							
-								// if (density<plotDensity ||
-								// densityMap.shouldPlot(TheDots[p][i].point.x,
-								// TheDots[p][i].point.y))
-								// {
-								// if (TheDots[p][i].isSelected())
-								// g2.setColor(Color.red);
-								// else
-								// }
-								// }
 
 								if (displayDensityMap)
 									g2.setColor(densityMap.getColor(
@@ -2350,38 +2317,11 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								if (plotToSVG)
 									dotDiameter = 2;
 
-								Composite com = g2.getComposite();
-								g2.setComposite(transComposite);
 								g2.fillOval(TheDots[p][i].box.x - dotDiameter
 										/ 2, TheDots[p][i].box.y - dotDiameter
 										/ 2, dotDiameter, dotDiameter);
-								g2.setComposite(com);
 
-								// densityMap.dontPlot(TheDots[p][i].point.x,
-								// TheDots[p][i].point.y);
-								// }
-								// }
-								// else
-								// {
-								// if (TheDots[p][i].isSelected())
-								// g2.setColor(Color.red);
-								// else
-								// g2.setColor(densityMap.getColor(TheDots[p][i].point.x,
-								// TheDots[p][i].point.y));
-								//
-								// int dotDiameter = TheDots[p][i].box.width;
-								// if (plotToSVG)
-								// dotDiameter = 2;
-								//
-								// Composite com = g2.getComposite();
-								// g2.setComposite(transComposite);
-								// g2.fillOval(TheDots[p][i].box.x-dotDiameter/2,TheDots[p][i].box.y-dotDiameter/2,
-								// dotDiameter, dotDiameter);
-								// g2.setComposite(com);
-								//
-								// densityMap.dontPlot(TheDots[p][i].point.x,
-								// TheDots[p][i].point.y);
-								// }
+
 							}
 						}
 						// tallying all dots and selected dots to get a
@@ -2391,6 +2331,10 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 							NumDots_Selected++;
 
 					}
+					g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+							RenderingHints.VALUE_ANTIALIAS_OFF);
+					g2.setComposite(com);
+
 
 					//
 					// Computing the centroid and drawing it
@@ -2434,10 +2378,10 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 						lastCentroid = centroid_display;
 					}
 
+
 				}
 
-				// System.out.println("Time: "
-				// + (System.currentTimeMillis() - time));
+
 
 				g2.setColor(Color.green);
 			}
@@ -2913,9 +2857,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 			}
 			int len = TheDots.length;
 			for (int p = 0; p < numPlots; p++)
-				for (int i = 0; i < len; i++)
+ {
+				int numD = TheDots[p].length;
+				for (int i = 0; i < numD; i++)
 					if (TheDots[p][i] != null)
 						TheDots[p][i].setSelected(false);
+			}
 
 			// Seeing if clicked on a DotFilter
 			if (TheDotFilters != null && TheDotFilters.size() > 0) {

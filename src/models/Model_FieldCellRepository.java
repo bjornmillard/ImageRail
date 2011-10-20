@@ -297,8 +297,6 @@ public class Model_FieldCellRepository
 		// Assuming all cells in this cell bank are stored with the same
 		// structure
 
-		long timeS = System.currentTimeMillis();
-
 		CellCoordinates cell = cellCoords.get(0);
 		int numC = cell.getComSize();
 		String comName = "";
@@ -307,15 +305,12 @@ public class Model_FieldCellRepository
 		if (numC == 1) {
 			comName = cell.getComNames()[0];
 			if (comName.trim().equalsIgnoreCase("BoundingBox")) {
-				// System.out.println("___Saving BoundingBoxes");
 				io.writeCellBoundingBoxes(plateIndex, wellIndex, field
 						.getIndexInWell(), cellCoords);
 			} else if (comName.trim().equalsIgnoreCase("Centroid")) {
-				// System.out.println("___Saving Centroids");
 				io.writeCellCentroids(plateIndex, wellIndex, field
 						.getIndexInWell(), cellCoords);
 			} else if (comName.trim().equalsIgnoreCase("Outline")) {
-				// System.out.println("___Saving All Outlines");
 				io.writeWholeCells(plateIndex, wellIndex, field
 						.getIndexInWell(), cellCoords);
 			}
@@ -323,14 +318,9 @@ public class Model_FieldCellRepository
 				// etc...
 		{
 
-			// System.out.println("___Saving All Coordinates");
 			io.writeWholeCells(plateIndex, wellIndex, field.getIndexInWell(),
 					cellCoords);
 		}
-
-		// System.out
-		// .println("writeTime: " + (timeS - System.currentTimeMillis()));
-
 	}
 
 	/** */
@@ -344,7 +334,7 @@ public class Model_FieldCellRepository
 		cellCoords = coords_;
 		dataValues = vals;
 		initCells(ids, cellCoords, dataValues);
-		System.gc();
+
 	}
 	
 	

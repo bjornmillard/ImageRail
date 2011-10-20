@@ -1304,6 +1304,9 @@ public class MainGUI extends JFrame {
 	 * @author BLM
 	 */
 	public void updateDotPlot() {
+
+		long time = System.currentTimeMillis();
+
 		ArrayList<Model_Well> arr = ThePlatePanel.getModel()
 				.getSelectedWells_horizOrder();
 		int numWells = arr.size();
@@ -1343,6 +1346,10 @@ public class MainGUI extends JFrame {
 		TheMainPanel.repaint();
 		ThePlatePanel.updatePanel();
 		TheMainGUI.repaint();
+
+		// System.out
+		// .println("Time to Update"
+		// + (System.currentTimeMillis() - time));
 
 	}
 
