@@ -121,7 +121,7 @@ public class MainStartupDialog extends JFrame
 		{
 			
 			setText(text);
-			setFont(new Font("Serif", Font.BOLD, 16));
+			setFont(new Font("SansSerif", Font.PLAIN, 18));
 			setHorizontalAlignment(JLabel.CENTER);
 			setVerticalAlignment(JLabel.CENTER);
 			addMouseListener(new java.awt.event.MouseAdapter()

@@ -94,7 +94,7 @@ import dialogs.CaptureImage_Dialog;
 public class DotPlot extends JPanel implements ImageCapturePanel {
 	private AlphaComposite transComposite = AlphaComposite.getInstance(
 			AlphaComposite.SRC_OVER, 0.70f);
-	private Font SmallFont = new Font("Helvetca", Font.BOLD, 9);
+	private Font SmallFont = new Font("Helvetca", Font.BOLD, 10);
 	private Font StandardFont = new Font("Helvetca", Font.PLAIN, 8);
 	private JSlider transparencySlider;
 	private JSlider percentToPlotSlider;
@@ -1828,8 +1828,9 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 					// drawing gridlines
 					if (PlotType != CONTOUR) {
 						g2.setColor(Gray_1);
-						int numLines = 5;
+						int numLines = 10;
 						for (int i = 0; i < numLines; i++)
+							if (i % 2 != 0)
 							g2
 									.drawLine(
 											XMARGIN_LEFT + 1,
@@ -2028,6 +2029,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 										+ 1 + tickLen);
 
 					// labels
+					if (numPlots < 5)
 					if (Bounds_Y.Upper != 0 && MaxValue_Y != 0) {
 						g2.setFont(SmallFont);
 						for (int i = 0; i < numTicks; i++)
@@ -2176,6 +2178,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 						if ((i + 1) % 2 == 0 && i != numTicks) // odd ticks, but
 																// not top
 						{
+							// Only putting it on the first graph
+							if (p == 0)
 							if (Bounds_Y.Upper != Double.NaN
 									&& Bounds_Y.Lower != Double.NaN
 									&& (Bounds_Y.Lower != Bounds_Y.Upper)) {
@@ -2266,12 +2270,12 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 
 					// Drawing how many dots there are
 					int xBuffer = (int) ((xStart + axisLenX * p + plotBufferX));
-					g2.setColor(Color.darkGray);
-					g2.drawString("Total Dots: ", xBuffer + 8, yStart
+					g2.setColor(Color.gray);
+					g2.setFont(SmallFont);
+					g2.drawString("# Cells: ", xBuffer + 8, yStart
 							- axisLength_Y + 13);
 					g2.drawString("" + numD, xBuffer + 9, yStart - axisLength_Y
 							+ 23);
-
 
 					//
 					// Drawing the dots

@@ -290,29 +290,6 @@ public class MainGUI extends JFrame {
 		FileMenu.addSeparator();
 
 
-
-		// item = new JMenuItem("Save Project");
-		// item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK));
-		// item.addActionListener(new ActionListener()
-		// {
-		// public void actionPerformed(ActionEvent ae)
-		// {
-		// resaveCells();
-		// }
-		// });
-		// FileMenu.add(item);
-
-		// item = new JMenuItem("Save Project as...");
-		// item.addActionListener(new ActionListener()
-		// {
-		// public void actionPerformed(ActionEvent ae)
-		// {
-		// saveNewProject();
-		// }
-		// });
-		// FileMenu.add(item);
-		// FileMenu.addSeparator();
-
 		JMenu menuI = new JMenu("Save as MIDAS..");
 		// menuI.setEnabled(false);
 		FileMenu.add(menuI);
@@ -808,7 +785,7 @@ public class MainGUI extends JFrame {
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				try {
-					String text = "ImageRail: \n"
+					String text = "ImageRail (Version 1.2.3)\n"
 							+ "Software for high-throughput microscopy image analysis \n\n"
 							+ "Copyright (c) 2011 Bjorn Millard <bjornmillard@gmail.com> \n\n"
 							+ "This program is free software: you can redistribute it and/or \n"

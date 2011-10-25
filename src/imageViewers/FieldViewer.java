@@ -901,14 +901,36 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	}
 
 	/**
-	 * Returns the raw image that is currently being displayed in a non-scaled
-	 * formate
+	 * Returns the raw image that is currently being displayed in an unscaled
+	 * format
 	 * 
 	 * @author BLM
 	 */
 	public RenderedImage getTheCurrentImage() {
 		return TheCurrentImage;
 	}
+
+	// /**
+	// *
+	// * */
+	// public int[][][] getImageRaster_Banded() {
+	// int numChannels = 3;
+	// int width = TheCurrentImage.getWidth();
+	// int height = TheCurrentImage.getHeight();
+	// int max =
+	// int[][][] raster = new int[width][height][numChannels];
+	// int[] pix = new int[1];
+	// for (int i = 0; i < width; i++)
+	// for (int j = 0; j < height; j++)
+	// for (int c = 0; c < numChannels; c++)
+	// {
+	// TheCurrentImage.getData().getPixel(i, j, pix);
+	// System.out.println(pix[0]);
+	// raster[i][j][c] = pix[0];
+	// }
+	//
+	// return raster;
+	// }
 
 	/**
 	 * Returns the image that is currently being displayed in a SCALED format

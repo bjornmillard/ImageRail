@@ -239,6 +239,42 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		OptionsMenu.add(item);
 		OptionsMenu.addSeparator();
 		
+		// item = new JMenuItem("Create RGB Image");
+		// item.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent ae) {
+		//
+		// // Getting rasters to print to RGB
+		// int[][][] im = TheCurrentViewer.getImageRaster_Banded();
+		// int width = im.length;
+		// int height = im[0].length;
+		// int numChannels = im[0][0].length;
+		//
+		// // We need a sample model for color images where the pixels are
+		// // bytes, with three bands.
+		// SampleModel sampleModel = RasterFactory
+		// .createBandedSampleModel(DataBuffer.TYPE_BYTE, width,
+		// height, numChannels);
+		// // Create a TiledImage using the SampleModel.
+		// TiledImage tiledImage = new TiledImage(0, 0, width, height, 0,
+		// 0, sampleModel, null);
+		// // Get a raster for the single tile.
+		// WritableRaster raster = tiledImage.getWritableTile(0, 0);
+		// int[] pixVal = new int[3];
+		// for (int w = 0; w < width; w++) {
+		// for (int h = 0; h < height; h++) {
+		// for (int c = 0; c < numChannels; c++)
+		// pixVal[c] = im[w][h][c];
+		// raster.setPixel(w, h, pixVal);
+		// }
+		// }
+		//
+		// // Save the image on a file.
+		// JAI.create("filestore", tiledImage, "jairgb.png", "PNG");
+		// }
+		// });
+		// OptionsMenu.add(item);
+		// OptionsMenu.addSeparator();
+
 		JMenu SelectionShapeMenu = new JMenu("Selection Shape...");
 		OptionsMenu.add(SelectionShapeMenu);
 		JRadioButtonMenuItem square = new JRadioButtonMenuItem("Rectangle");

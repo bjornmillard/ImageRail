@@ -46,11 +46,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -62,10 +64,14 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import midasGUI.MetadataParser;
 import models.Model_Plate;
 import models.Model_Well;
 import plots.Legend;
 import plots.LinePlot;
+import sdcubeio.ExpDesign_IO;
+import sdcubeio.ExpDesign_Model;
+import sdcubeio.ExpDesign_Sample;
 import tools.PanelDropTargetListener;
 import tools.SVG_writer;
 import dialogs.CaptureImage_Dialog;
@@ -216,22 +222,47 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 		});
 		TheToolBar.add(montageButton);
 		
-		// TheToolBar.add(MetaButton);
-		// MetaButton.setToolTipText("Display Experimental Metadata Model_Plate Map");
-		// MetaButton.addActionListener(new ActionListener()
-		// {
-		// public void actionPerformed(ActionEvent ae)
-		// {
-		// DisplayMetaData ++;
-		// if(DisplayMetaData>3)
-		// DisplayMetaData = -1;
-		// updateMetaDataLegend();
-		//						
-		//
-		// // new Plate_MetaDataDisplay(ThePlate, "MetaData Viewer", 600,
-		// // 600, TheMetaDataWriter);
-		// }
-		// });
+		 TheToolBar.add(MetaButton);
+		 MetaButton.setToolTipText("Import IncuCyte Metadata file");
+		 MetaButton.addActionListener(new ActionListener()
+		 {
+			 public void actionPerformed(ActionEvent ae)
+			 {
+				 //FileChooser
+					File dir = gui.MainGUI.getGUI().getTheDirectory();
+					JFileChooser fc = null;
+					if (dir != null)
+						fc = new JFileChooser(dir);
+					else
+						fc = new JFileChooser();
+
+					int returnVal = fc.showOpenDialog(null);
+					if (returnVal == JFileChooser.APPROVE_OPTION) {
+						File file = fc.getSelectedFile();
+						gui.MainGUI.getGUI().setTheDirectory(new File(file.getParent()));
+
+						//Make sure its the correct file format
+						// NOTE: currently we only support the IncuCyte XML metadata format
+						if(file.getName().indexOf(".PlateMap")<=0)
+						{
+							JOptionPane.showMessageDialog(null,"Invalid Metadata File Type! \n\n Please try again","Invalid File",JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+						
+						ExpDesign_Model model = MetadataParser.parse_IncuCyteXML(file.getAbsolutePath(),
+								TheModel, gui.MainGUI.getGUI().getExpDesignConnector());
+						ExpDesign_IO.write(model);
+						
+						System.out.println("model: "+model.getSamples().size());
+						ArrayList<ExpDesign_Sample> samples = model.getSamples();
+						for(int i =0; i < samples.size(); i++)
+						{
+							System.out.println(samples.get(i));
+						}
+					}
+					
+			 }
+		 });
 
 	}
 
