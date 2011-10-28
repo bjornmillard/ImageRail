@@ -103,6 +103,7 @@ import dialogs.ThresholdingBoundsInputDialog_WellMeans;
 import features.Feature;
 import features.FeatureSorter;
 import filters.DotFilterQueue;
+import filters.FeatureDetector;
 import filters.FilterManager;
 
 
@@ -257,7 +258,7 @@ public class MainGUI extends JFrame {
 		TheMenuBar.add(FileMenu);
 		TheMenuBar.add(ProcessMenu);
 		TheMenuBar.add(OptionsMenu);
-		// TheMenuBar.add(ToolsMenu);
+		TheMenuBar.add(ToolsMenu);
 		TheMenuBar.add(DisplayMenu);
 		TheMenuBar.add(HelpMenu);
 		setJMenuBar(TheMenuBar);
@@ -361,55 +362,7 @@ public class MainGUI extends JFrame {
 				ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				// Horiz ordering
-				ArrayList<Model_Well> wells = new ArrayList<Model_Well>();
-				Model_Plate[] plates = getThePlateHoldingPanel().getPlates();
-				int numPlates = plates.length;
-				for (int p = 0; p < numPlates; p++)
-					wells.addAll(plates[p].getSelectedWells_horizOrder());
-
-				int len = wells.size();
-				if (len == 0)
-					return;
-				ArrayList<FieldViewer> temp = new ArrayList<FieldViewer>();
-
-				FieldViewer_Frame imageViewerFrame = new FieldViewer_Frame();
-				for (int i = 0; i < len; i++) {
-					Model_Well w = (Model_Well) wells.get(i);
-					if (w.getFields() != null) {
-						int numFields = w.getFields().length;
-						for (int j = 0; j < numFields; j++) {
-							if (w.getFields()[j].getNumberOfChannels() > 0) {
-								FieldViewer d = new FieldViewer(
-										imageViewerFrame, w, w.getFields()[j]);
-								temp.add(d);
-								if (d != null) {
-									if (TheDotPlot != null
-											&& TheDotPlot.TheDotSelectionListener != null) {
-										d
-										.setDotSelectionListener(TheDotPlot.TheDotSelectionListener);
-										TheDotPlot.TheDotSelectionListener
-										.addListener(d);
-									}
-								}
-							}
-						}
-					}
-				}
-				if (temp.size() == 0)
-					return;
-				int num = temp.size();
-				FieldViewer[] arr_horiz = new FieldViewer[num];
-				for (int i = 0; i < num; i++)
-					arr_horiz[i] = (FieldViewer) temp.get(i);
-
-				imageViewerFrame.setImageViewers(arr_horiz);
-				imageViewerFrame.setVisible(true);
-
-				// Trying to block the plate so user doesnt change it until done
-				// veiwing images
-				TheMainGUI.ThePlatePanel.block(imageViewerFrame);
-
+				displayImages_SelectedWells();
 			}
 		});
 		DisplayMenu.add(item);
@@ -417,52 +370,57 @@ public class MainGUI extends JFrame {
 
 		// Displays the Filter manager dialog so you can filter the cells
 		// appropriately
-		item = new JMenuItem("Show Filter Manager");
+//		item = new JMenuItem("Show Filter Manager");
+//		item.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent ae) {
+//				TheFilterManager = new FilterManager();
+//				TheFilterManager.setVisible(true);
+//			}
+//		});
+//		ToolsMenu.add(item);
+
+		item = new JMenuItem("Find Bubbles/Artifacts");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				TheFilterManager = new FilterManager();
-				TheFilterManager.setVisible(true);
+				
+				ArrayList<Model_Well> wells = ThePlatePanel.getModel().getSelectedWells_horizOrder();
+				int len = wells.size();
+				for (int i = 0; i < len; i++) {
+					Model_Well well= wells.get(i);
+					int numH = well.getHDFcount();
+					if(numH>0)
+					{
+						well.loadCells(TheImageRail_H5IO, true, true);
+						Model_Field[] fields = well.getFields();
+						int num = fields.length;
+						boolean foundOne = false;
+						for (int f = 0; f < num; f++) {
+								if(FeatureDetector.containsArtifact(fields[f]))
+								{
+									foundOne = true;
+								}
+						}
+						if (!foundOne)
+						{
+							well.setSelected(false);
+							well.clearCellData();
+						}
+						else
+							well.setSelected(true);
+						
+					}
+					else
+						well.setSelected(false);
+				}
+				ThePlatePanel.updatePanel();
+				//Opening an image viewer showing the resulting wells
+				displayImages_SelectedWells();
+
 			}
 		});
 		ToolsMenu.add(item);
-		// ToolsMenu.add(AnalysisModulesMenu);
-
-		// JMenuItem but2 = new JMenuItem("Bimodal Fitting");
-		// but2.addActionListener(new ActionListener() {
-		// public void actionPerformed(ActionEvent ae) {
-		// new AnalysisModuleFrame(new Plate_bimodalFit(TheMainGUI
-		// .getPlateHoldingPanel().getModel().getPlates()[0],
-		// "Bimodal Fit", 800, 700));
-		// validate();
-		// repaint();
-		// ThePlatePanel.updatePanel();
-		// }
-		// });
-		// AnalysisModulesMenu.add(but2);
-		//
-		// but2 = new JMenuItem("Dose Response Calculator");
-		// but2.addActionListener(new ActionListener() {
-		// public void actionPerformed(ActionEvent ae) {
-		// new AnalysisModuleFrame(new Line_DoseResponseCalculator(
-		// TheLinePlot, "Dose Response Ranges", 650, 400));
-		// }
-		// });
-		// AnalysisModulesMenu.add(but2);
-		//
-		// but2 = new JMenuItem("Multiple Line Plots");
-		// but2.addActionListener(new ActionListener() {
-		// public void actionPerformed(ActionEvent ae) {
-		// Feature[] features = FeatureSelectionDialog
-		// .showFeatureSelectionDialog();
-		// if (features != null)
-		// new AnalysisModuleFrame(new Grid_LinePlot(TheMainGUI
-		// .getPlateHoldingPanel().getModel().getPlates()[0],
-		// features, "Multiple LineGraph Plotter", 800, 800));
-		//
-		// }
-		// });
-		// AnalysisModulesMenu.add(but2);
-
+		
+		
 		/**
 		 * Adding the Possible options for the leftPanelDisplay
 		 * 
@@ -1064,6 +1022,63 @@ public class MainGUI extends JFrame {
 			System.out.println("Open command cancelled by user.");
 	}
 
+	/** 
+	 * Displays all the images from the selected wells from all plates in the project.
+	 * @author BLM
+	 * */
+	public void displayImages_SelectedWells()
+	{
+		// Horiz ordering
+		ArrayList<Model_Well> wells = new ArrayList<Model_Well>();
+		Model_Plate[] plates = getThePlateHoldingPanel().getPlates();
+		int numPlates = plates.length;
+		for (int p = 0; p < numPlates; p++)
+			wells.addAll(plates[p].getSelectedWells_horizOrder());
+
+		int len = wells.size();
+		if (len == 0)
+			return;
+		ArrayList<FieldViewer> temp = new ArrayList<FieldViewer>();
+
+		FieldViewer_Frame imageViewerFrame = new FieldViewer_Frame();
+		for (int i = 0; i < len; i++) {
+			Model_Well w = (Model_Well) wells.get(i);
+			if (w.getFields() != null) {
+				int numFields = w.getFields().length;
+				for (int j = 0; j < numFields; j++) {
+					if (w.getFields()[j].getNumberOfChannels() > 0) {
+						FieldViewer d = new FieldViewer(
+								imageViewerFrame, w, w.getFields()[j]);
+						temp.add(d);
+						if (d != null) {
+							if (TheDotPlot != null
+									&& TheDotPlot.TheDotSelectionListener != null) {
+								d
+								.setDotSelectionListener(TheDotPlot.TheDotSelectionListener);
+								TheDotPlot.TheDotSelectionListener
+								.addListener(d);
+							}
+						}
+					}
+				}
+			}
+		}
+		if (temp.size() == 0)
+			return;
+		int num = temp.size();
+		FieldViewer[] arr_horiz = new FieldViewer[num];
+		for (int i = 0; i < num; i++)
+			arr_horiz[i] = (FieldViewer) temp.get(i);
+
+		imageViewerFrame.setImageViewers(arr_horiz);
+		imageViewerFrame.setVisible(true);
+
+		// Trying to block the plate so user doesnt change it until done
+		// veiwing images
+		TheMainGUI.ThePlatePanel.block(imageViewerFrame);	
+	
+	}
+	
 	/**
 	 * Prompts the user to select directory where new project will be created
 	 * 
