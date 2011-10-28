@@ -818,6 +818,19 @@ public class Model_Well
 		MainGUI.getGUI().updateAllPlots();
 	}
 
+	/** Clears the RAM of all cell data in this well, not mean values
+	 * @author BLM*/
+	public void clearCellData()
+	{
+				Model_Field[] fields = getFields();
+				if(fields!=null)
+				{
+					int numF = fields.length;
+					for (int z = 0; z < numF; z++)
+						fields[z].killCells();
+				}
+	}
+	
 	public void clearOldData() {
 		Model_Field[] fields = getFields();
 		if (fields != null) {

@@ -1635,6 +1635,164 @@ public class ImageTools
 		System.exit(0);
 
 	}
+	
+	/**
+	 * Accepts image raster and number of bins desired and returns a 2xnumBins 
+	 * matrix where first dimensions contains the bin range values and the second the bin count
+	 * @author BLM
+	 * @param int[][] raster, int numBins
+	 * @return int[][] histogram (2xnumBins)
+	 */
+	public static int[][] getHistogram(int[][] raster, int numBins)
+	{
+		//2xnumBins matrix 
+		int[][] bins = new int[2][numBins];
+		int width = raster.length;
+		int height = raster[0].length;
+		//Find min and max values
+		int min = Integer.MAX_VALUE;
+		int max = Integer.MIN_VALUE;
+		for (int r = 0; r < height; r++) {
+			for (int c = 0; c < width; c++) {
+				if(raster[r][c]<min)
+					min = raster[r][c];
+				if(raster[r][c]>max)
+					max = raster[r][c];
+			}
+		}
+		//Init the bin range values
+		int dx = (int)((float)(max-min)/(float)numBins);
+		for (int i = 0; i < numBins; i++)
+			bins[0][i] = (int)(min+dx*i);
+		//Binning
+		for (int r = 0; r < height; r++) {
+			for (int c = 0; c < width; c++) {
+				
+				int index = (int)((((float)raster[r][c]-min)/(float)(max-min))*numBins);
+				if (index>=numBins)
+					index = numBins-1;
+				else if (index<0)
+					index=0;
+				
+				bins[1][index]++;
+			}
+		}
+		return bins;
+	}
+
+
+	/**
+	 * Accepts image raster and number of bins desired and returns a 2xnumBins 
+	 * matrix where first dimensions contains the bin range values and the second the bin count
+	 * Normalizes the bin count from 0-1.
+	 * @author BLM
+	 * @param int[][] raster, int numBins
+	 * @return float[][] histogram (2xnumBins)
+	 */
+	public static float[][] getHistogram_norm(int[][] raster, int numBins)
+	{
+		//2xnumBins matrix 
+		float[][] bins = new float[2][numBins];
+		int width = raster.length;
+		int height = raster[0].length;
+		//Find min and max values
+		float min = Float.MAX_VALUE;
+		float max = Float.MIN_VALUE;
+		for (int r = 0; r < height; r++) {
+			for (int c = 0; c < width; c++) {
+				if(raster[r][c]<min)
+					min = raster[r][c];
+				if(raster[r][c]>max)
+					max = raster[r][c];
+			}
+		}
+		//Init the bin range values
+		int dx = (int)((float)(max-min)/(float)numBins);
+		for (int i = 0; i < numBins; i++)
+			bins[0][i] = (int)(min+dx*i);
+		//Binning
+		for (int r = 0; r < height; r++) {
+			for (int c = 0; c < width; c++) {
+				
+				int index = (int)((((float)raster[r][c]-min)/(float)(max-min))*numBins);
+				if (index>=numBins)
+					index = numBins-1;
+				else if (index<0)
+					index=0;
+				
+				bins[1][index]++;
+			}
+		}
+		//Normalizing
+		min = Float.MAX_VALUE;
+		max = Float.MIN_VALUE;
+		for (int i = 0; i < numBins; i++)
+		{
+			if(bins[1][i]<min)
+				min = (int)bins[1][i];
+			if(bins[1][i]>max)
+				max = (int)bins[1][i];
+		}
+//		System.out.println("*************");
+		for (int i = 0; i < numBins; i++)
+		{
+			bins[1][i] = ((bins[1][i]-min)/(max-min));
+//			System.out.println(bins[1][i]);
+		}
+		return bins;
+	}
+	
+	/**
+	 * Accepts image raster and number of bins desired and returns a 2xnumBins 
+	 * matrix where first dimensions contains the bin range values and the second the bin count
+	 * Normalizes the bin count from 0-1.
+	 * @author BLM
+	 * @param int[][] raster, int numBins
+	 * @return float[][] histogram (2xnumBins)
+	 */
+	public static float[][] getHistogram_bounds_norm(int[][] raster, int numBins, int minRange, int maxRange)
+	{
+		//2xnumBins matrix 
+		float[][] bins = new float[2][numBins];
+		int width = raster.length;
+		int height = raster[0].length;
+		//Find min and max values
+		float min = minRange;
+		float max = maxRange;
+		
+		//Init the bin range values
+		int dx = (int)((float)(max-min)/(float)numBins);
+		for (int i = 0; i < numBins; i++)
+			bins[0][i] = (int)(min+dx*i);
+		//Binning
+		for (int r = 0; r < height; r++) {
+			for (int c = 0; c < width; c++) {
+				
+				int index = (int)((((float)raster[r][c]-min)/(float)(max-min))*numBins);
+				if (index>=numBins)
+					index = numBins-1;
+				else if (index<0)
+					index=0;
+				
+				bins[1][index]++;
+			}
+		}
+		//Normalizing
+		min = Float.MAX_VALUE;
+		max = Float.MIN_VALUE;
+		for (int i = 0; i < numBins; i++)
+		{
+			if(bins[1][i]<min)
+				min = (int)bins[1][i];
+			if(bins[1][i]>max)
+				max = (int)bins[1][i];
+		}
+		for (int i = 0; i < numBins; i++)
+		{
+			bins[1][i] = ((bins[1][i]-min)/(max-min));
+		}
+		return bins;
+	}
 }
 
 
