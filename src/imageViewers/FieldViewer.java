@@ -33,6 +33,7 @@ import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -40,6 +41,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.geom.Ellipse2D;
+import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
@@ -68,18 +70,23 @@ import com.sun.media.jai.widget.DisplayJAI;
 public class FieldViewer extends DisplayJAI implements MouseListener,
 		MouseMotionListener, WindowListener {
 	private AlphaComposite translucComposite = AlphaComposite.getInstance(
-			AlphaComposite.SRC_OVER, 0.07f);
+			AlphaComposite.SRC_OVER, 0.2f);
+	private AlphaComposite translucComposite_100 = AlphaComposite.getInstance(
+			AlphaComposite.SRC_OVER, 1f);
+	private AlphaComposite translucComposite_90 = AlphaComposite.getInstance(
+			AlphaComposite.SRC_OVER, 0.9f);
+	private AlphaComposite translucComposite_20 = AlphaComposite.getInstance(
+			AlphaComposite.SRC_OVER, 0.2f);
 	private DotSelectionListener TheDotSelectionListener;
 	private FieldViewer_Frame TheParentContainer;
 	private boolean CreateNewBox;
 	private int dX;
 	private int dY;
+	private Color lightGray = new Color(50,50,50);
+	private Color gray = new Color(40,40,40);
+	private Color lighterGray = new Color(60,60,60);
 
-	private Point DummyPoint;
 	private JPanel ThePanel;
-	private Rectangle DummyBox;
-
-
 	// Allowing Both rectangle and oval selection -BLM Aug_09
 	private Rectangle tempRect;
 	private Ellipse2D.Float tempOval;
@@ -121,6 +128,9 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	private Polygon ThePolygonGate;
 	private ArrayList<Point> ThePolygonGate_Points;
 
+	//Normalized pixel Histograms for all fields for display on right. Size [numChannels][numBins]
+	private float[][] histograms;
+	
 	public FieldViewer(FieldViewer_Frame holderFrame_, Model_Well well, Model_Field field) {
 		HolderFrame = holderFrame_;
 		ImageSelected_index = 0;
@@ -132,8 +142,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		setBackground(Color.black);
 		pixel = new int[3];
 		float scalingFactor = 1f;
-		DummyPoint = new Point();
-		DummyBox = new Rectangle();
+	
 
 		LineProfileValues_X = null;
 		LineProfileValues_Y = null;
@@ -151,15 +160,15 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		MaxValueSlider = new JSlider(0, MainGUI.MAXPIXELVALUE,
 				MainGUI.MAXPIXELVALUE);
 
-		MaxValueSlider.setToolTipText("Maximum");
+		MaxValueSlider.setToolTipText("Max = "+MaxValueSlider.getValue());
 		MaxValueSlider.setName("Max");
 		MaxValueSlider.setOrientation(JSlider.VERTICAL);
 		SliderListener_RescaleDisplay listener = new SliderListener_RescaleDisplay();
 		MaxValueSlider.addChangeListener(listener);
 
 		MinValueSlider = new JSlider(0, MainGUI.MAXPIXELVALUE, 0);
-		MinValueSlider.setEnabled(false);
-		MinValueSlider.setToolTipText("Minimum");
+		MinValueSlider.setEnabled(true);
+		MinValueSlider.setToolTipText("Min = "+MinValueSlider.getValue());
 		MinValueSlider.setName("Min");
 		MinValueSlider.setPaintTicks(false);
 		MinValueSlider.setPaintLabels(false);
@@ -205,8 +214,6 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			set(TheCurrentImage);
 			TheDisplayedImage = TheCurrentImage;
 
-			// currentRaster = TheCurrentImage.getData();
-
 			int numP = MainGUI.getGUI().getThePlateHoldingPanel()
 					.getPlates().length;
 			ThePlates = new Model_Plate[numP];
@@ -230,16 +237,54 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 							w2.getGUI().color_outline = Color.white;
 					}
 			}
-
 			TheWell = well;
-			// for (int p = 0; p < numP; p++)
-			// if (ThePlates[p].getID() == well.getPlate().getID()) {
-			// TheWell = ThePlates[p].getWell(well.name);
-			// break;
-			// }
+
+			//Creating the histogram data
+			updateHistograms();
+			
 			ThePanel.repaint();
 		}
 	}
+	
+	/** 
+	 * 
+	 */
+	public void updateHistograms()
+	{
+		int numBins = 100;
+		int numChannels = ImagesToView.length;
+		histograms = new float[numChannels][numBins];
+		for (int j = 0; j < ImagesToView.length; j++) {
+			//rescaling image to be small
+			ParameterBlock pb = new ParameterBlock();
+			RenderedImage TheCurrentImage = JAI.create("fileload",
+					ImagesToView[j].getAbsolutePath());
+			pb.addSource(TheCurrentImage);
+			pb.add(0.1F);
+			pb.add(0.1F);
+			pb.add(0.0F);
+			pb.add(0.0F);
+			pb.add(new InterpolationNearest());
+			// Creates a new, scaled image and uses it on the DisplayJAI component
+			TheCurrentImage = JAI.create("scale", pb);
+			Raster raster = TheCurrentImage.getData();
+			int width = raster.getWidth();
+			int height = raster.getHeight();
+			int[][] im = new int[width][height];
+			int[] pix = new int[raster.getNumBands()];
+			for (int r = 0; r < height; r++) {
+				for (int c = 0; c < width; c++) {
+					raster.getPixel(c, r, pix);
+					im[c][r] = pix[0];
+				}
+			}
+			//create histogram for this raster
+			float[][] hist = tools.ImageTools.getHistogram_bounds_norm(im, numBins, (int)MainGUI.getGUI().getMinValues_ImageDisplay()[j], (int)MainGUI.getGUI().getMaxValues_ImageDisplay()[j]);
+			histograms[j] = hist[1];
+			im = null;
+		}
+	}
+	
 
 	/**
 	 * Sets the listener in case dots have been selected in the dot plot we can
@@ -444,12 +489,12 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 		}
 
-		/**
-		 * checking all pixels to see if they are @ the threshold value for
-		 * background, then highlight them in the image
-		 * 
-		 * @author BLM
-		 */
+//		/**
+//		 * checking all pixels to see if they are @ the threshold value for
+//		 * background, then highlight them in the image
+//		 * 
+//		 * @author BLM
+//		 */
 		// if (TheParentContainer.shouldPlotBackground() && TheField != null
 		// && TheField.getBackgroundValues() != null
 		// && TheField.getBackgroundValues().length > 0
@@ -487,8 +532,6 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		//			
 		// }
 
-	
-
 		// Drawing the mini-plates
 		int len = ThePlates.length;
 		Model_Plate platew = TheWell.getPlate();
@@ -498,25 +541,117 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				platev = ThePlates[i];
 				break;
 			}
+		
+		//Draw the mini plate in upper right corner
+		drawMiniPlate(g2, platev);
+		//Draws the dynamic pixel value indicator under the plate
+		drawPixelValue(g2);
+		//Draw the x,y line intensity profile
+//		drawLineProfiles(g2, platev.getGUI().getXstart() + 50, platev.getGUI().getYstart() + 310 );
+		//Draw all stored and unstored ROIs
+		drawROIs(g2);
+		//Draws the image pixel intensity histograms for all channels
+		drawHistograms(g2, platev.getGUI().getXstart(), platev.getGUI().getYstart() + 200, 170, 100);
 
-		int numR = platev.getWells().length;
-		int numC = platev.getWells()[0].length;
-		// Drawing the plate name above it
-		g2.setColor(Color.WHITE);
-		g2.setFont(MainGUI.Font_12);
-		String st = "Plate #" + platev.getID();
-		g2.drawString(st, (platev.getGUI().getXstart() + (platev.getGUI()
-				.getWidth() / 2 - st.length() * 5)), platev.getGUI()
-				.getYstart() - 5);
-		for (int r = 0; r < numR; r++)
-			for (int c = 0; c < numC; c++) {
-				if (r == TheWell.Row && c == TheWell.Column)
-					platev.getWells()[r][c].setSelected(true);
-				else
-					platev.getWells()[r][c].setSelected(false);
-				platev.getWells()[r][c].getGUI().draw(g2, false);
+		// Finally drawing current highlighting
+		paintHighlighting(g2, scalingFactor);
+
+	}
+	
+	public void drawHistograms(Graphics2D g2, int xStart, int yStart, int width, int height)
+	{
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+
+		if(histograms==null || histograms.length == 0 || histograms[0].length == 0)
+			return;
+		
+		//Drawing histogram containing box
+		int border = 5;
+		xStart = xStart+border;
+		yStart = yStart+border;
+		width = width - 2*border;
+		height = height -2*border;
+		
+		g2.setColor(gray);
+		g2.fillRect(xStart-border, yStart-border, width+2*border, height+2*border);
+		g2.setColor(lightGray);
+		g2.drawRect(xStart-border, yStart-border, width+2*border, height+2*border);
+		g2.setColor(lighterGray);
+		g2.fillRect(xStart, yStart, width, height);
+		g2.setColor(lightGray);
+		g2.drawRect(xStart, yStart, width, height);
+		
+		//Drawing the graph
+		Composite orig = g2.getComposite();
+		int channelSelected = ImageSelectionSlider.getValue();
+		for (int i = 0; i < histograms.length; i++) {
+		if( i!=channelSelected)
+		{
+			Polygon histo = getHistogramPolygon(histograms[i], xStart, yStart, width, height);
+			if (histo != null ) {	
+					g2.setComposite(translucComposite_20);
+				if(i==0)
+					g2.setColor(Color.blue);
+				else if(i==1)
+					g2.setColor(Color.green);
+				else if(i==2)
+					g2.setColor(Color.orange);
+				else if(i==3)
+					g2.setColor(Color.red);
+				
+					g2.fill(histo);
+					g2.setColor(Color.black);
+					g2.draw(histo);
 			}
+			}
+		}
+		//Making sure we print the active histo on top
+		for (int i = 0; i < histograms.length; i++) {
+			if( i==channelSelected)
+			{
+				Polygon histo = getHistogramPolygon(histograms[i], xStart, yStart, width, height);
+				if (histo != null ) {	
+						g2.setComposite(translucComposite_90);
+					if(i==0)
+						g2.setColor(Color.blue);
+					else if(i==1)
+						g2.setColor(Color.green);
+					else if(i==2)
+						g2.setColor(Color.orange);
+					else if(i==3)
+						g2.setColor(Color.red);
+					
+						g2.fill(histo);
+						g2.setColor(Color.black);
+						g2.draw(histo);
+				}
+				}
+			}
+		g2.setComposite(orig);
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
 
+	}
+	
+	public Polygon getHistogramPolygon(float[] bins, int xStart, int yStart, int width, int height)
+	{
+			Polygon p = new Polygon();
+			int numBins = bins.length;
+			float dx = (float) width / (float) numBins;
+
+			for (int i = 0; i < numBins; i++)
+				p.addPoint((int) (xStart + dx * i),
+						(int) ((yStart + height) - height * bins[i]));
+
+			p.addPoint((int) (xStart + dx * (numBins - 1)), yStart + height);
+			p.addPoint(xStart, yStart + height);
+			p.npoints = numBins + 2;
+
+			return p;
+	}
+	
+	
+	public void drawPixelValue(Graphics2D g2)
+	{
 		g2.setFont(gui.MainGUI.Font_12);
 		g2.setColor(Color.white);
 		if (pixelValue != -1)
@@ -527,9 +662,63 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			g2.drawString("Pixel Area = " + areaValue,
  ThePlates[0].getGUI()
 					.getXstart() + 20, ThePlates[0].getGUI().getYstart() + 160);
+	}
+	
+	public void drawROIs(Graphics2D g2)
+	{
+		// Drawing any stored field ROI's
+		ArrayList<Shape> rois = TheField.getROIs();
+		if (rois != null && rois.size() > 0) {
+			int num = rois.size();
+			for (int i = 0; i < num; i++) {
+				Shape shape = rois.get(i);
+				Color color = null;
+				if (TheField.isROIselected(i))
+					color = Color.red;
+				else
+					color = Color.green;
 
+				drawScaledShape(g2, shape, color);
+			}
+		}
+
+
+		/** Drawing polygon ROIs */
+		if (ThePolygonGate_Points != null) {
+			float scalingFactor = FieldViewer_Frame.getScaling();
+			g2.setColor(Color.green);
+			int len = ThePolygonGate_Points.size();
+			if (len > 0) {
+				Point p = ThePolygonGate_Points.get(0);
+				for (int i = 1; i < len; i++) {
+					Point pLast = p;
+					p = ThePolygonGate_Points.get(i);
+					g2.drawLine((int) (pLast.x * scalingFactor),
+							(int) (pLast.y * scalingFactor),
+							(int) (p.x * scalingFactor),
+							(int) (p.y * scalingFactor));
+				}
+			}
+		} else if (ThePolygonGate != null) {
+			g2.setColor(Color.green);
+			// if (ThePolygonGate.xpoints.length == 1)
+			// g2.drawLine(ThePolygonGate.xpoints[0],
+			// ThePolygonGate.xpoints[0], ThePolygonGate.ypoints[0],
+			// ThePolygonGate.ypoints[0]);
+			// else {
+			drawScaledShape(g2, ThePolygonGate, Color.green);
+				g2.setColor(Color.black);
+			// }
+		}
+	}
+	
+
+	
+	public void drawLineProfiles(Graphics2D g2, int xStart, int yStart)
+	{
 		if (LineProfileValues_X != null && LineProfileValues_Y != null) {
 			g2.setColor(Color.white);
+			float scalingFactor = FieldViewer_Frame.getScaling();
 			int len1 = LineProfileValues_X.length;
 			int len2 = LineProfileValues_Y.length;
 			int yMax = -10000000;
@@ -549,14 +738,14 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			}
 
 			int xLen = 60;
-			int xStart = platev.getGUI().getXstart() + 50;
-			int yStart = platev.getGUI().getYstart() + 250;
+		
 			float yHeight = 30f;
 			// mini scale requires smaller params
 			if (scalingFactor == 0.25f || scalingFactor == 0.1f) {
-				yStart = platev.getGUI().getYstart() + 200;
-				xLen = 20;
-				yHeight = 20;
+				return;
+//				yStart = platev.getGUI().getYstart() + 200;
+//				xLen = 20;
+//				yHeight = 20;
 			}
 			// Drawing the xProfile
 			int lastVal = yStart;
@@ -634,11 +823,12 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 			// Drawing the yProfile
 			g2.setColor(Color.white);
-			xStart = platev.getGUI().getYstart() + 250;
-			yStart = platev.getGUI().getXstart() + 50;
+//			xStart = platev.getGUI().getYstart() + 250;
+//			yStart = platev.getGUI().getXstart() + 50;
 
-			if (scalingFactor == 0.25f) {
-				xStart = platev.getGUI().getYstart() + 200;
+			if (scalingFactor == 0.25f || scalingFactor == 0.1f) {
+				return;
+//				xStart = platev.getGUI().getYstart() + 200;
 			}
 			lastVal = xStart;
 			xLast = yStart;
@@ -654,57 +844,29 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			}
 
 		}
-
-		// Drawing any stored field ROI's
-		ArrayList<Shape> rois = TheField.getROIs();
-		if (rois != null && rois.size() > 0) {
-			int num = rois.size();
-			for (int i = 0; i < num; i++) {
-				Shape shape = rois.get(i);
-				Color color = null;
-				if (TheField.isROIselected(i))
-					color = Color.red;
-				else
-					color = Color.green;
-
-				drawScaledShape(g2, shape, color);
-			}
-		}
-
-
-		/** Drawing polygon ROIs */
-		if (ThePolygonGate_Points != null) {
-
-			g2.setColor(Color.green);
-			len = ThePolygonGate_Points.size();
-			if (len > 0) {
-				Point p = ThePolygonGate_Points.get(0);
-				for (int i = 1; i < len; i++) {
-					Point pLast = p;
-					p = ThePolygonGate_Points.get(i);
-					g2.drawLine((int) (pLast.x * scalingFactor),
-							(int) (pLast.y * scalingFactor),
-							(int) (p.x * scalingFactor),
-							(int) (p.y * scalingFactor));
-				}
-			}
-		} else if (ThePolygonGate != null) {
-			g2.setColor(Color.green);
-			// if (ThePolygonGate.xpoints.length == 1)
-			// g2.drawLine(ThePolygonGate.xpoints[0],
-			// ThePolygonGate.xpoints[0], ThePolygonGate.ypoints[0],
-			// ThePolygonGate.ypoints[0]);
-			// else {
-			drawScaledShape(g2, ThePolygonGate, Color.green);
-				g2.setColor(Color.black);
-			// }
-		}
-
-		// Finally drawing current highlighting
-		paintHighlighting(g2, scalingFactor);
-
 	}
 
+	public void drawMiniPlate(Graphics2D g2, Model_Plate platev)
+	{
+		int numR = platev.getWells().length;
+		int numC = platev.getWells()[0].length;
+		// Drawing the plate name above it
+		g2.setColor(Color.WHITE);
+		g2.setFont(MainGUI.Font_12);
+		String st = "Plate #" + platev.getID();
+		g2.drawString(st, (platev.getGUI().getXstart() + (platev.getGUI()
+				.getWidth() / 2 - st.length() * 5)), platev.getGUI()
+				.getYstart() - 5);
+		for (int r = 0; r < numR; r++)
+			for (int c = 0; c < numC; c++) {
+				if (r == TheWell.Row && c == TheWell.Column)
+					platev.getWells()[r][c].setSelected(true);
+				else
+					platev.getWells()[r][c].setSelected(false);
+				platev.getWells()[r][c].getGUI().draw(g2, false);
+			}
+	}
+	
 	public void drawScaledShape(Graphics2D g2, Shape shape, Color color) {
 		float scale = FieldViewer_Frame.getScaling();
 		Shape shapeToDraw = null;
@@ -1498,7 +1660,9 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	public void windowDeactivated(WindowEvent p1) {
 	}
 
-	/** Rescales the image with a new max-value */
+	/** 
+	 * Rescales the image with a new max-value and min-value
+	 * */
 	public class SliderListener_RescaleDisplay implements ChangeListener {
 		public void stateChanged(ChangeEvent e) {
 
@@ -1510,59 +1674,39 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 						.getValue();
 			else if (j.getName().equalsIgnoreCase("Min")
 					&& !MinValueSlider.getValueIsAdjusting())
+			{
+				//Dont let minvalue be greater than maxvalue
+				if( MinValueSlider.getValue()> MaxValueSlider.getValue())
+				{
+					MinValueSlider.setValue(MaxValueSlider.getValue()-1);
+					MinValueSlider.repaint();
+				}
 				MainGUI.getGUI().getMinValues_ImageDisplay()[channel] = MinValueSlider
 						.getValue();
+			}
 
 			RenderedImage newImage = rescale(TheCurrentImage,
 					ImageSelectionSlider.getValue());
 			set(newImage);
 			TheDisplayedImage = newImage;
-
+			
+			//Update value that is displayed when hover over
+			if (!MaxValueSlider.getValueIsAdjusting())
+			{
+				MaxValueSlider.setToolTipText("Max = "+MaxValueSlider.getValue());
+				MinValueSlider.setToolTipText("Min = "+MinValueSlider.getValue());
+			}
+			
+			//update the histogram with new scalings	
+			if (!MaxValueSlider.getValueIsAdjusting())
+				updateHistograms();
+			
 			ThePanel.repaint();
 
 		}
 	}
 
-	// This method creates a surrogate image -- one which is
-	// used to display data which originally was outside the
-	// [0-255] range.
-	static public RenderedImage createSurrogate(RenderedImage image, double maxValue) {
-		ParameterBlock pb = new ParameterBlock();
-		pb.addSource(image);
-		RenderedOp extrema = JAI.create("extrema", pb);
-		// Must get the extrema of all bands.
-		double[] allMins = (double[]) extrema.getProperty("minimum");
-		// double[] allMaxs = (double[])extrema.getProperty("maximum");
-		double minValue = allMins[0];
-		// double maxValue = allMaxs[0];
-		for (int v = 1; v < allMins.length; v++) {
-			if (allMins[v] < minValue)
-				minValue = allMins[v];
-			// if (allMaxs[v] > maxValue) maxValue = allMaxs[v];
-		}
-		// Rescale the image with the parameters
-		double[] multiplyBy = new double[1];
-		multiplyBy[0] = MainGUI.MAXPIXELVALUE / (maxValue - minValue);
-		double[] addThis = new double[1];
-		addThis[0] = -minValue * multiplyBy[0];
-		// Now we can rescale the pixels gray levels:
-		ParameterBlock pbSub = new ParameterBlock();
-		pbSub.addSource(image);
-		pbSub.add(addThis);
-		RenderedImage surrogateImage = (PlanarImage) JAI.create(
-				"subtractconst", pbSub, null);
-		ParameterBlock pbMult = new ParameterBlock();
-		pbMult.addSource(surrogateImage);
-		pbMult.add(multiplyBy);
-		surrogateImage = (PlanarImage) JAI
-				.create("multiplyconst", pbMult, null);
-		// // Let's convert the data type for displaying.
-		// pb = new ParameterBlock();
-		// pb.addSource(surrogateImage);
-		// pb.add(DataBuffer.TYPE_BYTE);
-		// surrogateImage = JAI.create("format", pb);
-		return surrogateImage;
-	}
+
 
 	/** Changes the channel */
 	public class SliderListener_ImageSelection implements ChangeListener {
@@ -1615,20 +1759,24 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		}
 	}
 
-	static public RenderedImage rescale(RenderedImage input, int channel) {
+	/** 
+	 * Rescales the given RenderedImage 
+	 * */
+	static public RenderedImage rescale(RenderedImage image, int channel) {
 		int minValue = (int) MainGUI.getGUI().getMinValues_ImageDisplay()[channel];
 		int maxValue = (int) MainGUI.getGUI().getMaxValues_ImageDisplay()[channel];
-		// Subtracting basline
-		double[] subtract = new double[1];
-		subtract[0] = minValue;
-		// Now we can rescale the pixels gray levels:
-		ParameterBlock pbSub = new ParameterBlock();
-		pbSub.addSource(input);
-		pbSub.add(subtract);
-		RenderedImage surrogateImage = (PlanarImage) JAI.create("subtractconst", pbSub, null);
-
-		return createSurrogate(surrogateImage, maxValue);
-
+	
+		// set the levels for the dynamic
+		final ParameterBlock pb = new ParameterBlock();
+		pb.addSource(image);
+		// rescaling each band 
+		final double[] scale = new double[1];
+		final double[] offset = new double[1];
+		scale[0] = (double)gui.MainGUI.MAXPIXELVALUE / (maxValue - minValue);
+		offset[0] = -(((double)gui.MainGUI.MAXPIXELVALUE * minValue) / (maxValue - minValue));
+		pb.add(scale);
+		pb.add(offset);
+		return JAI.create("rescale", pb);
 	}
 
 	public void updateAllImages() {
@@ -2050,7 +2198,6 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	public void kill() {
 		translucComposite = null;
 		TheDotSelectionListener.kill();
-		DummyPoint = null;
 		ThePanel = null;
 		tempRect = null;
 		tempOval = null;
