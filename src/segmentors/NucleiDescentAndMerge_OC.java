@@ -33,7 +33,7 @@ import java.util.Hashtable;
 import models.Model_ParameterSet;
 import segmentedobject.CellCompartment;
 import segmentedobject.CellCoordinates;
-import tools.LinearKernals;
+import tools.LinearKernels;
 import tools.Pixel;
 import tools.SpatialFilter;
 
@@ -142,7 +142,12 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 									int xP = xStart + xI;
 									int y = (int) (m * xI + yStart);
 
-									ROIs_raster[y][xP] = true;
+										if (xP >= 0 && xP < width && y >= 0
+												&& y < height)
+											ROIs_raster[y][xP] = true;
+										if (xP >= 0 && xP < width
+												&& (y + 1) >= 0
+												&& (y + 1) < height)
 										ROIs_raster[y + 1][xP] = true;
 								}
 							} else {
@@ -155,9 +160,13 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 									float yP = (float) yStart + yI;
 									int x = (int) (1f / m * yI + xStart);
 
-									ROIs_raster[(int)yP][x] = true;
+										if (yP >= 0 && yP < height && x >= 0
+												&& x < width)
+											ROIs_raster[(int) yP][x] = true;
+										if (yP >= 0 && yP < height
+												&& (x + 1) >= 0
+												&& (x + 1) < width)
 										ROIs_raster[(int) yP][x + 1] = true;
-
 
 								}
 							}
@@ -322,7 +331,7 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 		// tools.ImageTools.displayRaster(iRaster);
 		// tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterdt.tif");
 		iRaster = SpatialFilter.linearFilter(iRaster,
-				LinearKernals.getLinearSmoothingKernal(5));
+				LinearKernels.getLinearSmoothingKernal(5));
 		// tools.ImageTools.displayRaster(iRaster);
 		// tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterlsk.tif");
 

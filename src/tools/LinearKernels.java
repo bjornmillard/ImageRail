@@ -20,9 +20,9 @@
 
 package tools;
 
-public class LinearKernals
+public class LinearKernels
 {
-	public LinearKernals()
+	public LinearKernels()
 	{
 	}
 	

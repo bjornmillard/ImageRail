@@ -86,7 +86,7 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 				{
 					Feature f = ((Feature)arr.get(i));
 					for (int j = 0; j < len; j++)
-						if(f.ChannelName.equalsIgnoreCase(featuresToSave[j].ChannelName))
+						if(f.Name.equalsIgnoreCase(featuresToSave[j].Name))
 							counter++;
 				}
 				int[] indices = new int[counter];
@@ -95,7 +95,7 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 				{
 					Feature f = ((Feature)arr.get(i));
 					for (int j = 0; j < len; j++)
-						if(f.ChannelName.equalsIgnoreCase(featuresToSave[j].ChannelName))
+						if(f.Name.equalsIgnoreCase(featuresToSave[j].Name))
 						{
 							indices[counter] = i;
 							counter++;
@@ -155,7 +155,7 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 				{
 					Feature f = featuresToSave[i];
 					ExpDesign_Description exd = new ExpDesign_Description();
-					exd.setName(f.ChannelName);
+					exd.setName(f.Name);
 					meas[i] = exd;
 				}
 				//Adding the Stdev
@@ -297,7 +297,7 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 		int len = featuresToPrint.length;
 		for (int i = 0; i < len; i++)
 		{
-			if (featuresToPrint[i].ChannelName.equalsIgnoreCase(f.ChannelName))
+			if (featuresToPrint[i].Name.equalsIgnoreCase(f.Name))
 				return true;
 		}
 		return false;

@@ -26,10 +26,11 @@
 
 package features;
 
+import gui.MainGUI;
+
 import java.util.ArrayList;
 
 import segmentedobject.CellCoordinates;
-import gui.MainGUI;
 
 public abstract class Feature
 {
@@ -39,12 +40,12 @@ public abstract class Feature
 	 * @author BLM
 	 * */
 	public int ChannelIndex;
-	public String ChannelName;
+	public String Name;
 	
 	public Feature()
 	{
 		ChannelIndex=0;
-		ChannelName="no name";
+		Name = "no name";
 	}
 	
 	
@@ -65,23 +66,23 @@ public abstract class Feature
 	
 	public void setChannelName(String name)
 	{
-		ChannelName = name;
+		Name = name;
 	}
-	public String getChannelName()
+	public String getName()
 	{
-		return ChannelName;
+		return Name;
 	}
 	
 	public String toString()
 	{
-		if (ChannelName==null || ChannelName.equalsIgnoreCase(""))
+		if (Name == null || Name.equalsIgnoreCase(""))
 			return "Feature has no name";
-		return ChannelName;
+		return Name;
 	}
 	
 	public boolean isSameFeature(Feature f)
 	{
-		if (f.ChannelName.equalsIgnoreCase(ChannelName))
+		if (f.Name.equalsIgnoreCase(Name))
 			return true;
 		return false;
 	}
@@ -90,7 +91,7 @@ public abstract class Feature
 	 * @author BLM*/
 	public int getGUIindex()
 	{
-		ArrayList features = MainGUI.getGUI().getTheFeatures();
+		ArrayList<Feature> features = MainGUI.getGUI().getTheFeatures();
 		int len = features.size();
 		for (int i = 0; i < len; i++)
 		{

@@ -273,7 +273,7 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 									int numWells = TheWells.length;
 									int numBins = bins[0].length;
 									pw.println("Histogram Bin Values,");
-									pw.println(""+TheFeature.ChannelName);
+									pw.println(""+TheFeature.Name);
 									
 									pw.print(",");
 									for (int i = 0; i < numWells; i++)

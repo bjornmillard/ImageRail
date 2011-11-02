@@ -317,7 +317,7 @@ public class Segment {
 		// System.out.println("Found "+len +" Features");
 		for (int i = 0; i < len; i++) {
 			Feature f = (arr.get(i));
-			f.ChannelName = f.getClass().toString();
+			f.Name = f.getClass().toString();
 
 			if (f.isMultiSpectralFeature() && channelNames != null) {
 				for (int w = 0; w < channelNames.length; w++) {

@@ -69,7 +69,7 @@ public class Ratio_nucCyt extends Feature
 	
 	public void setChannelName(String name)
 	{
-		ChannelName = "Ratio_nuc/cyt_"+name;
+		Name = "Ratio_nuc/cyt_"+name;
 	}
 }
 

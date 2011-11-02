@@ -88,7 +88,7 @@ public class DensityScatter
 		
 		
 		//Smoothing the density plot with a 2D Smoothing Filter
-		tools.ImageTools.linearFilter(bins, tools.LinearKernals.getLinearSmoothingKernal(SmoothSize));
+		tools.ImageTools.linearFilter(bins, tools.LinearKernels.getLinearSmoothingKernal(SmoothSize));
 		
 		
 		for (int x = 0; x < numBins; x++)
@@ -162,7 +162,7 @@ public class DensityScatter
 		
 		
 		//Smoothing the density plot with a 2D Smoothing Filter
-		tools.ImageTools.linearFilter(bins, tools.LinearKernals.getLinearSmoothingKernal(SmoothSize));
+		tools.ImageTools.linearFilter(bins, tools.LinearKernels.getLinearSmoothingKernal(SmoothSize));
 		
 		
 		for (int x = 0; x < numBins; x++)

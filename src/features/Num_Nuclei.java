@@ -42,7 +42,7 @@ public class Num_Nuclei extends Feature {
 	}
 
 	public String toString() {
-		ChannelName = "Num_Nuclei";
-		return ChannelName;
+		Name = "Num_Nuclei";
+		return Name;
 	}
 }

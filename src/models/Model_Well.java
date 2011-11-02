@@ -374,7 +374,28 @@ public class Model_Well
 		return Feature_Means[MainGUI.getGUI().getTheSelectedFeature_Index()]/Feature_Means[MainGUI.getGUI().getTheSelectedFeature_Index()];
 	}
 	
+	/**
+	 * Returns the mean value of the feature with the given name
+	 * 
+	 * @author BLM
+	 */
+	public float getValue_Mean(String featureName) {
+		if (Feature_Means == null)
+			return 0;
+
+		return Feature_Means[MainGUI.getGUI().getFeature_Index(featureName)];
+	}
 	
+	/**
+	 * Returns the standard deviation value of the feature with the given name
+	 * 
+	 * @author BLM
+	 */
+	public float getValue_Stdev(String featureName) {
+		if (Feature_Stdev == null)
+			return 0;
+		return Feature_Stdev[MainGUI.getGUI().getFeature_Index(featureName)];
+	}
 	
 	
 	/** Determines if this well has cell data loaded into the RAM for display purposes

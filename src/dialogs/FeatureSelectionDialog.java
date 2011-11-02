@@ -239,7 +239,7 @@ public class FeatureSelectionDialog extends JDialog
 			}
 			public String toString()
 			{
-				return TheFeature.ChannelName;
+				return TheFeature.Name;
 			}
 			public Feature getFeature()
 			{

@@ -58,6 +58,6 @@ public class Integrated_Nucleus extends Feature
 	
 	public void setChannelName(String name)
 	{
-		ChannelName = "Nucleus_"+name+" (Integrated)";
+		Name = "Nucleus_"+name+" (Integrated)";
 	}
 }

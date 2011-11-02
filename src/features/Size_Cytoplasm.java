@@ -36,7 +36,7 @@ public class Size_Cytoplasm extends Feature
 	}
 	public String toString()
 	{
-		ChannelName = "Size_cyto";
-		return ChannelName;
+		Name = "Size_cyto";
+		return Name;
 	}
 }

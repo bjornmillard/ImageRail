@@ -41,7 +41,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.geom.Ellipse2D;
-import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
@@ -50,8 +49,6 @@ import java.util.ArrayList;
 
 import javax.media.jai.InterpolationNearest;
 import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
@@ -240,7 +237,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			TheWell = well;
 
 			//Creating the histogram data
-			updateHistograms();
+			// updateHistograms();
 			
 			ThePanel.repaint();
 		}
@@ -251,7 +248,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	 */
 	public void updateHistograms()
 	{
-		int numBins = 100;
+		int numBins = 30;
 		int numChannels = ImagesToView.length;
 		histograms = new float[numChannels][numBins];
 		for (int j = 0; j < ImagesToView.length; j++) {
@@ -562,6 +559,10 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	{
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 
+		// If histograms not init, try first then give up else
+		if (histograms == null)
+			updateHistograms();
+
 		if(histograms==null || histograms.length == 0 || histograms[0].length == 0)
 			return;
 		
@@ -637,14 +638,21 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			Polygon p = new Polygon();
 			int numBins = bins.length;
 			float dx = (float) width / (float) numBins;
+		int border = 3;
+
+		p.addPoint((int) (xStart - border), (int) ((yStart + height) - height
+				* bins[0]));
 
 			for (int i = 0; i < numBins; i++)
 				p.addPoint((int) (xStart + dx * i),
 						(int) ((yStart + height) - height * bins[i]));
 
-			p.addPoint((int) (xStart + dx * (numBins - 1)), yStart + height);
-			p.addPoint(xStart, yStart + height);
-			p.npoints = numBins + 2;
+		p.addPoint((int) (xStart + dx * (numBins - 1) + border),
+				(int) ((yStart + height) - height * bins[numBins - 1]));
+		p.addPoint((int) (xStart + dx * (numBins - 1) + border), yStart
+				+ height);
+		p.addPoint(xStart - border, yStart + height);
+		p.npoints = numBins + 4;
 
 			return p;
 	}

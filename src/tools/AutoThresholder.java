@@ -1,6 +1,6 @@
 package tools;
 
-public class AutoThresholder {
+final public class AutoThresholder {
 
 	/**
 	 *  Otsu's threshold algorithm

@@ -181,7 +181,7 @@ public class SaveFeatures_Dialog extends JFrame
 		}
 		public String toString()
 		{
-			return TheFeature.ChannelName;
+			return TheFeature.Name;
 		}
 		public Feature getFeature()
 		{

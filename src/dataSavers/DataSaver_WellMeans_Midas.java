@@ -77,7 +77,7 @@ public class DataSaver_WellMeans_Midas implements DataSaver
 				{
 					Feature f = ((Feature)arr.get(i));
 					for (int j = 0; j < len; j++)
-						if(f.ChannelName.equalsIgnoreCase(featuresToSave[j].ChannelName))
+						if(f.Name.equalsIgnoreCase(featuresToSave[j].Name))
 							counter++;
 				}
 				int[] indices = new int[counter];
@@ -86,7 +86,7 @@ public class DataSaver_WellMeans_Midas implements DataSaver
 				{
 					Feature f = ((Feature)arr.get(i));
 					for (int j = 0; j < len; j++)
-						if(f.ChannelName.equalsIgnoreCase(featuresToSave[j].ChannelName))
+						if(f.Name.equalsIgnoreCase(featuresToSave[j].Name))
 						{
 							indices[counter] = i;
 							counter++;
@@ -100,14 +100,14 @@ public class DataSaver_WellMeans_Midas implements DataSaver
 				for (int i=0; i< numF; i++)
 				{
 					Feature f = featuresToSave[i];
-					meas[i] = new Measurement(f.ChannelName);
+					meas[i] = new Measurement(f.Name);
 				}
 				
 				//Adding the Stdev
 				for (int i=0; i< numF; i++)
 				{
 					Feature f = featuresToSave[i];
-					meas[i+numF] = new Measurement("Stdev_"+f.ChannelName);
+					meas[i+numF] = new Measurement("Stdev_"+f.Name);
 				}
 				
 				ArrayList uniqueM = new ArrayList();
@@ -175,7 +175,7 @@ public class DataSaver_WellMeans_Midas implements DataSaver
 		int len = featuresToPrint.length;
 		for (int i = 0; i < len; i++)
 		{
-			if (featuresToPrint[i].ChannelName.equalsIgnoreCase(f.ChannelName))
+			if (featuresToPrint[i].Name.equalsIgnoreCase(f.Name))
 				return true;
 		}
 		return false;

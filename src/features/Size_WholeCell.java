@@ -36,8 +36,8 @@ public class Size_WholeCell extends Feature
 	}
 	public String toString()
 	{
-		ChannelName = "Size_whole";
-		return ChannelName;
+		Name = "Size_whole";
+		return Name;
 	}
 }
 

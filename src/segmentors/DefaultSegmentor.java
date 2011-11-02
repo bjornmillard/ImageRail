@@ -29,7 +29,7 @@ import java.util.Collections;
 import models.Model_ParameterSet;
 import segmentedobject.CellCompartment;
 import segmentedobject.CellCoordinates;
-import tools.LinearKernals;
+import tools.LinearKernels;
 import tools.Pixel;
 import tools.SpatialFilter;
 
@@ -132,7 +132,7 @@ public class DefaultSegmentor implements CellSegmentor {
 		iRaster = SpatialFilter.distanceTransform(iRaster);
 		//tools.ImageTools.displayRaster(iRaster);		
 		//tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterdt.tif");
-		iRaster = SpatialFilter.linearFilter(iRaster, LinearKernals
+		iRaster = SpatialFilter.linearFilter(iRaster, LinearKernels
 .getLinearSmoothingKernal(5));
 		//tools.ImageTools.displayRaster(iRaster);
 		//tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterlsk.tif");

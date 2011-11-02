@@ -37,8 +37,8 @@ public class Coordinate_X extends Feature
 	}
 	public String toString()
 	{
-		ChannelName = "Coordinate_X";
-		return ChannelName;
+		Name = "Coordinate_X";
+		return Name;
 	}
 	
 }

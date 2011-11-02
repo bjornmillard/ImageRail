@@ -55,7 +55,7 @@ public class Mean_Cytoplasm extends Feature
 	
 	public void setChannelName(String name)
 	{
-		ChannelName = "Cyto_"+name+" (Mean)";
+		Name = "Cyto_"+name+" (Mean)";
 	}
 }
 

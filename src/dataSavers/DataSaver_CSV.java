@@ -143,7 +143,7 @@ public class DataSaver_CSV implements DataSaver
 					if (shouldPrint(feature, featuresToSave))
 					{
 						
-						pw.println(feature.ChannelName+headerTab+"Stdev_"+feature.ChannelName);
+						pw.println(feature.Name+headerTab+"Stdev_"+feature.Name);
 						for (int r = 0; r < numR; r++)
 						{
 							for (int c =0; c < numC; c++)
@@ -219,7 +219,7 @@ public class DataSaver_CSV implements DataSaver
 					if (shouldPrint(feature, featuresToSave))
 					{
 						
-						pw.println(feature.ChannelName);
+						pw.println(feature.Name);
 						for (int r = 0; r < numR; r++)
 						{
 							for (int c =0; c < numC; c++)
@@ -291,7 +291,7 @@ public class DataSaver_CSV implements DataSaver
 		int len = featuresToPrint.length;
 		for (int i = 0; i < len; i++)
 		{
-			if (featuresToPrint[i].ChannelName.equalsIgnoreCase(f.ChannelName))
+			if (featuresToPrint[i].Name.equalsIgnoreCase(f.Name))
 				return true;
 		}
 		return false;
@@ -299,7 +299,7 @@ public class DataSaver_CSV implements DataSaver
 	
 	public boolean shouldPrint(Feature f, Feature featuresToPrint)
 	{
-		if (featuresToPrint.ChannelName.equalsIgnoreCase(f.ChannelName))
+		if (featuresToPrint.Name.equalsIgnoreCase(f.Name))
 			return true;
 		
 		return false;

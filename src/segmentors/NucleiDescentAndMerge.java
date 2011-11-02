@@ -31,7 +31,7 @@ import java.util.Hashtable;
 import models.Model_ParameterSet;
 import segmentedobject.CellCompartment;
 import segmentedobject.CellCoordinates;
-import tools.LinearKernals;
+import tools.LinearKernels;
 import tools.Pixel;
 import tools.SpatialFilter;
 
@@ -135,7 +135,7 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 		iRaster = SpatialFilter.distanceTransform(iRaster);
 		//tools.ImageTools.displayRaster(iRaster);		
 		//tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterdt.tif");
-		iRaster = SpatialFilter.linearFilter(iRaster, LinearKernals
+		iRaster = SpatialFilter.linearFilter(iRaster, LinearKernels
 .getLinearSmoothingKernal(5));
 		//tools.ImageTools.displayRaster(iRaster);
 		//tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/afterlsk.tif");
@@ -447,10 +447,10 @@ public class NucleiDescentAndMerge implements CellSegmentor {
 		//Getting the Sobel edge detected image
 		// int[][] edge = tools.SpatialFilter.sobelEdgeDetector(Raster,
 		// pset.getThresholdChannel_cyto_Index(),
-		// tools.LinearKernals.getSobel_h(),
-		// tools.LinearKernals.getSobel_h(),
-		// tools.LinearKernals.getSobel_d1(),
-		// tools.LinearKernals.getSobel_d2());
+		// tools.LinearKernels.getSobel_h(),
+		// tools.LinearKernels.getSobel_h(),
+		// tools.LinearKernels.getSobel_d1(),
+		// tools.LinearKernels.getSobel_d2());
 
 		// tools.ImageTools.displayRaster(ras);
 		// System.out.println("min: " + tools.ImageTools.min(ras) + " max: "

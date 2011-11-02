@@ -100,6 +100,7 @@ import dialogs.SaveFeatures_Dialog;
 import dialogs.ThresholdingBoundsInputDialog_SingleCells;
 import dialogs.ThresholdingBoundsInputDialog_SingleCells_Osteo;
 import dialogs.ThresholdingBoundsInputDialog_WellMeans;
+import dialogs.ZScoreFilterDialog;
 import features.Feature;
 import features.FeatureSorter;
 import filters.DotFilterQueue;
@@ -274,7 +275,6 @@ public class MainGUI extends JFrame {
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				new PlateInputDialog(null);
-				// createNewProject();
 			}
 		});
 		FileMenu.add(item);
@@ -292,7 +292,6 @@ public class MainGUI extends JFrame {
 
 
 		JMenu menuI = new JMenu("Save as MIDAS..");
-		// menuI.setEnabled(false);
 		FileMenu.add(menuI);
 
 		item = new JMenuItem("Well Means");
@@ -379,41 +378,49 @@ public class MainGUI extends JFrame {
 //		});
 //		ToolsMenu.add(item);
 
-		item = new JMenuItem("Find Bubbles/Artifacts");
+		item = new JMenuItem("Z-Score Filter");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				
+
 				ArrayList<Model_Well> wells = ThePlatePanel.getModel().getSelectedWells_horizOrder();
 				int len = wells.size();
+				Model_Well[] ws = new Model_Well[len];
+				for (int i = 0; i < len; i++)
+					ws[i] = wells.get(i);
+
+				ZScoreFilterDialog dia = new ZScoreFilterDialog();
+				String operator = dia.Operater;
+				float zScore_threshold = dia.zScore_threshold;
+				String zScore_channel = dia.zScore_channel;
+
+				len = wells.size();
 				for (int i = 0; i < len; i++) {
-					Model_Well well= wells.get(i);
+					Model_Well well = wells.get(i);
 					int numH = well.getHDFcount();
-					if(numH>0)
-					{
+					if (numH > 0) {
 						well.loadCells(TheImageRail_H5IO, true, true);
 						Model_Field[] fields = well.getFields();
 						int num = fields.length;
 						boolean foundOne = false;
 						for (int f = 0; f < num; f++) {
-								if(FeatureDetector.containsArtifact(fields[f]))
-								{
-									foundOne = true;
-								}
+							if (FeatureDetector
+									.containsCellsWithZScoreCriteria(fields[f],
+											zScore_channel, zScore_threshold,
+											operator)) {
+								foundOne = true;
+							}
 						}
-						if (!foundOne)
-						{
+						if (!foundOne) {
 							well.setSelected(false);
 							well.clearCellData();
-						}
-						else
+						} else
 							well.setSelected(true);
-						
-					}
-					else
+
+					} else
 						well.setSelected(false);
 				}
 				ThePlatePanel.updatePanel();
-				//Opening an image viewer showing the resulting wells
+				// Opening an image viewer showing the resulting wells
 				displayImages_SelectedWells();
 
 			}
@@ -884,7 +891,7 @@ public class MainGUI extends JFrame {
 		// System.out.println("Found "+len +" Features");
 		for (int i = 0; i < len; i++) {
 			Feature f = (arr.get(i));
-			f.ChannelName = f.getClass().toString();
+			f.Name = f.getClass().toString();
 
 			if (f.isMultiSpectralFeature() && channelNames != null) {
 				for (int w = 0; w < channelNames.length; w++) {
@@ -2104,8 +2111,6 @@ public class MainGUI extends JFrame {
 	}
 
 
-
-
 	/**
 	 * Sets whether the GUI is running a processor
 	 * 
@@ -2145,6 +2150,19 @@ public class MainGUI extends JFrame {
 		for (int i = 0; i < len; i++)
 			f[i] = (Feature) TheFeatures.get(i);
 		return f;
+	}
+
+	/**
+	 * Returns the index of the feature with the given name
+	 * 
+	 * @author BLM
+	 */
+	public int getFeature_Index(String name) {
+		int len = TheFeatures.size();
+		for (int i = 0; i < len; i++)
+			if (((Feature) TheFeatures.get(i)).getName().equalsIgnoreCase(name))
+				return i;
+			return -1;
 	}
 
 	/**

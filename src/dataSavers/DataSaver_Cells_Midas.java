@@ -78,7 +78,7 @@ public class DataSaver_Cells_Midas implements DataSaver
 				int numFeatures = featuresToSave.length;
 				Measurement[] meas = new Measurement[numFeatures];
 				for (int i=0; i< numFeatures; i++)
-					meas[i] = new Measurement(featuresToSave[i].ChannelName);
+					meas[i] = new Measurement(featuresToSave[i].Name);
 				
 				ArrayList uniqueM = new ArrayList();
 				for (int i=0; i< numFeatures; i++)
@@ -146,7 +146,7 @@ public class DataSaver_Cells_Midas implements DataSaver
 		int len = featuresToPrint.length;
 		for (int i = 0; i < len; i++)
 		{
-			if (featuresToPrint[i].ChannelName.equalsIgnoreCase(f.ChannelName))
+			if (featuresToPrint[i].Name.equalsIgnoreCase(f.Name))
 				return true;
 		}
 		return false;

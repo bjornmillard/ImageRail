@@ -54,6 +54,6 @@ public class Integrated_WholeCell extends Feature
 	
 	public void setChannelName(String name)
 	{
-		ChannelName = "Whole_"+name+" (Integrated)";
+		Name = "Whole_"+name+" (Integrated)";
 	}
 }

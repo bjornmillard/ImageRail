@@ -54,6 +54,6 @@ public class Integrated_Cytoplasm extends Feature
 	
 	public void setChannelName(String name)
 	{
-		ChannelName = "Cyto_"+name+" (Integrated)";
+		Name = "Cyto_"+name+" (Integrated)";
 	}
 }

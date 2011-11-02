@@ -302,8 +302,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		if (num > 1) {
 			int leng = ComboBoxes[0].getItemCount();
 			for (int i = 0; i < leng; i++) {
-				if (((Feature) ComboBoxes[0].getItemAt(i)).ChannelName
-						.equalsIgnoreCase(FeatureX.ChannelName)) {
+				if (((Feature) ComboBoxes[0].getItemAt(i)).Name
+						.equalsIgnoreCase(FeatureX.Name)) {
 					index = i;
 					break;
 				}
@@ -327,8 +327,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		ComboBoxes[1].setToolTipText("Y-Axis Feature");
 		int leng = ComboBoxes[1].getItemCount();
 		for (int i = 0; i < leng; i++) {
-			if (((Feature) ComboBoxes[1].getItemAt(i)).ChannelName
-					.equalsIgnoreCase(FeatureY.ChannelName)) {
+			if (((Feature) ComboBoxes[1].getItemAt(i)).Name
+					.equalsIgnoreCase(FeatureY.Name)) {
 				index = i;
 				break;
 			}

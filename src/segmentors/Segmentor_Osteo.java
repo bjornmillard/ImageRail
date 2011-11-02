@@ -33,7 +33,7 @@ import java.util.Iterator;
 import models.Model_ParameterSet;
 import segmentedobject.CellCompartment;
 import segmentedobject.CellCoordinates;
-import tools.LinearKernals;
+import tools.LinearKernels;
 import tools.SpatialFilter;
 
 public class Segmentor_Osteo implements CellSegmentor {
@@ -432,7 +432,7 @@ public class Segmentor_Osteo implements CellSegmentor {
 						.getThreshold_Nucleus())
 					iRaster[r][c] = 1e20f;
 		iRaster = SpatialFilter.distanceTransform(iRaster);
-		iRaster = SpatialFilter.linearFilter(iRaster, LinearKernals
+		iRaster = SpatialFilter.linearFilter(iRaster, LinearKernels
 .getLinearSmoothingKernal(5));
 		// tools.ImageTools.displayRaster(iRaster);
 

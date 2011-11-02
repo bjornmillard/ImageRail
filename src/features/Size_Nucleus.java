@@ -47,7 +47,7 @@ public class Size_Nucleus extends Feature
 	}
 	public String toString()
 	{
-		ChannelName = "Size_nucleus";
-		return ChannelName;
+		Name = "Size_nucleus";
+		return Name;
 	}
 }

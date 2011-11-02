@@ -98,7 +98,7 @@ public class Processor_WellAverage_Compartmented extends Thread implements Proce
 			for (int i = 0; i < numF; i++)
 			{
 				Feature f =	 (Feature)MainGUI.getGUI().getTheFeatures().get(i);
-				if (f.ChannelName.indexOf("w")>=0 && f.ChannelName.indexOf("Whole_")>=0)
+				if (f.Name.indexOf("w")>=0 && f.Name.indexOf("Whole_")>=0)
 				{
 					temp[i] = meanValues[2][counter];
 					counter++;
@@ -108,7 +108,7 @@ public class Processor_WellAverage_Compartmented extends Thread implements Proce
 			for (int i = 0; i < numF; i++)
 			{
 				Feature f =	 (Feature)MainGUI.getGUI().getTheFeatures().get(i);
-				if (f.ChannelName.indexOf("w")>=0 && f.ChannelName.indexOf("Nucleus_")>=0)
+				if (f.Name.indexOf("w")>=0 && f.Name.indexOf("Nucleus_")>=0)
 				{
 					temp[i] = meanValues[0][counter];
 					counter++;
@@ -120,7 +120,7 @@ public class Processor_WellAverage_Compartmented extends Thread implements Proce
 			for (int i = 0; i < numF; i++)
 			{
 				Feature f =	 (Feature)MainGUI.getGUI().getTheFeatures().get(i);
-				if (f.ChannelName.indexOf("w")>=0 && f.ChannelName.indexOf("Cyto_")>=0)
+				if (f.Name.indexOf("w")>=0 && f.Name.indexOf("Cyto_")>=0)
 				{
 					temp[i] = meanValues[1][counter];
 					counter++;
@@ -131,7 +131,7 @@ public class Processor_WellAverage_Compartmented extends Thread implements Proce
 			for (int i = 0; i < numF; i++)
 			{
 				Feature f =	 (Feature)MainGUI.getGUI().getTheFeatures().get(i);
-				if (f.ChannelName.indexOf("w")>=0 && f.ChannelName.indexOf("CytNucRatio_")>=0)
+				if (f.Name.indexOf("w")>=0 && f.Name.indexOf("CytNucRatio_")>=0)
 				{
 					temp[i] = meanValues[1][counter]/meanValues[0][counter];
 					counter++;
@@ -141,7 +141,7 @@ public class Processor_WellAverage_Compartmented extends Thread implements Proce
 			for (int i = 0; i < numF; i++)
 			{
 				Feature f =	 (Feature)MainGUI.getGUI().getTheFeatures().get(i);
-				if (f.ChannelName.indexOf("w")>=0 && f.ChannelName.indexOf("NucCytRatio_")>=0)
+				if (f.Name.indexOf("w")>=0 && f.Name.indexOf("NucCytRatio_")>=0)
 				{
 					temp[i] = meanValues[0][counter]/meanValues[1][counter];
 					counter++;

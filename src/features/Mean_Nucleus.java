@@ -57,7 +57,7 @@ public class Mean_Nucleus extends Feature
 	
 	public void setChannelName(String name)
 	{
-		ChannelName = "Nucleus_"+name+" (Mean)";
+		Name = "Nucleus_"+name+" (Mean)";
 	}
 }
 

@@ -116,7 +116,7 @@ public class DataSaver_XML implements DataSaver
 				if (shouldPrint(feature, featuresToSave))
 				{
 					
-					pw.println(feature.ChannelName);
+					pw.println(feature.Name);
 					for (int r = 0; r < plate.getNumRows(); r++)
 					{
 						for (int c =0; c < plate.getNumColumns(); c++)
@@ -299,7 +299,7 @@ public class DataSaver_XML implements DataSaver
 		int len = featuresToPrint.length;
 		for (int i = 0; i < len; i++)
 		{
-			if (featuresToPrint[i].ChannelName.equalsIgnoreCase(f.ChannelName))
+			if (featuresToPrint[i].Name.equalsIgnoreCase(f.Name))
 				return true;
 		}
 		return false;
@@ -307,7 +307,7 @@ public class DataSaver_XML implements DataSaver
 	
 	public boolean shouldPrint(Feature f, Feature featuresToPrint)
 	{
-		if (featuresToPrint.ChannelName.equalsIgnoreCase(f.ChannelName))
+		if (featuresToPrint.Name.equalsIgnoreCase(f.Name))
 			return true;
 		
 		return false;

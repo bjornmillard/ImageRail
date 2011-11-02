@@ -143,12 +143,12 @@ public class Processor_WellAverage extends Thread implements Processor
 			for (int i = 0; i < numF; i++)
 			{
 				Feature f =	 (Feature)MainGUI.getGUI().getTheFeatures().get(i);
-				if (f.ChannelName.indexOf("w")>=0 && f.ChannelName.indexOf("Whole_")>=0 && f.toString().indexOf("(Mean)")>=0)
+				if (f.Name.indexOf("w")>=0 && f.Name.indexOf("Whole_")>=0 && f.toString().indexOf("(Mean)")>=0)
 				{
 					temp_all[i] = totalIntegration[counter]/totalPix;
 					counter++;
 				}
-				else if (f.ChannelName.indexOf("w")>=0 && f.ChannelName.indexOf("Whole_")>=0 && f.toString().indexOf("(Integrated)")>=0)
+				else if (f.Name.indexOf("w")>=0 && f.Name.indexOf("Whole_")>=0 && f.toString().indexOf("(Integrated)")>=0)
 				{
 					temp_all[i] = totalIntegration[counterInt];
 					counterInt++;
@@ -159,7 +159,7 @@ public class Processor_WellAverage extends Thread implements Processor
 			for (int i = 0; i < numF; i++)
 			{
 				Feature f =	 (Feature)MainGUI.getGUI().getTheFeatures().get(i);
-				if (f.ChannelName.indexOf("w")>=0 && f.ChannelName.indexOf("Whole_")>=0 && f.toString().indexOf("(Mean)")>=0)
+				if (f.Name.indexOf("w")>=0 && f.Name.indexOf("Whole_")>=0 && f.toString().indexOf("(Mean)")>=0)
 				{
 					float bkgd = well.TheParameterSet.getThreshold_Background();
 					temp_all[i] = temp_all[i] - bkgd;
