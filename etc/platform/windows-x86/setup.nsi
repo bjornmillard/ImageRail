@@ -6,10 +6,10 @@ SetCompressor /SOLID lzma
 # Defines
 !define REGKEY "SOFTWARE\$(^Name)"
 !define VERSION 1.2
-!define PATCH_LEVEL 2
-!define FULL_VERSION "${VERSION}.${PATCH_LEVEL}"
-#!define PATCH_EXTRA "pre1"
-#!define FULL_VERSION "${VERSION}.${PATCH_LEVEL}_${PATCH_EXTRA}"
+!define PATCH_LEVEL 3
+#!define FULL_VERSION "${VERSION}.${PATCH_LEVEL}"
+!define PATCH_EXTRA "pre2"
+!define FULL_VERSION "${VERSION}.${PATCH_LEVEL}_${PATCH_EXTRA}"
 !define COMPANY ""
 !define URL ""
 !define PLATFORM "windows-x86"
