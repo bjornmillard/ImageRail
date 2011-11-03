@@ -97,6 +97,7 @@ import dataSavers.DataSaver_Cells_Midas_wMetaData;
 import dataSavers.DataSaver_WellMeans_Midas_wMetaData;
 import dialogs.PlateInputDialog;
 import dialogs.SaveFeatures_Dialog;
+import dialogs.ThresholdingBoundsInputDialog_Nuclei;
 import dialogs.ThresholdingBoundsInputDialog_SingleCells;
 import dialogs.ThresholdingBoundsInputDialog_SingleCells_Osteo;
 import dialogs.ThresholdingBoundsInputDialog_WellMeans;
@@ -736,26 +737,25 @@ public class MainGUI extends JFrame {
 		});
 		cellMenu.add(item);
 
-		// item = new JMenuItem("Nuclei");
-		// item.addActionListener(new ActionListener() {
-		// public void actionPerformed(ActionEvent ae) {
-		//
-		// // Finding which wells were selected
-		// ArrayList<Model_Well> arr = ThePlatePanel.getModel()
-		// .getSelectedWells_horizOrder();
-		// int num = arr.size();
-		//
-		// Model_Well[] wells = new Model_Well[num];
-		// for (int n = 0; n < num; n++)
-		// wells[n] = (Model_Well) arr.get(n);
-		//
-		// ThresholdingBoundsInputDialog_SingleCells_Osteo s = new
-		// ThresholdingBoundsInputDialog_SingleCells_Osteo(
-		// wells);
-		// }
-		//
-		// });
-		// cellMenu.add(item);
+		item = new JMenuItem("Nuclei");
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+
+				// Finding which wells were selected
+				ArrayList<Model_Well> arr = ThePlatePanel.getModel()
+						.getSelectedWells_horizOrder();
+				int num = arr.size();
+
+				Model_Well[] wells = new Model_Well[num];
+				for (int n = 0; n < num; n++)
+					wells[n] = (Model_Well) arr.get(n);
+
+				ThresholdingBoundsInputDialog_Nuclei s = new ThresholdingBoundsInputDialog_Nuclei(
+						wells);
+			}
+
+		});
+		cellMenu.add(item);
 
 		ProcessMenu.addSeparator();
 		item = new JMenuItem("Stop");
@@ -1941,13 +1941,6 @@ public class MainGUI extends JFrame {
 			loadFieldROIs();
 			updateAllPlots();
 
-			//
-			//Checking if loaded project features match up 
-			StringBuffer[] fNames = new StringBuffer[TheFeatures.size()];
-			for (int j = 0; j < TheFeatures.size(); j++) {
-				fNames[j] = new StringBuffer(((Feature)TheFeatures.get(j)).toString());
-			}
-
 			// // loading plate names
 			// StringBuffer[] plateNames = TheImageRail_H5IO.readPlateNames();
 			// for (int i = 0; i < plateNames.length; i++) {
@@ -1965,8 +1958,41 @@ public class MainGUI extends JFrame {
 			ThePlatePanel.updatePanel();
 			TheMainPanel.repaint();
 			TheMainGUI.repaint();
+
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+
+		// Checking that the loaded project contains the same
+		// features as that of this version of ImageRail
+		Feature[] feat = getFeatures();
+		String[] names = new String[feat.length];
+		for (int i = 0; i < feat.length; i++)
+			names[i] = feat[i].getName().trim();
+		StringBuffer[] projectNames = TheImageRail_H5IO
+				.validateFeaturesUsedInProject(names);
+		if (projectNames != null) {
+			getGUI().shutDown();
+			getGUI().setVisible(false);
+			TheStartupDialog.setVisible(true);
+			System.out.println("...Failed validation of project Feature list");
+
+			String st = "[Local]:";
+			for (int i = 0; i < names.length; i++)
+				st += "\n " + names[i];
+			st += "\n\n[Project]:";
+			for (int i = 0; i < projectNames.length; i++)
+				st += "\n " + projectNames[i];
+
+			JOptionPane
+					.showMessageDialog(
+							(Component) null,
+							"**FEATURE MISMATCH ERROR**\n\nMeasurements in the loaded project do not match \nthose in this version of ImageRail. "
+									+ "Please resolve by \nfinding missing Features files or reprocessing \nimages with your version of ImageRail."
+									+ "\nContact: <bjornmillard@gmail.com> for further help.\n\n"
+									+ st,
+							"alert", JOptionPane.OK_OPTION);
+			System.exit(0);
 		}
 	}
 
@@ -2633,7 +2659,6 @@ public class MainGUI extends JFrame {
 					(Component) null,
 					"\nCells have been Deleted \n\n Would you like to save these changes \n in your project files?\n",
 					"alert", JOptionPane.YES_NO_OPTION);
-			System.out.println("result: " + result);
 
 			if (result == 0) {
 				resaveCells();

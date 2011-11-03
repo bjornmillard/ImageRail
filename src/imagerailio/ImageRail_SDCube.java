@@ -1768,7 +1768,7 @@ public class ImageRail_SDCube
 	 * */
 	public void initHashtable()
 	{
-		System.out.println("Initializing the Hashtable");
+		System.out.println("Initializing the Hashtable...");
 		this.hashtable_indexToPath = new Hashtable<String, String>();
 		//iterate through all samples in this project if they currently exist and hash what plate/wells they corresponds to
 		try {
@@ -1800,7 +1800,6 @@ public class ImageRail_SDCube
 					// seeing if this field has a "feature_values" dataset
 					String path = pathToSample + "/Children/" + j
 							+ "/Meta/Height_Width_Channels";
-
 					try {
 						io.openHDF5(hdfPath);
 						exists = io.existsDataset(path);
@@ -1813,6 +1812,7 @@ public class ImageRail_SDCube
 								+ j;
 						hashtable_indexToPath.put(indexKeyField, pathToField);
 					}
+
 				}
 
 			}
@@ -1829,6 +1829,76 @@ public class ImageRail_SDCube
 				+ hashtable_indexToPath.size() + " Samples");
 		System.out.println("________________");
 
+	}
+
+	/**
+	 * Checks that the project being loaded has the same Features as the version
+	 * of imagerail being used to open it.
+	 * 
+	 * @author Bjorn Millard
+	 * @param null
+	 * @return void
+	 * */
+	public StringBuffer[] validateFeaturesUsedInProject(String[] featureNames)
+	{
+		System.out.println("Validating Features...");
+		try {
+			int numSamples = io.getGroupChildCount(hdfPath, "./Children");
+			for (int i = 0; i < numSamples; i++) {
+
+				String pathToSample = "./Children/" + i;
+
+				// Indexing each field if it has single cell data in it
+				// If sample exists, seeing if data for this specific field
+				// exists
+
+				// Get number of fields in this sample
+				int numFields = io.getGroupChildCount(hdfPath, pathToSample
+						+ "/Children");
+				for (int j = 0; j < numFields; j++) {
+					
+					// seeing if this field has a "feature_values" dataset
+					String path = pathToSample + "/Children/" + j
+							+ "/Meta/feature_names";
+					try {
+						io.openHDF5(hdfPath);
+						StringBuffer[] names = (StringBuffer[]) io.readDataset_String(hdfPath,path);
+						int len = featureNames.length;
+						
+						if(len!=names.length)
+							return names;
+						
+						for (int p = 0; p < len; p++) {
+							// System.out
+							// .println(featureNames[p] + "," + names[p]);
+							if (!((names[p] + "").trim()
+									.equalsIgnoreCase(featureNames[p].trim())))
+								return names;
+						}
+						
+					} catch (H5IO_Exception e) {
+						e.printStackTrace();
+						return null;
+					}
+				
+					
+					
+				}
+
+			}
+		} catch (H5IO_Exception e) {
+			e.printStackTrace();
+			try { //trying to close all streams before corruption of file
+				io.closeHDF5();
+				io.closeAll();
+			} catch (H5IO_Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+		System.out.println("...Successfuly validated features ");
+		System.out.println("________________");
+
+		return null;
 	}
 
 	/**
