@@ -41,11 +41,13 @@ public abstract class Feature
 	 * */
 	public int ChannelIndex;
 	public String Name;
+	public String ChannelName;
 	
 	public Feature()
 	{
-		ChannelIndex=0;
+		 ChannelIndex=0;
 		Name = "no name";
+		ChannelName = "no channel";
 	}
 	
 	
@@ -59,12 +61,23 @@ public abstract class Feature
 		return -1;
 	}
 	
-	public void setChannelIndex(int index)
-	{
+	public void setChannelIndex(int index) {
 		ChannelIndex = index;
 	}
+
+	public int getChannelIndex() {
+		return ChannelIndex;
+	}
 	
-	public void setChannelName(String name)
+	public void setChannelName(String channelName) {
+		ChannelName = channelName;
+	}
+
+	public String getChannelName() {
+		return ChannelName;
+	}
+
+	public void setName(String name)
 	{
 		Name = name;
 	}

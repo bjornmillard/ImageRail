@@ -74,7 +74,9 @@ public class Processor_WellAverage_Compartmented extends Thread implements Proce
 			for (int f = 0; f < numFields; f++)
 			{
 				File[] set = well.getFields()[f].getImageFiles();
-				int[][][] Raster_Channels = tools.ImageTools.getImageRaster_FromFiles_copy(set);
+				int[][][] Raster_Channels = tools.ImageTools
+						.getImageRaster_FromFiles_copy(set, gui.MainGUI
+								.getGUI().getTheChannelNames());
 				//segmenting the cells based on the binary image
 				float[][] tempMeans = DefaultSegmentor.findWellAverageOnly_Compartments(Raster_Channels, well.TheParameterSet);
 				//storing this data

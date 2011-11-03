@@ -20,7 +20,6 @@
 
 package gui;
 
-import features.Feature;
 import imPanels.ImageCapturePanel;
 import imPanels.JPanel_highlightBox;
 import imageViewers.FieldViewer_Frame;
@@ -75,6 +74,7 @@ import sdcubeio.ExpDesign_Sample;
 import tools.PanelDropTargetListener;
 import tools.SVG_writer;
 import dialogs.CaptureImage_Dialog;
+import features.Feature;
 
 public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel {
 	/** The X-coordinate where plate is started to be drawn*/
@@ -200,7 +200,8 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 					TheModel.setTitle(response);
 					titleLabel.setText(TheModel.getTitle());
 					MainGUI.getGUI().getPlateHoldingPanel().getTheMainPanel()
-							.setTitleAt(TheModel.getID(), TheModel.getTitle());
+							.setTitleAt(TheModel.getID() + 1,
+									TheModel.getTitle());
 						}
 						
 						
@@ -582,7 +583,15 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 
 			Feature f = MainGUI.getGUI().getTheSelectedFeature();
 			if (f != null)
-				channel = f.ChannelIndex;
+ {
+				channel = 0;
+				String[] cnames = gui.MainGUI.getGUI().getTheChannelNames();
+				if (cnames != null)
+					for (int i = 0; i < cnames.length; i++) {
+						if (f.getName().indexOf(cnames[i]) > 0)
+							channel = i;
+					}
+			}
 
 			// getting the selected feature index
 			int fIndex = MainGUI.getGUI().getTheSelectedFeature_Index();
@@ -1093,7 +1102,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 	public void captureSVG(PrintWriter pw) {
 		SVG_writer g2 = new SVG_writer(pw);
 		g2.printHeader();
-		g2.printTitle("Plate");
+		g2.printTitle(TheModel.getTitle());
 
 		draw(g2, true);
 

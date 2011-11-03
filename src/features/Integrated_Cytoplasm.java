@@ -39,8 +39,16 @@ public class Integrated_Cytoplasm extends Feature
 		if (len == 0)
 			return 0f;
 
+
 		for (int i = 0; i < len; i++)
-			sum+=raster[coords[i].y][coords[i].x][ChannelIndex]; 	//TODO - need to account for multiple wavelengths
+			sum += raster[coords[i].y][coords[i].x][getChannelIndex()]; // TODO
+																		// -
+																		// need
+																		// to
+																		// account
+																		// for
+																		// multiple
+																		// wavelengths
 		
 		assert sum >= 0;
 		
@@ -52,7 +60,7 @@ public class Integrated_Cytoplasm extends Feature
 		return true;
 	}
 	
-	public void setChannelName(String name)
+	public void setName(String name)
 	{
 		Name = "Cyto_"+name+" (Integrated)";
 	}

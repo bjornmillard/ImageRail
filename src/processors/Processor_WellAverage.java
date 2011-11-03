@@ -110,7 +110,8 @@ public class Processor_WellAverage extends Thread implements Processor
 
 				File[] images_oneField = well.getFields()[f].getImageFiles();
 				int[][][] Raster_Channels = tools.ImageTools
-						.getImageRaster_FromFiles_copy(images_oneField);
+						.getImageRaster_FromFiles_copy(images_oneField,
+								gui.MainGUI.getGUI().getTheChannelNames());
 				int[] fieldDimensions = { Raster_Channels.length,
 						Raster_Channels[0].length, Raster_Channels[0][0].length };
 				try {

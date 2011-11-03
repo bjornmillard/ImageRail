@@ -53,7 +53,7 @@ public class Mean_WholeCell extends Feature
 		return true;
 	}
 	
-	public void setChannelName(String name)
+	public void setName(String name)
 	{
 		Name = "Whole_"+name+" (Mean)";
 	}

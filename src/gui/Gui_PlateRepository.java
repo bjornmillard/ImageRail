@@ -88,6 +88,9 @@ public class Gui_PlateRepository extends JPanel {
 		for (int p = 0; p < TheModel.getNumPlates(); p++) {
 			if (ThePlates[p].getTitle() == null)
 				ThePlates[p].setTitle("Plate #" + ThePlates[p].getID());
+			else
+				ThePlates[p].setTitle(ThePlates[p].getTitle());
+
 			TheMainPanel.addTab(ThePlates[p].getTitle(), null);
 		}
 

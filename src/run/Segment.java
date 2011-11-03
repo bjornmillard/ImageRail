@@ -138,7 +138,8 @@ public class Segment {
 
 				// (2) Converting the images files to a raster
 				int[][][] raster = tools.ImageTools
-						.getImageRaster_FromFiles_copy(files);
+						.getImageRaster_FromFiles_copy(files, gui.MainGUI
+								.getGUI().getTheChannelNames());
 				// (3) Computing the background from each channel
 				float[] backgroundValues = new float[numChannels];
 				if (BkgdThreshold > 0)
@@ -323,8 +324,8 @@ public class Segment {
 				for (int w = 0; w < channelNames.length; w++) {
 					try {
 						Feature fn = f.getClass().newInstance();
-						fn.setChannelIndex(w);
-						fn.setChannelName(channelNames[w]);
+						// fn.setChannelIndex(w);
+						fn.setName(channelNames[w]);
 						features.add(fn);
 					} catch (Exception e) {
 						e.printStackTrace();

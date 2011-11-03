@@ -1653,6 +1653,54 @@ public class ImageRail_SDCube
 	}
 
 	/**
+	 * Writes plate name to HDF file
+	 * 
+	 * @author Bjorn Millard
+	 * @param String
+	 *            [] names
+	 * */
+	public void writePlateNames(String[] names) {
+		// remove prior dataset
+
+		String path = "./Meta/PlateNames";
+		try {
+			if (io.existsDataset(path))
+				io.removeDataset(path);
+		} catch (H5IO_Exception e1) {
+			e1.printStackTrace();
+		}
+		try {
+			io.writeDataset(hdfPath, path, names);
+		} catch (H5IO_Exception e) {
+			System.err.println("** ERROR writing PlateCount and PlateSizes");
+		}
+	}
+
+	/**
+	 * Reads plate name from HDF file
+	 * 
+	 * @author Bjorn Millard
+	 * @param String
+	 *            [] names
+	 * */
+	public StringBuffer[] readPlateNames() {
+		// remove prior dataset
+		String path = "./Meta/PlateNames";
+		StringBuffer[] names = null;
+		try {
+			names = io.readDataset_String(hdfPath, path);
+			if (names == null)
+				return null;
+			return names;
+		} catch (H5IO_Exception e) {
+			System.out.println("**Failed to load Plate names for: " + path);
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	/**
 	 * Writes meta-info about the Plate count and sizes for this imagerail
 	 * project
 	 * 

@@ -848,58 +848,67 @@ public class ImageTools
 	
 	static public String[] getNameOfUniqueChannels(File dir)
 	{
-		ArrayList uniques = new ArrayList();
-		File[] files = dir.listFiles();
-		if(files==null)
+		ArrayList<String> uniques = new ArrayList<String>();
+		// This is the parent directory for all plates' images
+		// Each file here is a directory: Plate_0, Plate_1, etc...
+		File[] dirs = dir.listFiles();
+		if (dirs == null)
 			return null;
 		
-		int numF = files.length;
-		for(int i=0;i < numF; i++)
+		int numD = dirs.length;
+		for (int i = 0; i < numD; i++)
 		{
-			//getting channel name
-			String name = files[i].getName();
-			
-			int ind = 0;
-			for (int j=0;j<10;j++)
+			// Get each plate successively
+			File[] files = dirs[i].listFiles();
+			if (files != null && files.length > 0)
 			{
-				
-				ind = name.indexOf(("_w"+j));
-				if (ind>0)
-					break;
-			}
-			
-			int ind2 = name.indexOf(".tif");
-			if (ind2<=0)
-				ind2 = name.indexOf(".TIF");
-			if (ind2<=0)
-				ind2 = name.indexOf(".Tif");
-			
-			
-			if (ind>0)
-			{
-				String subString = name.substring(ind+2, ind2);
-				//seeing if unique
-				boolean unique = true;
-				for (int j = 0;  j < uniques.size(); j++)
-				{
-					String uniq = (String) uniques.get(j);
-					if (uniq.equalsIgnoreCase(subString))
-					{
-						unique = false;
-						break;
+				// Checking Plate[i]
+				int numF = files.length;
+				for (int f = 0; f < numF; f++) {
+
+					// getting channel name
+					String name = files[f].getName();
+
+					// Trying to find the index of the start of the wavelength
+					// identifier
+					int ind = 0;
+					for (int j = 0; j < 10; j++) {
+
+						ind = name.indexOf(("_w" + j));
+						if (ind > 0)
+							break;
 					}
-				}
-				if (unique)
-				{
-					uniques.add(subString);
-				}
+
+					// Trying to find the index of the start of the Tiff
+					// extension
+					int ind2 = name.indexOf(".tif");
+					if (ind2 <= 0)
+						ind2 = name.indexOf(".TIF");
+					if (ind2 <= 0)
+						ind2 = name.indexOf(".Tif");
+				
+					if (ind > 0) {
+						String subString = name.substring(ind + 2, ind2);
+						// seeing if unique
+						boolean unique = true;
+						for (int j = 0; j < uniques.size(); j++) {
+							String uniq = (String) uniques.get(j);
+							if (uniq.equalsIgnoreCase(subString)) {
+								unique = false;
+								break;
+							}
+							}
+						if (unique) {
+							uniques.add(subString);
+						}
+					}
+			}
 			}
 		}
 		
 		Collections.sort(uniques);
 		
 		int len = uniques.size();
-		
 		
 		String[] arr = new String[len];
 		for (int i=0; i < uniques.size(); i++)
@@ -910,9 +919,9 @@ public class ImageTools
 	}
 	
 	
-	static public int getNumUniqueChannels(ArrayList files)
+	static public int getNumUniqueChannels(ArrayList<File> files)
 	{
-		ArrayList uniques = new ArrayList();
+		ArrayList<String> uniques = new ArrayList<String>();
 		
 		int numF = files.size();
 		for(int i=0;i < numF; i++)
@@ -1141,11 +1150,12 @@ public class ImageTools
 		return rast;
 	}
 	
-	static	public int[][][] getImageRaster_FromFiles_copy(File[] inFiles)
+	static public int[][][] getImageRaster_FromFiles_copy(File[] inFiles,
+			String[] requiredChannelNames)
 	{
 		//finding all tiff files only
 		int numFiles = inFiles.length;
-		ArrayList arr = new ArrayList();
+		ArrayList<File> arr = new ArrayList<File>();
 		for (int i =0; i < numFiles; i++)
 		{
 			File f = inFiles[i];
@@ -1175,24 +1185,22 @@ public class ImageTools
 		}
 		catch (IOException e) {System.out.println("error Loading image: ");e.printStackTrace();}
 		
-		//gettng the raster
+
+		// for (int r =0; r < height; r++)
+		// for (int c =0; c < width; c++)
+		// {
+		// ras.getPixel(c,r,pix);
+		// rast[r][c][0] = (int)((float)pix[0]);
+		// }
+		
+		// getting the raster
 		Raster ras = op.getData();
 		int width = ras.getWidth();
 		int height = ras.getHeight();
-		
-		
-		int[][][] rast = new int[height][width][numFiles];
-		
-		int[] pix = new int[numFiles];
-		for (int r =0; r < height; r++)
-			for (int c =0; c < width; c++)
-			{
-				ras.getPixel(c,r,pix);
-				rast[r][c][0] = (int)((float)pix[0]);
-			}
-		
+		int[][][] rast = new int[height][width][requiredChannelNames.length];
+		int[] pix = new int[3];
 		//Now doing other files
-		for (int i = 1; i < numFiles; i++)
+		for (int i = 0; i < numFiles; i++)
 		{
 			try
 			{
@@ -1201,14 +1209,21 @@ public class ImageTools
 				op = new NullOpImage(decoder.decodeAsRenderedImage(),null,OpImage.OP_IO_BOUND,null);
 			}
 			catch (IOException e) {System.out.println("error Loading image: ");e.printStackTrace();}
+			// get channel index
+			String[] rNames = requiredChannelNames;
+			int thisIndex = -1;
+			for (int j = 0; j < rNames.length; j++) {
+				if (files[i].getName().indexOf(rNames[j]) > 0)
+					thisIndex = j;
+			}
 			
-			//gettng the raster
+			// getting the raster
 			ras = op.getData();
 			for (int r =0; r < height; r++)
 				for (int c =0; c < width; c++)
 				{
 					ras.getPixel(c,r,pix);
-					rast[r][c][i] = pix[0];
+					rast[r][c][thisIndex] = pix[0];
 				}
 		}
 		

@@ -520,11 +520,58 @@ public class Model_Plate
 	public void setTitle(String title)
 	{
 		Title = title;
+		// // writing to HDF file
+		// if (gui.MainGUI.getGUI() == null
+		// || gui.MainGUI.getGUI().getThePlateHoldingPanel() == null
+		// || gui.MainGUI.getGUI().getThePlateHoldingPanel().getPlates() ==
+		// null)
+		// {
+		// System.out.println("GUI and/or Plates are null: "
+		// + gui.MainGUI.getGUI()
+		// + ","
+		// + gui.MainGUI.getGUI().getThePlateHoldingPanel()
+		// + ","
+		// + gui.MainGUI.getGUI().getThePlateHoldingPanel()
+		// .getPlates());
+		// return;
+		// }
+		// Model_Plate[] ps = gui.MainGUI.getGUI().getThePlateHoldingPanel()
+		// .getPlates();
+		//
+		// int len = ps.length;
+		// String[] names = new String[len];
+		// for (int i = 0; i < len; i++)
+		// names[i] = ps[i].getTitle();
+		// names[getID()] = Title;
+		//
+		// ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+		// if (io != null) {
+		// io.writePlateNames(names);
+		// System.out.println("Reading newly written plate names: ");
+		// StringBuffer[] ns = io.readPlateNames();
+		// len = ns.length;
+		// for (int i = 0; i < len; i++) {
+		// System.out.println(ns[i]);
+		// }
+		// }
 	}
 	/** Gets the Title of the plate
 	 * @author BLM */
 	public String getTitle()
 	{
+		// // loading plate names
+		// ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+		// if (io == null)
+		// return "Plate #" + getID();
+		//
+		// StringBuffer[] plateNames = io.readPlateNames();
+		// if (plateNames != null) {
+		// // for (int i = 0; i < plateNames.length; i++) {
+		// // System.out.println(plateNames[i]);
+		// // }
+		// if (plateNames != null && plateNames.length > 0)
+		// return plateNames[getID()] + "";
+		// }
 		return Title;
 	}
 	

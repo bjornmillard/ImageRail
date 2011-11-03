@@ -277,7 +277,9 @@ public class Processor_SingleCells extends Thread implements Processor
 					File[] images_oneField = field.getImageFiles();
 					
 					//  (2) Converting the images files to a raster
-					Raster = tools.ImageTools.getImageRaster_FromFiles_copy(images_oneField);
+					Raster = tools.ImageTools.getImageRaster_FromFiles_copy(
+							images_oneField, gui.MainGUI.getGUI()
+									.getTheChannelNames());
 					
 					//  (3) Computing the background from each channel
 					if (well.TheParameterSet.getThreshold_Background() > 0)
@@ -297,6 +299,10 @@ public class Processor_SingleCells extends Thread implements Processor
 					//image and extract the proper values
 					long time = System.currentTimeMillis();
 					System.out.println("-->> Performing Feature Computations");
+					// Compute
+					int numChannels = gui.MainGUI.getGUI()
+							.getNumberOfChannels();
+
 					float[][] cellFeatureMatrix = computeFeatureValues(cellCoords, Raster, backgroundValues);
 					if(cellFeatureMatrix!=null && cellFeatureMatrix.length>0)
 					{
@@ -311,7 +317,7 @@ public class Processor_SingleCells extends Thread implements Processor
 						try
 						{
 							int[] fieldDimensions = { Raster.length,
-									Raster[0].length, Raster[0][0].length };
+									Raster[0].length, numChannels };
 							io.createField(well.getID(), plateIndex, wellIndex,
 									f,
 									fieldDimensions, gui.MainGUI.getGUI()

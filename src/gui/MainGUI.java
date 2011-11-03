@@ -691,8 +691,10 @@ public class MainGUI extends JFrame {
 
 		ProcessMenu.add(item);
 
+		JMenu cellMenu = new JMenu("Single Cells");
+		ProcessMenu.add(cellMenu);
 
-		item = new JMenuItem("Single Cells");
+		item = new JMenuItem("Classic");
 		// item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,ActionEvent.META_MASK));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -711,9 +713,9 @@ public class MainGUI extends JFrame {
 			}
 
 		});
-		ProcessMenu.add(item);
+		cellMenu.add(item);
 
-		item = new JMenuItem("Single Cells - Osteo");
+		item = new JMenuItem("Osteoclasts");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 
@@ -728,10 +730,32 @@ public class MainGUI extends JFrame {
 
 				ThresholdingBoundsInputDialog_SingleCells_Osteo s = new ThresholdingBoundsInputDialog_SingleCells_Osteo(
 						wells);
+
 			}
 
 		});
-		ProcessMenu.add(item);
+		cellMenu.add(item);
+
+		// item = new JMenuItem("Nuclei");
+		// item.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent ae) {
+		//
+		// // Finding which wells were selected
+		// ArrayList<Model_Well> arr = ThePlatePanel.getModel()
+		// .getSelectedWells_horizOrder();
+		// int num = arr.size();
+		//
+		// Model_Well[] wells = new Model_Well[num];
+		// for (int n = 0; n < num; n++)
+		// wells[n] = (Model_Well) arr.get(n);
+		//
+		// ThresholdingBoundsInputDialog_SingleCells_Osteo s = new
+		// ThresholdingBoundsInputDialog_SingleCells_Osteo(
+		// wells);
+		// }
+		//
+		// });
+		// cellMenu.add(item);
 
 		ProcessMenu.addSeparator();
 		item = new JMenuItem("Stop");
@@ -899,6 +923,7 @@ public class MainGUI extends JFrame {
 						Feature fn = f.getClass().newInstance();
 						fn.setChannelIndex(w);
 						fn.setChannelName(channelNames[w]);
+						fn.setName(channelNames[w]);
 						TheFeatures.add(fn);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -937,10 +962,13 @@ public class MainGUI extends JFrame {
 			Model_Plate[] plates = new Model_Plate[numPlates];
 			for (int p = 0; p < plates.length; p++) {
 				plates[p] = new Model_Plate(numRows, numCols, p, true);
+				plates[p].setTitle("Plate #" + p);
 				plates[p].initGUI();
 			}
+
 			ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
 					plates));
+
 
 			// Reinit the ExpDesignModel
 				TheExpDesign_Model = new ExpDesign_Model(TheProjectDirectory
@@ -963,6 +991,12 @@ public class MainGUI extends JFrame {
 			TheImageRail_H5IO.writePlateCountAndSizes(numPlates, plates[0]
 					.getNumColumns()
 					* plates[0].getNumRows());
+
+			// Writing plate Names
+			for (int p = 0; p < plates.length; p++)
+				TheImageRail_H5IO.writePlateCountAndSizes(numPlates,
+						plates[0].getNumColumns() * plates[0].getNumRows());
+
 			TheMainPanel.setLeftComponent(TheInputPanel_Container);
 			TheMainPanel.setRightComponent(ThePlatePanel);
 			TheMainPanel.setDividerLocation(TheMainPanel.getDividerLocation());
@@ -1446,7 +1480,7 @@ public class MainGUI extends JFrame {
 	 */
 	public void updateFeatures() {
 		/** Features comboBox */
-		ArrayList list = new ArrayList();
+		ArrayList<Feature> list = new ArrayList<Feature>();
 		int len = TheFeatures.size();
 
 		for (int i = 0; i < len; i++)
@@ -1724,9 +1758,7 @@ public class MainGUI extends JFrame {
 			e.printStackTrace();
 		}
 
-		// Getting Number of uniquie channel names and adding Features based off
-		// of wavelength - TODO features should be added better
-		ChannelNames = tools.ImageTools.getNameOfUniqueChannels(dir);
+
 
 		for (int r = 0; r < plate.getWells().length; r++)
 			for (int c = 0; c < plate.getWells()[0].length; c++) {
@@ -1748,6 +1780,11 @@ public class MainGUI extends JFrame {
 
 				}
 			}
+
+		// Getting Number of uniquie channel names and adding Features based off
+		// of wavelength - TODO features should be added better
+		ChannelNames = tools.ImageTools.getNameOfUniqueChannels(dir
+				.getParentFile());
 
 		// Init Scaling parameters
 		initScalingParameters();
@@ -1835,6 +1872,7 @@ public class MainGUI extends JFrame {
 				arr.add(new Model_Plate(numR, numC, i, true));
 			}
 
+
 			// Creating the new plate holder with new plates
 			Model_Plate[] plates = new Model_Plate[arr.size()];
 			for (int p = 0; p < plates.length; p++)
@@ -1866,7 +1904,9 @@ public class MainGUI extends JFrame {
 				// Getting Number of unique channel names and adding Features
 				// based off of wavelength - TODO features should be added
 				// better
-				String[] names = tools.ImageTools.getNameOfUniqueChannels(dir);
+
+				String[] names = tools.ImageTools.getNameOfUniqueChannels(dir
+						.getParentFile());
 
 				if (names != null && names.length > 0)
 					ChannelNames = names;
@@ -1881,7 +1921,7 @@ public class MainGUI extends JFrame {
 							// Organizing the images into sets of File[] in a an
 							// arraylist where each element of the arrList is a
 							// File[] of each wavelength for each field
-							ArrayList allSets = tools.ImageTools
+							ArrayList<File[]> allSets = tools.ImageTools
 							.getAllSetsOfCorresponsdingChanneledImageFiles(allFiles);
 							int numFields = allSets.size();
 
@@ -1907,6 +1947,16 @@ public class MainGUI extends JFrame {
 			for (int j = 0; j < TheFeatures.size(); j++) {
 				fNames[j] = new StringBuffer(((Feature)TheFeatures.get(j)).toString());
 			}
+
+			// // loading plate names
+			// StringBuffer[] plateNames = TheImageRail_H5IO.readPlateNames();
+			// for (int i = 0; i < plateNames.length; i++) {
+			// System.out.println(plateNames[i]);
+			// }
+			// if (plateNames != null) {
+			// for (int i = 0; i < plates.length; i++)
+			// plates[i].setTitle(plateNames[i] + "");
+			// }
 
 			TheMainPanel.setLeftComponent(TheInputPanel_Container);
 			TheMainPanel.setRightComponent(ThePlatePanel);
@@ -2330,7 +2380,9 @@ public class MainGUI extends JFrame {
 	 * @author BLM
 	 * */
 	public Model_PlateRepository getThePlateHoldingPanel() {
-		return ThePlatePanel.getModel();
+		if (ThePlatePanel != null)
+			return ThePlatePanel.getModel();
+		return null;
 	}
 
 	//
