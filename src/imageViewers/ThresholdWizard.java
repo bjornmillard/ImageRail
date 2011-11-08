@@ -41,8 +41,6 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import models.Model_ParameterSet;
-import models.Model_Plate;
 import models.Model_Well;
 
 import com.sun.media.jai.widget.DisplayJAI;
@@ -190,59 +188,57 @@ public class ThresholdWizard extends JFrame {
 		 * 
 		 * @author BLM
 		 */
-		public void mouseClicked(MouseEvent e) {
-			if (e.isShiftDown()) {
-				if (clickTargetRect.contains(e.getPoint())) {
-					Model_Plate[] plates = MainGUI.getGUI()
-							.getPlateHoldingPanel().getModel().getPlates();
-					int numPlates = plates.length;
-					for (int p = 0; p < numPlates; p++) {
-						Model_Well[] wells = plates[p].getAllWells();
-						for (int i = 0; i < wells.length; i++) {
-							Model_ParameterSet pset = wells[i]
-									.getParameterSet();
-
-							pset.setModified(true);
-							// ProcessType
-							pset.setProcessType(Model_ParameterSet.SINGLECELL);
-							// Threshold Channel Nucleus
-							pset.setThresholdChannel_nuc_Name(MainGUI.getGUI()
-									.getTheChannelNames()[0]);
-							// Threshold Channel Cytoplasm
-							pset.setThresholdChannel_cyto_Name(MainGUI.getGUI()
-									.getTheChannelNames()[0]);
-							// Nuc bound threshold
-							pset.setThreshold_Nucleus(NucThreshold);
-							// Cell bound Threshold
-							pset.setThreshold_Cytoplasm(CytoThreshold);
-							// Bkgd threshold
-							pset.setThreshold_Background(BkgdThreshold);
-
-							pset.setCoordsToSaveToHDF("Centroid");
-
-							pset
-									.setMeanOrIntegrated(wells[i].TheParameterSet.MEAN);
-
-							// Finding the index of this channel name
-							for (int j = 0; j < MainGUI.getGUI()
-									.getTheChannelNames().length; j++)
-								if (MainGUI.getGUI().getTheChannelNames()[j]
-										.equalsIgnoreCase(pset
-												.getThresholdChannel_nuc_Name()))
-									pset.setThresholdChannel_nuc_Index(j);
-							// Finding the index of this channel name
-							for (int j = 0; j < MainGUI.getGUI()
-									.getTheChannelNames().length; j++)
-								if (MainGUI.getGUI().getTheChannelNames()[j]
-										.equalsIgnoreCase(pset
-												.getThresholdChannel_cyto_Name()))
-									pset.setThresholdChannel_cyto_Index(j);
-						}
-					}
-				}
-			}
-			TheFrame.setVisible(false);
-		}
+		// public void mouseClicked(MouseEvent e) {
+		// if (e.isShiftDown()) {
+		// if (clickTargetRect.contains(e.getPoint())) {
+		// Model_Plate[] plates = MainGUI.getGUI()
+		// .getPlateHoldingPanel().getModel().getPlates();
+		// int numPlates = plates.length;
+		// for (int p = 0; p < numPlates; p++) {
+		// Model_Well[] wells = plates[p].getAllWells();
+		// for (int i = 0; i < wells.length; i++) {
+		// Model_ParameterSet pset = wells[i].getParameterSet();
+		//
+		// // ProcessType
+		// pset.setProcessType(Model_ParameterSet.SINGLECELL);
+		// // Threshold Channel Nucleus
+		// pset.setParameter("Thresh_Nuc_ChannelName",""+MainGUI.getGUI()
+		// .getTheChannelNames()[0]);
+		// // Threshold Channel Cytoplasm
+		// pset.setParameter("Thresh_Cyt_ChannelName",MainGUI.getGUI()
+		// .getTheChannelNames()[0]);
+		// // Nuc bound threshold
+		// pset.setParameter("Thresh_Nuc_Value",""+NucThreshold);
+		// // Cell bound Threshold
+		// pset.setParameter("Thresh_Cyt_Value",""+CytoThreshold);
+		// // Bkgd threshold
+		// pset.setParameter("Thresh_Bkgd_Value",""+BkgdThreshold);
+		//
+		// pset.setParameter("CoordsToSaveToHDF","Centroid");
+		//
+		// pset
+		// .setMeanOrIntegrated(wells[i].TheParameterSet.MEAN);
+		//
+		// // Finding the index of this channel name
+		// for (int j = 0; j < MainGUI.getGUI()
+		// .getTheChannelNames().length; j++)
+		// if (MainGUI.getGUI().getTheChannelNames()[j]
+		// .equalsIgnoreCase(pset
+		// .getParameter_String("Thresh_Nuc_ChannelName")))
+		// pset.setParameter("Thresh_Nuc_ChannelIndex",""+j);
+		// // Finding the index of this channel name
+		// for (int j = 0; j < MainGUI.getGUI()
+		// .getTheChannelNames().length; j++)
+		// if (MainGUI.getGUI().getTheChannelNames()[j]
+		// .equalsIgnoreCase(pset
+		// .getParameter_String("Thresh_Cyt_ChannelName")))
+		// pset.setParameter("Thresh_Cyt_ChannelIndex",""+j);
+		// }
+		// }
+		// }
+		// }
+		// TheFrame.setVisible(false);
+		// }
 
 		public void mouseEntered(MouseEvent e) {
 			// TODO Auto-generated method stub

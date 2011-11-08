@@ -25,10 +25,11 @@ import imagerailio.ImageRail_SDCube;
 
 import java.io.File;
 
+import models.Model_Field;
 import models.Model_Plate;
 import models.Model_Well;
 import sdcubeio.H5IO_Exception;
-import segmentors.DefaultSegmentor;
+import segmentors.DefaultSegmentor_v1;
 import dataSavers.DataSaver_CSV;
 
 public class Processor_WellAverage extends Thread implements Processor
@@ -56,32 +57,10 @@ public class Processor_WellAverage extends Thread implements Processor
 		long StartTime  = System.currentTimeMillis();
 		MainGUI.getGUI().setProcessing(true);
 		
-		
 		ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
-
-		// try
-		// {
-		// String projPath =
-		// gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
-		// // ProjectHDFConnector con = new ProjectHDFConnector(projPath);
-		// // con.createProject();
-		// io = gui.MainGUI.getGUI().getH5IO();
-		// //creating a HDF plate for each plate needed, since the wells could
-		// come from different plates
-		// int[][] idsAndWells =
-		// Processor_SingleCells.getAllUniquePlateIDsAndNumWells(WellsToProcess);
-		// for (int i = 0; i < idsAndWells[0].length; i++)
-		// {
-		// // System.out.println("ids: "+(idsAndWells[0][i]-1)
-		// +"   wells: "+idsAndWells[1][i]);
-		// con.writePlateSize(idsAndWells[0][i]-1, idsAndWells[1][i]);
-		// }
-		// }
-		// catch (H5IO_Exception e) {e.printStackTrace();}
 		
-		
-		
-		
+		if (io != null)
+			try {
 		//Processing all the wells
 		for (int w = 0; w < numWells; w++)
 		{
@@ -108,7 +87,8 @@ public class Processor_WellAverage extends Thread implements Processor
 				if (!MainGUI.getGUI().shouldStop())
 					break;
 
-				File[] images_oneField = well.getFields()[f].getImageFiles();
+				Model_Field field = well.getFields()[f];
+				File[] images_oneField = field.getImageFiles();
 				int[][][] Raster_Channels = tools.ImageTools
 						.getImageRaster_FromFiles_copy(images_oneField,
 								gui.MainGUI.getGUI().getTheChannelNames());
@@ -124,9 +104,9 @@ public class Processor_WellAverage extends Thread implements Processor
 					e.printStackTrace();
 				}
 				// Getting integrated values of the images for each channel
-				float[][] tempIntegration = DefaultSegmentor
+				float[][] tempIntegration = DefaultSegmentor_v1
 						.findTotalIntegrationAndTotalPixUsed(Raster_Channels,
-								well.TheParameterSet);
+								field.getParameterSet());
 				// storing this data
 				for (int p = 0; p < tempIntegration.length; p++)
 					totalIntegration[p] += tempIntegration[p][0];
@@ -157,15 +137,17 @@ public class Processor_WellAverage extends Thread implements Processor
 			}
 			
 			//Subtracting background if desired
-			for (int i = 0; i < numF; i++)
-			{
-				Feature f =	 (Feature)MainGUI.getGUI().getTheFeatures().get(i);
-				if (f.Name.indexOf("w")>=0 && f.Name.indexOf("Whole_")>=0 && f.toString().indexOf("(Mean)")>=0)
-				{
-					float bkgd = well.TheParameterSet.getThreshold_Background();
-					temp_all[i] = temp_all[i] - bkgd;
-				}
-			}
+			// for (int i = 0; i < numF; i++)
+			// {
+			// Feature f = (Feature)MainGUI.getGUI().getTheFeatures().get(i);
+			// if (f.Name.indexOf("w")>=0 && f.Name.indexOf("Whole_")>=0 &&
+			// f.toString().indexOf("(Mean)")>=0)
+			// {
+			// float bkgd =
+			// field.getParameterSet().getParameter("Thresh_Bkgd_Value");
+			// temp_all[i] = temp_all[i] - bkgd;
+			// }
+			// }
 			
 			
 			well.setMeanFluorescentValues(temp_all);
@@ -206,10 +188,10 @@ public class Processor_WellAverage extends Thread implements Processor
 				int totNumWells = well.getPlate().getNumRows()
 						* well.getPlate().getNumColumns();
 				io.writeParentPlateInfo(plateIndex, wellIndex, totNumWells);
-				io.writeSegmentationParameters(plateIndex, wellIndex,
-						(int) well.getParameterSet().getThreshold_Nucleus(),
-						(int) well.getParameterSet().getThreshold_Cytoplasm(),
-						(int) well.getParameterSet().getThreshold_Background());
+				// io.writeSegmentationParameters(plateIndex, wellIndex,
+				// (int) well.getParameterSet().getParameter_float("Thresh_Nuc_Value"),
+				// (int) well.getParameterSet().getParameter_float("Thresh_Cyt_Value"),
+				// (int) well.getParameterSet().getParameter_float("Thresh_Bkgd_Value"));
 				
 			}
 			catch (Exception e)
@@ -225,6 +207,17 @@ public class Processor_WellAverage extends Thread implements Processor
 			new DataSaver_CSV().save(MainGUI.getGUI(), ResultsFile);
 		}
 		
+			} catch (Exception e) {
+				// Make sure the HDF5 file is closed to prevent corruption
+				try {
+					io.getH5IO().closeAll();
+				} catch (H5IO_Exception e1) {
+					System.out
+							.println("**ERROR closing HFD5 file during crash");
+					e1.printStackTrace();
+				}
+			}
+
 		System.out.println("*** Finished: "+ (System.currentTimeMillis()-StartTime));
 		MainGUI.getGUI().setProcessing(false);
 	}

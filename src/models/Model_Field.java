@@ -43,6 +43,7 @@ public class Model_Field {
 	private ArrayList<Boolean> ROIs_selected;
 	private Model_FieldCellRepository TheCellRepository;
 	private float[] backgroundValues;
+	private Model_ParameterSet TheParameterSet;
 
 	public Model_Field(File[] imageFiles, int index, Model_Well parentWell_) {
 		parentWell = parentWell_;
@@ -50,6 +51,7 @@ public class Model_Field {
 		ROIs = new ArrayList<Shape>();
 		ROIs_selected = new ArrayList<Boolean>();
 		ImageFiles = imageFiles;
+		TheParameterSet = new Model_ParameterSet();
 	}
 
 	public int getIndexInWell() {
@@ -370,6 +372,26 @@ public class Model_Field {
 				counter++;
 		}
 		return counter;
+	}
+
+	/**
+	 * Returns the Parameter set used to process this Field
+	 * 
+	 * @author BLM
+	 */
+	public Model_ParameterSet getParameterSet() {
+		return TheParameterSet;
+	}
+
+	/**
+	 * Sets the Parameter set used to process this Field
+	 * 
+	 * @author BLM
+	 */
+	public void setParameterSet(Model_ParameterSet pset) {
+		TheParameterSet = pset;
+		/* Write the parameter set to the HDF5 file for this well */
+
 	}
 }
 

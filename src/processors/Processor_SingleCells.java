@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import models.Model_Field;
 import models.Model_Plate;
 import models.Model_Well;
+import sdcubeio.H5IO_Exception;
 import segmentedobject.CellCoordinates;
 import segmentors.CellSegmentor;
 
@@ -230,10 +231,10 @@ public class Processor_SingleCells extends Thread implements Processor
 	 * @author BLM*/
 	public void processWells(Model_Well[] wells, CellSegmentor theSegmentor)
 	{
-		
+		ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
+		if (io != null)
 		try
  {
-			ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
 
 			//Initializing some storage variables
 			float[] backgroundValues = new float[MainGUI.getGUI().getNumberOfChannels()];
@@ -282,15 +283,17 @@ public class Processor_SingleCells extends Thread implements Processor
 									.getTheChannelNames());
 					
 					//  (3) Computing the background from each channel
-					if (well.TheParameterSet.getThreshold_Background() > 0)
-						tools.ImageTools.computeBackgroundValues(Raster, backgroundValues, well.TheParameterSet);
+					if (field.getParameterSet().getParameter_float(
+							"Thresh_Bkgd_Value") > 0)
+						tools.ImageTools.computeBackgroundValues(Raster,
+								backgroundValues, field.getParameterSet());
 					field.setBackgroundValues(backgroundValues);
 					
 					// (4) Getting Cell Coordinates (segmenting the cells)
 					if (field.getROIs() != null)
 						theSegmentor.setROIs(field.getROIs());
 					ArrayList<CellCoordinates> cellCoords = theSegmentor
-							.segmentCells(Raster, well.TheParameterSet);
+							.segmentCells(Raster, field.getParameterSet());
 					theSegmentor.clearROIs();
 					
 					
@@ -333,8 +336,8 @@ public class Processor_SingleCells extends Thread implements Processor
 								fNames[i] = new String(features[i].toString());
 							io.writeFeatureNames(plateIndex, wellIndex, f, fNames);
 							
-							String whatToSave = well.TheParameterSet
-									.getCoordsToSaveToHDF();
+							String whatToSave = field.getParameterSet()
+									.getParameter_String("CoordsToSaveToHDF");
 							if (whatToSave.equalsIgnoreCase("BoundingBox"))
 							{
 								//Only save the cell BoundingBoxes to file
@@ -382,21 +385,16 @@ public class Processor_SingleCells extends Thread implements Processor
 						time = System.currentTimeMillis();
 						
 						
-
+							// Storing Parameters used to process this field
+							String hdfPath = gui.MainGUI.getGUI()
+									.getProjectDirectory().getAbsolutePath()
+									+ "/Data.h5";
+							field.getParameterSet().writeParameters(hdfPath,
+									well.getPlate().getID(),
+											well.getWellIndex(),
+											field.getIndexInWell());
 						
-						
-
-						// // If we wanted to store the neighbor cell
-						// information
-						// // if
-						// (MainGUI.StoreNeighborsCheckBox.isSelected())//MainGUI.FindNeighborsCheckBox.isSelected())
-						// // {
-						// DelaunayTriangulator dt = new DelaunayTriangulator();
-						// dt.assignNeighbors(cells, Raster[0].length,
-						// Raster.length);
-						// // }
-						
-						//cleaning up
+							// Cleaning up
 						Raster = null;
 						well.getPlate().getGUI().repaint();
 					}
@@ -439,7 +437,10 @@ public class Processor_SingleCells extends Thread implements Processor
 				//Writing HDF5 well sample metadata
 				int totNumWells = well.getPlate().getNumRows() * well.getPlate().getNumColumns();
 				io.writeParentPlateInfo(plateIndex, wellIndex,totNumWells);
-				io.writeSegmentationParameters(plateIndex, wellIndex, (int)well.getParameterSet().getThreshold_Nucleus(), (int)well.getParameterSet().getThreshold_Cytoplasm(), (int)well.getParameterSet().getThreshold_Background());
+				// io.writeSegmentationParameters(plateIndex, wellIndex,
+				// (int)well.getParameterSet().getParameter_float("Thresh_Nuc_Value"),
+				// (int)well.getParameterSet().getParameter_float("Thresh_Cyt_Value"),
+				// (int)well.getParameterSet().getParameter_float("Thresh_Bkgd_Value"));
 			}
 			
 			
@@ -450,6 +451,14 @@ public class Processor_SingleCells extends Thread implements Processor
 		} // END writing HDF data to project
 		catch (Exception e)
 		{
+				// Make sure the HDF5 file is closed to prevent corruption
+				try {
+					io.getH5IO().closeAll();
+				} catch (H5IO_Exception e1) {
+					System.out
+							.println("**ERROR closing HFD5 file during crash");
+					e1.printStackTrace();
+				}
 			// Handle this exception!!!
 			e.printStackTrace();
 		}

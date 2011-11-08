@@ -1600,33 +1600,7 @@ public class ImageRail_SDCube
 		return fVals;
 	}
 
-	/**
-	 * Writes the segmentaiton parameters used by imagerail to segment the given
-	 * well
-	 * 
-	 * @author Bjorn Millard
-	 * @param int plateIdx Index of the plate.
-	 * @param int wellIdx Index of the well.
-	 * @param int fieldIdx Index of the field.
-	 * @param int nuclearThreshold
-	 * @param int cytoplasmicThreshold
-	 * @param int backgroundThresholod
-	 * @throws H5IO_Exception
-	 */
-	public void writeSegmentationParameters(int plateIdx, int wellIdx, int nucThreshold, int cytThreshold, int bkgdThreshold) throws H5IO_Exception
-	{
-		String pathToSample = hashtable_indexToPath.get(getIndexKey(plateIdx,
-				wellIdx));
-		if (pathToSample != null) {
-			String path = pathToSample + "/Meta";
-			// remove prior dataset
-			if (io.existsDataset(path + "/" + "Segmentation_Parameters"))
-				io.removeDataset(path + "/" + "Segmentation_Parameters");
-			int[] in = {nucThreshold, cytThreshold, bkgdThreshold};
-			io.writeDataset(hdfPath, path + "/" + "Segmentation_Parameters",
-					in);
-		}
-	}
+
 
 	/**
 	 * Writes meta-info about the parent plate (Size)

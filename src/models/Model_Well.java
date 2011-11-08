@@ -25,7 +25,6 @@ import gui.Gui_Well;
 import gui.MainGUI;
 import imagerailio.ImageRail_SDCube;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import midasGUI.Measurement;
@@ -63,8 +62,6 @@ public class Model_Well
 
 	/** */
 	public DotSelectionListener TheDotSelectionListener;
-	/** */
-	public Model_ParameterSet TheParameterSet;
 
 	//MIDAS fields:
 	public String name;
@@ -102,7 +99,7 @@ public class Model_Well
 		name = Model_Plate.getRowName(row)+Model_Plate.getColumnName(col);
 		TheGates = new ArrayList<Gate_DotPlot>();
 		GateCounter = 1;
-		TheParameterSet = new Model_ParameterSet();
+
 		selected = false;
 
 	}
@@ -157,13 +154,7 @@ public class Model_Well
 	
 
 
-	public Model_ParameterSet getParameterSet() {
-		return TheParameterSet;
-	}
 
-	public void setParameterSet(Model_ParameterSet pset) {
-		TheParameterSet = pset;
-	}
 
 	public boolean areCellsModified()
 	{
@@ -793,45 +784,47 @@ public class Model_Well
 	}
 	
 	
-	public void printParameterSet(PrintWriter pw) {
-		pw.println("<Model_Well  name='" + name
-				+ "' "
-				+ "  Processed='"
-				+ TheParameterSet.getProcessType()
-				+ "' "
-				+ "  ThresholdChannel_nuc='"
-				+ TheParameterSet.getThresholdChannel_nuc_Name()
-				+ "' "
-				+ "  ThresholdChannel_cyto='"
-				+ TheParameterSet.getThresholdChannel_cyto_Name()
-				+ "' "
-				+ "  Threshold_Nucleus='"
-				+ TheParameterSet.getThreshold_Nucleus()
-				+ "' "
-				+ "  Threshold_Cell='"
-				+ TheParameterSet.getThreshold_Cytoplasm()
-				+ "' "
-				+ "  Threshold_Background='"
-				+ TheParameterSet.getThreshold_Background()
-				+ "' "
-				+
-				// "  TopXBrightestPixels='"+TheParameterSet.TopXBrightPix+"' "
-				// +
-				"  AnnulusSize='"
-				+ TheParameterSet.getAnnulusSize()
-				+ "' "
-				+ "  MeanOrIntegrated='"
-				+ TheParameterSet.getMeanOrIntegrated()
-				+ "' "
-				+ "  StoreCells='"
-				+ MainGUI.getGUI().getLoadCellsImmediatelyCheckBox()
-						.isSelected() + "' " +
-				// "  StorePixelInfo='"+MainGUI.getGUI().getStorePixelInformationCheckBox().isSelected()+"' "
-				// +
-				// "  StoreMembraneRegion='"+MainGUI.getGUI().getStoreMembranesCheckBox().isSelected()+"' "
-				// +
-				" />");
-	}
+	// public void printParameterSet(PrintWriter pw) {
+	// pw.println("<Model_Well  name='" + name
+	// + "' "
+	// + "  Processed='"
+	// + TheParameterSet.getProcessType()
+	// + "' "
+	// + "  ThreshChannel_Nuc='"
+	// + TheParameterSet.getParameter_String("Thresh_Nuc_ChannelName")
+	// + "' "
+	// + "  ThreshChannel_Cyt='"
+	// + TheParameterSet.getParameter_String("Thresh_Cyt_ChannelName")
+	// + "' "
+	// + "  Thresh_Nuc_Value='"
+	// + TheParameterSet.getParameter_float("Thresh_Nuc_Value")
+	// + "' "
+	// + "  Thresh_Cell='"
+	// + TheParameterSet.getParameter_float("Thresh_Cyt_Value")
+	// + "' "
+	// + "  Thresh_Bkgd_Value='"
+	// + TheParameterSet.getParameter_float("Thresh_Bkgd_Value")
+	// + "' "
+	// +
+	// // "  TopXBrightestPixels='"+TheParameterSet.TopXBrightPix+"' "
+	// // +
+	// "  AnnulusSize='"
+	// + TheParameterSet.getAnnulusSize()
+	// + "' "
+	// + "  MeanOrIntegrated='"
+	// + TheParameterSet.getMeanOrIntegrated()
+	// + "' "
+	// + "  StoreCells='"
+	// + MainGUI.getGUI().getLoadCellsImmediatelyCheckBox()
+	// .isSelected() + "' " +
+	// //
+	// "  StorePixelInfo='"+MainGUI.getGUI().getStorePixelInformationCheckBox().isSelected()+"' "
+	// // +
+	// //
+	// "  StoreMembraneRegion='"+MainGUI.getGUI().getStoreMembranesCheckBox().isSelected()+"' "
+	// // +
+	// " />");
+	// }
 
 	public void deleteSelectedCells() {
 		purgeSelectedCellsAndRecomputeWellMeans();

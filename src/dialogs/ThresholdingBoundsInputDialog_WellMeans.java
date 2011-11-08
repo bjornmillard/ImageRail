@@ -46,10 +46,10 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import models.Model_Field;
 import models.Model_ParameterSet;
 import models.Model_Well;
 import processors.Processor_WellAverage;
-import processors.Processor_WellAverage_Compartmented;
 
 public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements ActionListener,PropertyChangeListener
 {
@@ -73,10 +73,12 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 		
 		setModal(true);
 		
-		Model_ParameterSet pset = Model_ParameterSet.doWellsHaveSameParameterSet(wells);
-		if (pset!=null)
-			if (!pset.getProcessType().equalsIgnoreCase(Model_ParameterSet.WELLMEAN))
-				pset = null;
+		// Model_ParameterSet pset =
+		// Model_ParameterSet.doWellsHaveSameParameterSet(wells);
+		// if (pset!=null)
+		// if
+		// (!pset.getProcessType().equalsIgnoreCase(Model_ParameterSet.WELLMEAN))
+		// pset = null;
 		
 		
 		MainGUI.getGUI().setStoreCytoAndNuclearWellMeans(new JCheckBoxMenuItem("Nucleus Threshold"));
@@ -128,25 +130,25 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 		
 		
 		//
-		if(pset!=null)
-		{
-			int num = channelBox.getItemCount();
-			for (int i = 0; i < num; i++)
-			{
-				String name = (String)channelBox.getItemAt(i);
-				if (name.equalsIgnoreCase(pset.getThresholdChannel_cyto_Name()))
-					channelBox.setSelectedIndex(i);
-			}
-			
-			textField[0].setText("" + pset.getThreshold_Cytoplasm());
-			if (pset.getThreshold_Nucleus() != Model_ParameterSet.NOVALUE)
-			{
-				textField[1].setEnabled(true);
-				textField[1].setText("" + pset.getThreshold_Nucleus());
-			}
-			
-			textField[2].setText("" + pset.getThreshold_Background());
-		}
+		// if(pset!=null)
+		// {
+		// int num = channelBox.getItemCount();
+		// for (int i = 0; i < num; i++)
+		// {
+		// String name = (String)channelBox.getItemAt(i);
+		// if (name.equalsIgnoreCase(pset.getParameter_String("Thresh_Cyt_ChannelName")))
+		// channelBox.setSelectedIndex(i);
+		// }
+		//
+		// textField[0].setText("" + pset.getParameter_float("Thresh_Cyt_Value"));
+		// if (pset.getParameter_float("Thresh_Nuc_Value") != Model_ParameterSet.NOVALUE)
+		// {
+		// textField[1].setEnabled(true);
+		// textField[1].setText("" + pset.getParameter_float("Thresh_Nuc_Value"));
+		// }
+		//
+		// textField[2].setText("" + pset.getParameter_float("Thresh_Bkgd_Value"));
+		// }
 		//
 		
 		
@@ -155,10 +157,9 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 		
 		mess[0] = "Thresholding Channel";
 		mess[1] = "Cytoplasm/Background Threshold";
-		mess[2] = "Background Threshold";
+		// mess[2] = "Background Threshold";
 		
-//		Object[] array = {mess[0], channelBox, mess[1], textField[0], MainGUI.getGUI().getStoreCytoAndNuclearWellMeans(), textField[1], mess[2], textField[2]};
-		Object[] array = {mess[0], channelBox, mess[1], textField[0],  mess[2], textField[2]};
+		Object[] array = { mess[0], channelBox, mess[1], textField[0] };
 		
 		//Create an array specifying the number of dialog buttons
 		//and their text.
@@ -238,57 +239,6 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 			if (btnString1.equals(value))
 			{
 				String[] strings  = null;
-				if (MainGUI.getGUI().getStoreCytoAndNuclearWellMeans().isSelected())
-				{
-					strings = new String[3];
-					strings[0] = textField[0].getText();
-					strings[1] = textField[1].getText();
-					strings[2] = textField[2].getText();
-					//make sure the inputed values are numbers only
-					if (tools.MathOps.areNumbers(strings))
-					{
-						
-						int CellBoundaryChannel = channelBox.getSelectedIndex();
-						float Threshold_CellBoundary = Float.parseFloat(strings[0]);
-						float Threshold_Nucleus = Float.parseFloat(strings[1]);
-						float Threshold_Background = Float.parseFloat(strings[2]);
-						
-						MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
-						Processor_WellAverage_Compartmented tasker = new Processor_WellAverage_Compartmented();
-						
-						tasker.setWellsToProcess(TheWells);
-						
-						tasker.start();
-						
-						//Storing the Parameters for each Model_Well
-						int len = TheWells.length;
-						for (int i = 0; i < len; i++)
-						{
-							Model_Well well = TheWells[i];
-							Model_ParameterSet pset = well.TheParameterSet;
-							pset.setModified(true);
-							//Threshold Channel
-							pset.setThresholdChannel_cyto_Name(MainGUI.getGUI()
-									.getTheChannelNames()[CellBoundaryChannel]);
-							//Nuc bound threshold
-							pset.setThreshold_Nucleus(Threshold_Nucleus);
-							//Cell bound Threshold
-							pset.setThreshold_Cytoplasm(Threshold_CellBoundary);
-							//Bkgd threshold
-							pset.setThreshold_Background(Threshold_Background);
-							
-							
-							if (MainGUI.getGUI().getWellMeanOrIntegratedIntensityCheckBox().isSelected())
-								well.TheParameterSet
-										.setMeanOrIntegrated(well.TheParameterSet.MEAN);
-							else
-								well.TheParameterSet
-										.setMeanOrIntegrated(well.TheParameterSet.INTEGRATED);
-						}
-					}
-				}
-				else
-				{
 					strings = new String[2];
 					strings[0] = textField[0].getText();
 					strings[1] = textField[2].getText();
@@ -296,9 +246,9 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 					if (tools.MathOps.areNumbers(strings))
 					{
 						int CellBoundaryChannel = channelBox.getSelectedIndex();
-						float Threshold_CellBoundary = Float.parseFloat(strings[0]);
-						float Threshold_Background = Float.parseFloat(strings[1]);
-						float Threshold_Nucleus = -1;
+						float Thresh_CellBoundary = Float.parseFloat(strings[0]);
+						float Thresh_Bkgd_Value = Float.parseFloat(strings[1]);
+						float Thresh_Nuc_Value = -1;
 						MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
 						
 						//Storing the Parameters for each Model_Well
@@ -306,27 +256,27 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 						for (int i = 0; i < len; i++)
 						{
 							Model_Well well = TheWells[i];
-							Model_ParameterSet pset = well.TheParameterSet;
-							pset.setModified(true);
-							//ProcessType
-							pset.setProcessType(Model_ParameterSet.WELLMEAN);
-							//Threshold Channel
-							pset.setThresholdChannel_cyto_Name(MainGUI.getGUI()
-									.getTheChannelNames()[CellBoundaryChannel]);
-							//Nuc bound threshold
-							pset.setThreshold_Nucleus(Threshold_Nucleus);
-							//Cell bound Threshold
-							pset.setThreshold_Cytoplasm(Threshold_CellBoundary);
-							//Bkgd threshold
-							pset.setThreshold_Background(Threshold_Background);
-							
-							if (MainGUI.getGUI().getWellMeanOrIntegratedIntensityCheckBox().isSelected())
-								well.TheParameterSet
-										.setMeanOrIntegrated(well.TheParameterSet.MEAN);
-							else
-								well.TheParameterSet
-										.setMeanOrIntegrated(well.TheParameterSet.INTEGRATED);
-							
+							Model_Field[] fields = well.getFields();
+							for (int p = 0; p < fields.length; p++) {
+
+								Model_ParameterSet pset = fields[p]
+										.getParameterSet();
+
+								// Threshold Channel
+								pset.setParameter("Thresh_Cyt_ChannelName",MainGUI
+										.getGUI().getTheChannelNames()[CellBoundaryChannel]);
+								pset.setParameter(
+										"Thresh_Cyt_ChannelIndex", ""
+												+ CellBoundaryChannel);
+								// Nuc bound threshold
+								pset.setParameter("Thresh_Nuc_Value",""+Thresh_Nuc_Value);
+								// Cell bound Threshold
+								pset.setParameter("Thresh_Cyt_Value",""+Thresh_CellBoundary);
+								// Bkgd threshold
+								pset.setParameter("Thresh_Bkgd_Value",""+Thresh_Bkgd_Value);
+							pset.setParameter("Algorithm", "WellAverage");
+
+							}
 						}
 						
 						
@@ -334,10 +284,10 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 						Processor_WellAverage tasker = new Processor_WellAverage(TheWells);
 						tasker.start();
 					}
-				}
 				
 				
 				
+
 				typedText = null;
 				clearAndHide();
 				

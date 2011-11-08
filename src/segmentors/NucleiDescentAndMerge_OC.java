@@ -322,8 +322,8 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++)
 				if (raster[getLinearRasterIndex(r, c,
-						pset.getThresholdChannel_nuc_Index())] > pset
-						.getThreshold_Nucleus())
+						pset.getParameter_int("Thresh_Nuc_ChannelIndex"))] > pset
+						.getParameter_float("Thresh_Nuc_Value"))
 					iRaster[r][c] = 1e20f;
 
 		// tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/beforedt.tif");
@@ -492,29 +492,29 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++) {
 				// if part of cell
-				if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cytoplasm()) {
+				if (raster_[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Cyt_Value")) {
 					wholeCounter++;
 					for (int i = 0; i < numChannels; i++)
 						wholeMeanVals[i] += raster_[r][c][i];
 				}
 				// is above cell boundary threshold but not part of nucleus
-				if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cytoplasm()
-						&& raster_[r][c][pset.getThresholdChannel_nuc_Index()] < pset
-								.getThreshold_Nucleus()) {
+				if (raster_[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Cyt_Value")
+						&& raster_[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] < pset
+								.getParameter_float("Thresh_Nuc_Value")) {
 					cytoCounter++;
 					for (int i = 0; i < numChannels; i++)
 						cytoMeanVals[i] += raster_[r][c][i];
 				}
 				// is above nucleus threshold
-				else if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Nucleus()) {
+				else if (raster_[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Nuc_Value")) {
 					nuclearCounter++;
 					for (int i = 0; i < numChannels; i++)
 						nuclearMeanVals[i] += raster_[r][c][i];
-				} else if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] < pset
-						.getThreshold_Background()) {
+				} else if (raster_[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] < pset
+						.getParameter_float("Thresh_Bkgd_Value")) {
 					for (int i = 0; i < numChannels; i++)
 						bkgdMeans[i] += raster_[r][c][i];
 					bkgdCounter++;
@@ -553,8 +553,8 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++) {
-				if (rgbRaster[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cytoplasm()) {
+				if (rgbRaster[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Cyt_Value")) {
 					pixelCounter++;
 					for (int i = 0; i < numChannels; i++)
 						integValues[i][0] += rgbRaster[r][c][i];
@@ -679,14 +679,14 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 						if (neigh.getID() == -1
 								&& raster[getLinearRasterIndex(neigh.getRow(),
 										neigh.getColumn(),
-										pset.getThresholdChannel_marker_Index())] > pset
-										.getThreshold_Marker()) {
+										pset.getParameter_int("ThreshChannel_marker_Index"))] > pset
+										.getParameter_float("Thresh_Marker")) {
 							// Adding restraints on whether the cell should keep
 							// grown (ex: Membrane detection)
 							if (raster[getLinearRasterIndex(neigh.getRow(),
 									neigh.getColumn(),
-									pset.getThresholdChannel_membrane_Index())] < pset
-									.getThreshold_Membrane()) {
+									pset.getParameter_int("ThreshChannel_membrane_Index"))] < pset
+									.getParameter_float("Thresh_Membrane")) {
 								// In case we have ROI boundaries that we dont
 								// want to grow into
 								if (ROIs_raster != null) {
@@ -800,7 +800,7 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 		Hashtable<Integer, Boolean> hash_id = new Hashtable<Integer, Boolean>();
 
 		// Hashtable<String, String> hash_id = new Hashtable<String, String>();
-		float k = pset.getGeneralParameter(0);
+		float k = pset.getParameter_float("MergeFactor");
 		System.out.println("**Merging neighbors w/larger relative borders: "
 				+ k * 100 + "%");
 		Enumeration<String> enu = hash_neighborsBorderLength.keys();
@@ -1026,8 +1026,8 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 						if (neigh.getID() == -1
 								&& raster[getLinearRasterIndex(neigh.getRow(),
 										neigh.getColumn(),
-										pset.getThresholdChannel_nuc_Index())] > pset
-										.getThreshold_Nucleus()) {
+										pset.getParameter_int("Thresh_Nuc_ChannelIndex"))] > pset
+										.getParameter_float("Thresh_Nuc_Value")) {
 							change = true;
 							nuc.add(pixels[neigh.getRow()
 									+ (neigh.getColumn() * height)]);
@@ -1066,7 +1066,7 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 	static public float[][] findTotalIntegrationAndTotalPixUsed(
 			int[][][] rgbRaster, Model_ParameterSet pset) {
 		float[][] vals = null;
-		DefaultSegmentor theSegmentor = new DefaultSegmentor();
+		DefaultSegmentor_v1 theSegmentor = new DefaultSegmentor_v1();
 		vals = theSegmentor.getIntegratedChannelValuesOverMask_wPixelCount(
 				rgbRaster, pset);
 
@@ -1075,7 +1075,7 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 
 	static public float[][] findWellAverageOnly_Compartments(
 			int[][][] rgbRaster, Model_ParameterSet pset) {
-		DefaultSegmentor theSegmentor = new DefaultSegmentor();
+		DefaultSegmentor_v1 theSegmentor = new DefaultSegmentor_v1();
 		float[][] vals = theSegmentor
 				.getMeanChannelValuesOverMask_Compartmented(rgbRaster, pset);
 		return vals;
@@ -1167,8 +1167,8 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 						if (neigh.getID() == -1
 								&& raster[getLinearRasterIndex(neigh.getRow(),
 										neigh.getColumn(),
-										pset.getThresholdChannel_cyto_Index())] > pset
-										.getThreshold_Cytoplasm()) {
+										pset.getParameter_int("Thresh_Cyt_ChannelIndex"))] > pset
+										.getParameter_float("Thresh_Cyt_Value")) {
 							// Adding restraints on whether the cell should keep
 							// grown (ex: Membrane detection)
 							change = true;
@@ -1245,8 +1245,8 @@ public class NucleiDescentAndMerge_OC implements CellSegmentor {
 			int sum = 0;
 			for (int j = 0; j < num; j++)
 				sum += raster_linear[getLinearRasterIndex(pts[j].y, pts[j].x,
-						pset.getThresholdChannel_marker_Index())];
-			if (sum / num > pset.getThreshold_Marker())
+						pset.getParameter_int("ThreshChannel_marker_Index"))];
+			if (sum / num > pset.getParameter_float("Thresh_Marker"))
 				nucs.add(allNucs[i]);
 		}
 		int num = nucs.size();

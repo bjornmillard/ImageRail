@@ -189,7 +189,7 @@ public class ImageTools
 		return arr;
 	}
 	
-	/** Computes the mean intensity value for background pixels lower than the MainGUI.Threshold_Background level in all other
+	/** Computes the mean intensity value for background pixels lower than the MainGUI.Thresh_Bkgd_Value level in all other
 	 * channels and stores them in "backgorunds" array.
 	 * @author BLM*/
 	static public void computeBackgroundValues(int[][][] raster, float[] backgrounds, Model_ParameterSet pset)
@@ -204,8 +204,8 @@ public class ImageTools
 		int	bkgdCounter=0;
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++)
-				if (raster[r][c][pset.getThresholdChannel_cyto_Index()] < pset
-						.getThreshold_Background())
+				if (raster[r][c][pset.getParameter_int("Thresh_Cyt_ChannelIndex")] < pset
+						.getParameter_float("Thresh_Bkgd_Value"))
 				{
 					for (int i=0; i < numChannels; i++)
 						backgrounds[i]+=raster[r][c][i];

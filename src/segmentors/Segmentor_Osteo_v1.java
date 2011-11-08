@@ -36,7 +36,7 @@ import segmentedobject.CellCoordinates;
 import tools.LinearKernels;
 import tools.SpatialFilter;
 
-public class Segmentor_Osteo implements CellSegmentor {
+public class Segmentor_Osteo_v1 implements CellSegmentor {
 	private Pixel[][] pixels;
 	private int height;
 	private int width;
@@ -87,8 +87,8 @@ public class Segmentor_Osteo implements CellSegmentor {
 							// cytoplasm of this osteoclast
 							if (roi.contains(p)
 									&& raster[r][c][pset
-											.getThresholdChannel_nuc_Index()] < pset
-											.getThreshold_Nucleus()) {
+											.getParameter_int("Thresh_Nuc_ChannelIndex")] < pset
+											.getParameter_float("Thresh_Nuc_Value")) {
 								cytoPts.add(new Point(c, r));
 									osteoFlags[r][c] = 1;
 							}
@@ -286,7 +286,7 @@ public class Segmentor_Osteo implements CellSegmentor {
 					float m = ((float) yDist) / ((float) xDist);
 
 					boolean staysAboveBkgd = true;
-					int bkgd = (int) pset.getThreshold_Background();
+					int bkgd = (int) pset.getParameter_float("Thresh_Bkgd_Value");
 					// Need to invert line tracking if slope too vertical
 					// (ex: walk along y axis not x axis)
 					if (m != Float.NaN || m != 0) {
@@ -302,7 +302,7 @@ public class Segmentor_Osteo implements CellSegmentor {
 								int y = (int) (m * xI + yStart);
 
 								int val = raster[y][xP][pset
-										.getThresholdChannel_cyto_Index()];
+										.getParameter_int("Thresh_Cyt_ChannelIndex")];
 
 								// printing out this trace
 								// st += pix[0] + ",";
@@ -323,7 +323,7 @@ public class Segmentor_Osteo implements CellSegmentor {
 								int x = (int) (1f / m * yI + xStart);
 
 								int val = raster[(int) yP][x][pset
-										.getThresholdChannel_cyto_Index()];
+										.getParameter_int("Thresh_Cyt_ChannelIndex")];
 								// printing out this trace
 								// st += pix[0] + ",";
 
@@ -428,8 +428,8 @@ public class Segmentor_Osteo implements CellSegmentor {
 		// Computing distance and Smoothing data with 7x7 kernal
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++)
-				if (raster[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Nucleus())
+				if (raster[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Nuc_Value"))
 					iRaster[r][c] = 1e20f;
 		iRaster = SpatialFilter.distanceTransform(iRaster);
 		iRaster = SpatialFilter.linearFilter(iRaster, LinearKernels
@@ -602,29 +602,29 @@ public class Segmentor_Osteo implements CellSegmentor {
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++) {
 				// if part of cell
-				if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cytoplasm()) {
+				if (raster_[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Cyt_Value")) {
 					wholeCounter++;
 					for (int i = 0; i < numChannels; i++)
 						wholeMeanVals[i] += raster_[r][c][i];
 				}
 				// is above cell boundary threshold but not part of nucleus
-				if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cytoplasm()
-						&& raster_[r][c][pset.getThresholdChannel_nuc_Index()] < pset
-								.getThreshold_Nucleus()) {
+				if (raster_[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Cyt_Value")
+						&& raster_[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] < pset
+								.getParameter_float("Thresh_Nuc_Value")) {
 					cytoCounter++;
 					for (int i = 0; i < numChannels; i++)
 						cytoMeanVals[i] += raster_[r][c][i];
 				}
 				// is above nucleus threshold
-				else if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Nucleus()) {
+				else if (raster_[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Nuc_Value")) {
 					nuclearCounter++;
 					for (int i = 0; i < numChannels; i++)
 						nuclearMeanVals[i] += raster_[r][c][i];
-				} else if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] < pset
-						.getThreshold_Background()) {
+				} else if (raster_[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] < pset
+						.getParameter_float("Thresh_Bkgd_Value")) {
 					for (int i = 0; i < numChannels; i++)
 						bkgdMeans[i] += raster_[r][c][i];
 					bkgdCounter++;
@@ -663,8 +663,8 @@ public class Segmentor_Osteo implements CellSegmentor {
 
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++) {
-				if (rgbRaster[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cytoplasm()) {
+				if (rgbRaster[r][c][pset.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Cyt_Value")) {
 					pixelCounter++;
 					for (int i = 0; i < numChannels; i++)
 						integValues[i][0] += rgbRaster[r][c][i];
@@ -752,8 +752,8 @@ public class Segmentor_Osteo implements CellSegmentor {
 						Pixel neigh = neighbors[i];
 						if (neigh.getID() == -1
 								&& Raster[neigh.getRow()][neigh.getColumn()][pset
-										.getThresholdChannel_cyto_Index()] > pset
-										.getThreshold_Cytoplasm()) {
+										.getParameter_int("Thresh_Cyt_ChannelIndex")] > pset
+										.getParameter_float("Thresh_Cyt_Value")) {
 							change = true;
 							Point point = new Point(neigh.getColumn(), neigh
 									.getRow());
@@ -844,8 +844,8 @@ public class Segmentor_Osteo implements CellSegmentor {
 						Pixel neigh = neighbors[i];
 						if (neigh.getID() == -1
 								&& rgbRaster[neigh.getRow()][neigh.getColumn()][pset
-										.getThresholdChannel_nuc_Index()] > pset
-										.getThreshold_Nucleus()) {
+										.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+										.getParameter_float("Thresh_Nuc_Value")) {
 							change = true;
 							nuc.add(pixels[neigh.getRow()][neigh.getColumn()]);
 							neigh.setID(pix.getID());
@@ -879,7 +879,7 @@ public class Segmentor_Osteo implements CellSegmentor {
 	static public float[][] findTotalIntegrationAndTotalPixUsed(
 			int[][][] rgbRaster, Model_ParameterSet pset) {
 		float[][] vals = null;
-		DefaultSegmentor theSegmentor = new DefaultSegmentor();
+		DefaultSegmentor_v1 theSegmentor = new DefaultSegmentor_v1();
 		vals = theSegmentor.getIntegratedChannelValuesOverMask_wPixelCount(
 				rgbRaster, pset);
 
@@ -888,7 +888,7 @@ public class Segmentor_Osteo implements CellSegmentor {
 
 	static public float[][] findWellAverageOnly_Compartments(
 			int[][][] rgbRaster, Model_ParameterSet pset) {
-		DefaultSegmentor theSegmentor = new DefaultSegmentor();
+		DefaultSegmentor_v1 theSegmentor = new DefaultSegmentor_v1();
 		float[][] vals = theSegmentor
 				.getMeanChannelValuesOverMask_Compartmented(rgbRaster, pset);
 		return vals;

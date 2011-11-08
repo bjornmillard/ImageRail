@@ -33,7 +33,7 @@ import tools.LinearKernels;
 import tools.Pixel;
 import tools.SpatialFilter;
 
-public class DefaultSegmentor implements CellSegmentor {
+public class DefaultSegmentor_v1 implements CellSegmentor {
 	private int height;
 	private int width;
 	private int numChannels;
@@ -124,8 +124,8 @@ public class DefaultSegmentor implements CellSegmentor {
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++)
 				if (raster[getLinearRasterIndex(r, c,
-						pset.getThresholdChannel_nuc_Index())] > pset
-						.getThreshold_Nucleus())
+						pset.getParameter_int("Thresh_Nuc_ChannelIndex"))] > pset
+						.getParameter_float("Thresh_Nuc_Value"))
 					iRaster[r][c] = 1e20f;
 
 		//tools.ImageTools.raster2tiff(iRaster, 0, "/tmp/beforedt.tif");
@@ -343,8 +343,10 @@ public class DefaultSegmentor implements CellSegmentor {
 
 		// now going through the cytoplasmic pixels and dilating only those
 		int diameter = 10000;
-		if (pset.getAnnulusSize() != -1)
-			diameter = pset.getAnnulusSize();
+		// String par = pset.getParameter("AnnulusSize");
+		// if (par != null
+		// && Integer.parseInt(pset.getParameter("AnnulusSize")) != -1)
+		// diameter = Integer.parseInt(pset.getParameter("AnnulusSize"));
 
 		while (true) {
 			boolean change = false;
@@ -361,8 +363,8 @@ public class DefaultSegmentor implements CellSegmentor {
 						if (neigh.getID() == -1
 								&& raster[getLinearRasterIndex(neigh.getRow(),
 										neigh.getColumn(),
-										pset.getThresholdChannel_cyto_Index())] > pset
-										.getThreshold_Cytoplasm()) {
+										pset.getParameter_int("Thresh_Cyt_ChannelIndex"))] > pset
+										.getParameter_float("Thresh_Cyt_Value")) {
 							change = true;
 							arr.add(new Point(neigh.getColumn(), neigh.getRow()));
 							neigh.setID(pix.getID());
@@ -450,8 +452,8 @@ public class DefaultSegmentor implements CellSegmentor {
 						if (neigh.getID() == -1
 								&& raster[getLinearRasterIndex(neigh.getRow(),
 										neigh.getColumn(),
-										pset.getThresholdChannel_nuc_Index())] > pset
-										.getThreshold_Nucleus()) {
+										pset.getParameter_int("Thresh_Nuc_ChannelIndex"))] > pset
+										.getParameter_float("Thresh_Nuc_Value")) {
 							change = true;
 							nuc.add(pixels[neigh.getRow()
 									+ (neigh.getColumn() * height)]);
@@ -491,7 +493,7 @@ public class DefaultSegmentor implements CellSegmentor {
 	static public float[][] findTotalIntegrationAndTotalPixUsed(
 			int[][][] rgbRaster, Model_ParameterSet pset) {
 		float[][] vals = null;
-		DefaultSegmentor theSegmentor = new DefaultSegmentor();
+		DefaultSegmentor_v1 theSegmentor = new DefaultSegmentor_v1();
 		vals = theSegmentor.getIntegratedChannelValuesOverMask_wPixelCount(
 				rgbRaster, pset);
 
@@ -500,7 +502,7 @@ public class DefaultSegmentor implements CellSegmentor {
 
 	static public float[][] findWellAverageOnly_Compartments(
 			int[][][] rgbRaster, Model_ParameterSet pset) {
-		DefaultSegmentor theSegmentor = new DefaultSegmentor();
+		DefaultSegmentor_v1 theSegmentor = new DefaultSegmentor_v1();
 		float[][] vals = theSegmentor
 				.getMeanChannelValuesOverMask_Compartmented(rgbRaster, pset);
 		return vals;
@@ -524,29 +526,34 @@ public class DefaultSegmentor implements CellSegmentor {
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++) {
 				// if part of cell
-				if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cytoplasm()) {
+				if (raster_[r][c][pset
+						.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Cyt_Value")) {
 					wholeCounter++;
 					for (int i = 0; i < numChannels; i++)
 						wholeMeanVals[i] += raster_[r][c][i];
 				}
 				// is above cell boundary threshold but not part of nucleus
-				if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cytoplasm()
-						&& raster_[r][c][pset.getThresholdChannel_nuc_Index()] < pset
-								.getThreshold_Nucleus()) {
+				if (raster_[r][c][pset
+						.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Cyt_Value")
+						&& raster_[r][c][pset
+								.getParameter_int("Thresh_Nuc_ChannelIndex")] < pset
+								.getParameter_float("Thresh_Nuc_Value")) {
 					cytoCounter++;
 					for (int i = 0; i < numChannels; i++)
 						cytoMeanVals[i] += raster_[r][c][i];
 				}
 				// is above nucleus threshold
-				else if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Nucleus()) {
+				else if (raster_[r][c][pset
+						.getParameter_int("Thresh_Nuc_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Nuc_Value")) {
 					nuclearCounter++;
 					for (int i = 0; i < numChannels; i++)
 						nuclearMeanVals[i] += raster_[r][c][i];
-				} else if (raster_[r][c][pset.getThresholdChannel_nuc_Index()] < pset
-						.getThreshold_Background()) {
+				} else if (raster_[r][c][pset
+						.getParameter_int("Thresh_Nuc_ChannelIndex")] < pset
+						.getParameter_float("Thresh_Bkgd_Value")) {
 					for (int i = 0; i < numChannels; i++)
 						bkgdMeans[i] += raster_[r][c][i];
 					bkgdCounter++;
@@ -585,8 +592,9 @@ public class DefaultSegmentor implements CellSegmentor {
 
 		for (int r = 0; r < height; r++)
 			for (int c = 0; c < width; c++) {
-				if (rgbRaster[r][c][pset.getThresholdChannel_nuc_Index()] > pset
-						.getThreshold_Cytoplasm()) {
+				if (rgbRaster[r][c][pset
+						.getParameter_int("Thresh_Cyt_ChannelIndex")] > pset
+						.getParameter_float("Thresh_Cyt_Value")) {
 					pixelCounter++;
 					for (int i = 0; i < numChannels; i++)
 						integValues[i][0] += rgbRaster[r][c][i];

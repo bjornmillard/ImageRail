@@ -20,373 +20,229 @@
 
 package models;
 
-import gui.MainGUI;
+import imagerailio.ImageRail_SDCube;
 
-import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+import sdcubeio.H5IO;
+import sdcubeio.H5IO_Exception;
 
 public class Model_ParameterSet {
-	private String WellName;
-	private String ThresholdChannel_nuc_Name;
-	private String ThresholdChannel_cyto_Name;
-	private String ThresholdChannel_membrane_Name;
-	private String ThresholdChannel_marker_Name;
-	private int ThresholdChannel_nuc_Index;
-	private int ThresholdChannel_cyto_Index;
-	private int ThresholdChannel_marker_Index;
-	private int ThresholdChannel_membrane_Index;
-	private float Threshold_Nucleus;
-	private float Threshold_Cytoplasm;
-	private float Threshold_Background;
-	private float Threshold_Marker;
-	private float Threshold_Membrane;
-	private int AnnulusSize;
-	private String MeanOrIntegrated;
-	private boolean Modified;
-	private String ProcessType;
-	private String CoordsToSaveToHDF;
-	private int NumThreads;
-	private ArrayList<Float> GeneralParameters;
-	private ArrayList<String> GeneralParameters_names;
-
-	static public String MEAN = "MEAN";
-	static public String INTEGRATED = "INTEGRATED";
-	static public int NOVALUE = -1;
-	static public String SINGLECELL = "SingleCell";
-	static public String WELLMEAN = "WellMean";
-	static public String UNPROCESSED = "Unprocessed";
+	// Hash of all ParameterNames-->ParameterValue(encoded as String)
+	private Hashtable<String, String> TheParameters;
 
 	public Model_ParameterSet() {
-		Modified = false;
-		WellName = null;
-		ProcessType = UNPROCESSED;
-		ThresholdChannel_nuc_Name = null;
-		ThresholdChannel_cyto_Name = null;
-		ThresholdChannel_membrane_Name = null;
-		ThresholdChannel_marker_Name = null;
-		Threshold_Nucleus = NOVALUE;
-		Threshold_Cytoplasm = NOVALUE;
-		Threshold_Background = NOVALUE;
-		Threshold_Membrane = NOVALUE;
-		Threshold_Marker = NOVALUE;
-		AnnulusSize = NOVALUE;
-		CoordsToSaveToHDF = "BoundingBox"; // Default
-		NumThreads = 1;
-		MeanOrIntegrated = null;
-		GeneralParameters = new ArrayList<Float>();
-		GeneralParameters_names = new ArrayList<String>();
+		TheParameters = new Hashtable<String, String>();
 	}
 
+	
 	/**
-	 * Returns common parameter set if it exists
-	 * 
-	 * @author BLM
-	 */
-	static public Model_ParameterSet doWellsHaveSameParameterSet(Model_Well[] wells) {
-		Model_ParameterSet dummy = null;
-		boolean initDummy = false;
-		int len = wells.length;
-		if (len == 1 && wells[0].TheParameterSet != null)
-			return Model_ParameterSet.copy(wells[0].TheParameterSet);
-
-		for (int i = 0; i < len; i++) {
-			Model_ParameterSet p = wells[i].TheParameterSet;
-			if (p != null) {
-				if (!initDummy) {
-					if (p.ProcessType.equalsIgnoreCase(UNPROCESSED))
-						return null;
-					dummy = Model_ParameterSet.copy(p);
-					initDummy = true;
-				} else if (!Model_ParameterSet.isSame(p, dummy))
-					return null;
-			} else
-				return null;
-		}
-
-		return dummy;
-	}
-
-	/**
-	 * Makes a copy of the given parameter set
-	 * 
-	 * @author BLM
-	 */
-	static public Model_ParameterSet copy(Model_ParameterSet in) {
-		Model_ParameterSet out = new Model_ParameterSet();
-		out.Modified = true;
-		out.WellName = in.WellName;
-		out.ProcessType = in.ProcessType;
-		out.ThresholdChannel_nuc_Name = in.ThresholdChannel_nuc_Name;
-		out.ThresholdChannel_marker_Name = in.ThresholdChannel_marker_Name;
-		out.ThresholdChannel_cyto_Name = in.ThresholdChannel_cyto_Name;
-		out.ThresholdChannel_membrane_Name = in.ThresholdChannel_membrane_Name;
-		out.Threshold_Nucleus = in.Threshold_Nucleus;
-		out.Threshold_Marker = in.Threshold_Marker;
-		out.Threshold_Cytoplasm = in.Threshold_Cytoplasm;
-		out.Threshold_Membrane = in.Threshold_Membrane;
-		out.Threshold_Background = in.Threshold_Background;
-		out.AnnulusSize = in.AnnulusSize;
-		out.MeanOrIntegrated = in.MeanOrIntegrated;
-		out.ProcessType = in.ProcessType;
-
-		return out;
-	}
-
-	/**
-	 * Compares two parameter sets, but the well name does not have to be the
-	 * same
-	 * 
-	 * @author BLM
-	 */
-	static public boolean isSame(Model_ParameterSet p1, Model_ParameterSet p2) {
-		if (p1.Modified != p2.Modified)
-			return false;
-		if (!p1.ProcessType.equalsIgnoreCase(p2.ProcessType))
-			return false;
-		if (p1.ThresholdChannel_nuc_Name != null
-				&& p2.ThresholdChannel_nuc_Name != null
-				&& !p1.ThresholdChannel_nuc_Name
-						.equalsIgnoreCase(p2.ThresholdChannel_nuc_Name))
-			return false;
-		if (p1.ThresholdChannel_cyto_Name != null
-				&& p2.ThresholdChannel_cyto_Name != null
-				&& !p1.ThresholdChannel_cyto_Name
-						.equalsIgnoreCase(p2.ThresholdChannel_cyto_Name))
-			return false;
-		if (p1.ThresholdChannel_membrane_Name != null
-				&& p2.ThresholdChannel_membrane_Name != null
-				&& !p1.ThresholdChannel_membrane_Name
-						.equalsIgnoreCase(p2.ThresholdChannel_membrane_Name))
-			return false;
-		if (p1.ThresholdChannel_marker_Name != null
-				&& p2.ThresholdChannel_marker_Name != null
-				&& !p1.ThresholdChannel_marker_Name
-						.equalsIgnoreCase(p2.ThresholdChannel_marker_Name))
-			return false;
-		if (p1.Threshold_Nucleus != p2.Threshold_Nucleus)
-			return false;
-		if (p1.Threshold_Marker != p2.Threshold_Marker)
-			return false;
-		if (p1.Threshold_Cytoplasm != p2.Threshold_Cytoplasm)
-			return false;
-		if (p1.Threshold_Background != p2.Threshold_Background)
-			return false;
-		if (p1.Threshold_Membrane != p2.Threshold_Membrane)
-			return false;
-		if (p1.AnnulusSize != p2.AnnulusSize)
-			return false;
-		return true;
-	}
-
-	public String toString() {
-		String st = "*******\n";
-		st += "Name=" + WellName + "\n";
-		st += "ProcessType=" + ProcessType + "\n";
-		st += "Threshold_nuc_Channel=" + ThresholdChannel_nuc_Name + "\n";
-		st += "Threshold_cyto_Channel=" + ThresholdChannel_cyto_Name + "\n";
-		st += "ThresholdChannel_nuc_Index=" + ThresholdChannel_nuc_Index + "\n";
-		st += "ThresholdChannel_cyto_Index=" + ThresholdChannel_cyto_Index
-				+ "\n";
-		st += "ThresholdChannel_marker_Index=" + ThresholdChannel_marker_Index
-				+ "\n";
-		st += "ThresholdChannel_membrane_Index="
-				+ ThresholdChannel_membrane_Index + "\n";
-		st += "Threshold_Nucleus=" + Threshold_Nucleus + "\n";
-		st += "Threshold_Cytoplasm=" + Threshold_Cytoplasm + "\n";
-		st += "Threshold_Bkgd=" + Threshold_Background + "\n";
-		st += "Threshold_Membrane=" + Threshold_Membrane + "\n";
-		st += "Threshold_Marker=" + Threshold_Marker + "\n";
-		st += "AnnulusSize=" + AnnulusSize + "\n";
-		st += "MeanOrIntegrated=" + MeanOrIntegrated + "\n";
-		st += "StoreCells="
-				+ MainGUI.getGUI().getLoadCellsImmediatelyCheckBox()
-						.isSelected() + "\n";
-		st += "********\n";
-		return st;
-	}
-
-	/**
-	 * Model_Field Getter/Setters
+	 * Returns the names of the parameters stored in this model
 	 * 
 	 * @author BLM
 	 * */
-	public String getWellName() {
-		return WellName;
+	public String[] getParameterNames() {
+		String[] keys = null;
+		Enumeration<String> e =  TheParameters.keys();
+		if(e!=null)
+		{
+			int count = 0;
+		  for (Enumeration<String> en = TheParameters.keys() ; en.hasMoreElements() ;) 
+		  {
+		         String key = en.nextElement();
+		         count++;
+		  }
+		  keys = new String[count];
+		  count = 0;
+		  for (Enumeration<String> en = TheParameters.keys() ; en.hasMoreElements() ;) 
+		  {
+		         keys[count] = en.nextElement().trim();
+		         count++;
+		  }
+		}
+		return keys;
 	}
 
-	public void setWellName(String wellName) {
-		WellName = wellName;
+	/**
+	 * Returns the values of the parameters stored in this model
+	 * 
+	 * @author BLM
+	 * */
+	public String[] getParameterValues() {
+		String[] vals = null;
+		Enumeration<String> e =  TheParameters.keys();
+		if(e!=null)
+		{
+			int count = 0;
+		  for (Enumeration<String> en = TheParameters.keys() ; en.hasMoreElements() ;) 
+		  {
+		         String key = en.nextElement();
+		         count++;
+		  }
+		  vals = new String[count];
+		  count = 0;
+		  for (Enumeration<String> en = TheParameters.keys() ; en.hasMoreElements() ;) 
+		  {
+		         String key = en.nextElement();
+		         vals[count] = TheParameters.get(key.trim()).trim();
+		         count++;
+		  }
+		}
+		return vals;
 	}
 
-	public String getThresholdChannel_nuc_Name() {
-		return ThresholdChannel_nuc_Name;
+	/**
+	 * Returns the names and values of the parameters stored in this model.
+	 * Note: the dimensions of the return value are: 2xLenParameters where the
+	 * first dimension is the names of the parameters and the second dimension
+	 * are the values of the correspondingly indexed parameters encoded as
+	 * Strings
+	 * 
+	 * @author BLM
+	 * @param void
+	 * @return String[][] [paramNames,paramVals]
+	 * */
+	public String[][] getParameters() {
+		String[][] keyVals = null;
+		Enumeration<String> e =  TheParameters.keys();
+		if(e!=null)
+		{
+			int count = 0;
+		  for (Enumeration<String> en = TheParameters.keys() ; en.hasMoreElements() ;) 
+		  {
+		         String key = en.nextElement();
+		         count++;
+		  }
+		  keyVals = new String[2][count];
+		  count = 0;
+		  for (Enumeration<String> en = TheParameters.keys() ; en.hasMoreElements() ;) 
+		  {
+		         String key = en.nextElement();
+		         keyVals[0][count] = key.trim();
+		         keyVals[1][count] = TheParameters.get(key.trim()).trim();
+		         count++;
+		  }
+		}
+		return keyVals;
 	}
 
-	public void setThresholdChannel_nuc_Name(String thresholdChannelNucName) {
-		ThresholdChannel_nuc_Name = thresholdChannelNucName;
+	/**
+	 * Sets the value of the parameter of the given name. The value is 
+	 * encoded as a String 
+	 * @author BLM
+	 * @param String parameterName, String paramVal
+	 *  */
+	public void setParameter(String name, String val) {
+		System.out.println(name + " , " + val);
+		TheParameters.put(name.trim(), val.trim());
 	}
 
-	public void setThresholdChannel_marker_Name(String name) {
-		ThresholdChannel_marker_Name = name;
+	/**
+	 * Returns the value of the parameter of the given name. The value is 
+	 * encoded as a String 
+	 * @author BLM
+	 * @param String parameterName
+	 * @return String paramValue
+	 *  */
+	public String getParameter(String name) {
+		return TheParameters.get(name.trim()).trim();
+	}
+	/**
+	 * Returns the value of the parameter of the given name. The value is 
+	 * encoded as a String but cast as float
+	 * @author BLM
+	 * @param String parameterName
+	 * @return float paramValue
+	 *  */
+	public float getParameter_float(String name) {
+		return(Float.parseFloat(TheParameters.get(name.trim()).trim()));
+	}
+	/**
+	 * Returns the value of the parameter of the given name. The value is 
+	 * encoded as a String but cast as int
+	 * @author BLM
+	 * @param String parameterName
+	 * @return float paramValue
+	 *  */
+	public int getParameter_int(String name) {
+		return(Integer.parseInt(TheParameters.get(name.trim()).trim()));
+	}
+	/**
+	 * Returns the value of the parameter of the given name. The value is 
+	 * encoded as a String but cast as double
+	 * @author BLM
+	 * @param String parameterName
+	 * @return float paramValue
+	 *  */
+	public double getParameter_double(String name) {
+		return(Double.parseDouble(TheParameters.get(name.trim()).trim()));
+	}
+	/**
+	 * Returns the value of the parameter of the given name. The value is 
+	 * encoded as a String but cast as double
+	 * @author BLM
+	 * @param String parameterName
+	 * @return float paramValue
+	 *  */
+	public String getParameter_String(String name) {
+		return TheParameters.get(name.trim()).trim();
 	}
 
-	public String getThresholdChannel_marker_Name() {
-		return ThresholdChannel_marker_Name;
+/**
+ * Returns the value of the parameter of the given name. The value is 
+ * encoded as a String but cast as boolean
+ * @author BLM
+ * @param String parameterName
+ * @return float paramValue
+ *  */
+public boolean getParameter_boolean(String name) {
+	String p = TheParameters.get(name.trim()).trim();
+	if(p.equalsIgnoreCase("TRUE"))
+		return true;
+	return false;
+}
+
+	/**
+	 * Writes the segmentation parameters used by ImageRail to segment the given
+	 * well
+	 * 
+	 * @author Bjorn Millard
+	 * @param Model_ParameterSet
+	 *            pset
+	 * @throws H5IO_Exception
+	 */
+	public void writeParameters(String hdfPath, int plateID, int wellID,
+			int fieldID) throws H5IO_Exception {
+		
+		String[] pNames = getParameterNames();
+		String[] pVals = getParameterValues();
+
+		ImageRail_SDCube imagerail_io = gui.MainGUI.getGUI().getH5IO();
+		H5IO h5 = imagerail_io.getH5IO();
+
+		Hashtable<String, String> hashtable_indexToPath = imagerail_io
+				.getHashtable();
+		String pathToSample = (String) hashtable_indexToPath.get(imagerail_io
+				.getIndexKey(plateID, wellID));
+		if (pathToSample != null) {
+			String path = pathToSample + "/Children/" + fieldID + "/Meta";
+			// Remove prior dataset
+			if (h5.existsDataset(path + "/Segmentation_Parameters_Names"))
+				h5.removeDataset(path + "/Segmentation_Parameters_Names");
+			if (h5.existsDataset(path + "/Segmentation_Parameters_Values"))
+				h5.removeDataset(path + "/Segmentation_Parameters_Values");
+
+			h5.openHDF5(hdfPath);
+			h5.writeStringDataset(path + "/" + "Segmentation_Parameters_Names",
+					pNames);
+			h5.closeHDF5();
+
+			h5.writeDataset(hdfPath, path + "/"
+					+ "Segmentation_Parameters_Values", pVals);
+
+		}
 	}
 
-	public String getThresholdChannel_cyto_Name() {
-		return ThresholdChannel_cyto_Name;
-	}
 
-	public void setThresholdChannel_cyto_Name(String thresholdChannelCytoName) {
-		ThresholdChannel_cyto_Name = thresholdChannelCytoName;
-	}
-
-	public String getThresholdChannel_membrane_Name() {
-		return ThresholdChannel_membrane_Name;
-	}
-
-	public void setThresholdChannel_membrane_Name(
-			String thresholdChannelMembraneName) {
-		ThresholdChannel_membrane_Name = thresholdChannelMembraneName;
-	}
-
-	public int getThresholdChannel_nuc_Index() {
-		return ThresholdChannel_nuc_Index;
-	}
-
-	public void setThresholdChannel_nuc_Index(int thresholdChannelNucIndex) {
-		ThresholdChannel_nuc_Index = thresholdChannelNucIndex;
-	}
-
-	public int getThresholdChannel_marker_Index() {
-		return ThresholdChannel_marker_Index;
-	}
-
-	public void setThresholdChannel_marker_Index(int index) {
-		ThresholdChannel_marker_Index = index;
-	}
-
-	public int getThresholdChannel_cyto_Index() {
-		return ThresholdChannel_cyto_Index;
-	}
-
-	public void setThresholdChannel_cyto_Index(int thresholdChannelCytoIndex) {
-		ThresholdChannel_cyto_Index = thresholdChannelCytoIndex;
-	}
-
-	public int getThresholdChannel_membrane_Index() {
-		return ThresholdChannel_membrane_Index;
-	}
-
-	public void setThresholdChannel_membrane_Index(
-			int thresholdChannelMembraneIndex) {
-		ThresholdChannel_membrane_Index = thresholdChannelMembraneIndex;
-	}
-
-	public float getThreshold_Nucleus() {
-		return Threshold_Nucleus;
-	}
-
-	public void setThreshold_Nucleus(float thresholdNucleus) {
-		Threshold_Nucleus = thresholdNucleus;
-	}
-
-	public float getThreshold_Marker() {
-		return Threshold_Marker;
-	}
-
-	public void setThreshold_Marker(float thresh) {
-		Threshold_Marker = thresh;
-	}
-
-	public float getThreshold_Cytoplasm() {
-		return Threshold_Cytoplasm;
-	}
-
-	public void setThreshold_Cytoplasm(float thresholdCell) {
-		Threshold_Cytoplasm = thresholdCell;
-	}
-
-	public void setThreshold_Membrane(float thresholdMembrane) {
-		Threshold_Membrane = thresholdMembrane;
-	}
-
-	public float getThreshold_Membrane() {
-		return Threshold_Membrane;
-	}
-
-	public float getThreshold_Background() {
-		return Threshold_Background;
-	}
-
-	public void setThreshold_Background(float thresholdBackground) {
-		Threshold_Background = thresholdBackground;
-	}
-
-	public int getAnnulusSize() {
-		return AnnulusSize;
-	}
-
-	public void setAnnulusSize(int annulusSize) {
-		AnnulusSize = annulusSize;
-	}
-
-	public String getMeanOrIntegrated() {
-		return MeanOrIntegrated;
-	}
-
-	public void setMeanOrIntegrated(String meanOrIntegrated) {
-		MeanOrIntegrated = meanOrIntegrated;
-	}
-
-	public boolean isModified() {
-		return Modified;
-	}
-
-	public void setModified(boolean modified) {
-		Modified = modified;
-	}
-
-	public String getProcessType() {
-		return ProcessType;
-	}
-
-	public void setProcessType(String processType) {
-		ProcessType = processType;
-	}
-
-	public String getCoordsToSaveToHDF() {
-		return CoordsToSaveToHDF;
-	}
-
-	public void setCoordsToSaveToHDF(String coordsToSaveToHDF) {
-		CoordsToSaveToHDF = coordsToSaveToHDF;
-	}
-
-	/** */
-	public void setNumThreads(int nThreads) {
-		NumThreads = nThreads;
-	}
-
-	public int getNumThreads() {
-		return NumThreads;
-	}
-
-	public void clearGeneralParameters() {
-		GeneralParameters = new ArrayList<Float>();
-		GeneralParameters_names = new ArrayList<String>();
-	}
-
-	public void addGeneralParameter(String name, Float val) {
-		GeneralParameters.add(val);
-		GeneralParameters_names.add(name);
-	}
-
-	public float getGeneralParameter(int index) {
-		return GeneralParameters.get(index).floatValue();
-	}
-
-	public String getGeneralParameter_name(int index) {
-		return GeneralParameters_names.get(index);
-	}
 }

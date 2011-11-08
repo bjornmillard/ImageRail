@@ -68,35 +68,24 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import midasGUI.MidasInputPanel;
 import models.Model_Field;
-import models.Model_ParameterSet;
 import models.Model_Plate;
 import models.Model_PlateRepository;
 import models.Model_Well;
-
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-
 import plots.DotPlot;
 import plots.HistogramPlot;
 import plots.LinePlot;
-import processors.Processor_SingleCells;
-import processors.Processor_WellAverage;
 import sdcubeio.ExpDesign_Model;
 import sdcubeio.H5IO_Exception;
 import segmentedobject.Cell;
-import segmentors.DefaultSegmentor;
 import dataSavers.DataSaver_CSV;
 import dataSavers.DataSaver_Cells_Midas_wMetaData;
 import dataSavers.DataSaver_WellMeans_Midas_wMetaData;
 import dialogs.PlateInputDialog;
 import dialogs.SaveFeatures_Dialog;
+import dialogs.ThresholdingBoundsInputDialog_BatchRun;
 import dialogs.ThresholdingBoundsInputDialog_Nuclei;
 import dialogs.ThresholdingBoundsInputDialog_SingleCells;
 import dialogs.ThresholdingBoundsInputDialog_SingleCells_Osteo;
@@ -758,6 +747,27 @@ public class MainGUI extends JFrame {
 		cellMenu.add(item);
 
 		ProcessMenu.addSeparator();
+		item = new JMenuItem("Batch Run");
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+
+				// Finding which wells were selected
+				ArrayList<Model_Well> arr = ThePlatePanel.getModel()
+						.getSelectedWells_horizOrder();
+				int num = arr.size();
+
+				Model_Well[] wells = new Model_Well[num];
+				for (int n = 0; n < num; n++)
+					wells[n] = (Model_Well) arr.get(n);
+
+				ThresholdingBoundsInputDialog_BatchRun s = new ThresholdingBoundsInputDialog_BatchRun(
+						wells);
+			}
+
+		});
+		ProcessMenu.add(item);
+
+		ProcessMenu.addSeparator();
 		item = new JMenuItem("Stop");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -935,6 +945,8 @@ public class MainGUI extends JFrame {
 
 		FeatureSorter sorter = new FeatureSorter();
 		Collections.sort(TheFeatures, sorter);
+
+
 
 	}
 
@@ -1520,176 +1532,6 @@ public class MainGUI extends JFrame {
 
 	}
 
-	/**
-	 * Loads the given parameter XML file into the given plate
-	 * 
-	 * @author BLM
-	 */
-	public void loadParameterFile(File file, Model_Plate plate) {
-		try {
-			ArrayList Wells = new ArrayList();
-			DocumentBuilderFactory factory = DocumentBuilderFactory
-			.newInstance();
-			DocumentBuilder builder = null;
-			try {
-				builder = factory.newDocumentBuilder();
-			} catch (ParserConfigurationException e) {
-			}
-
-			Document document = null;
-			document = builder.parse(file);
-
-			// parsing the nodes
-			NodeList nl = document.getElementsByTagName("Well");
-			Wells = new ArrayList();
-
-			int len = nl.getLength();
-			System.out.println("numWells: " + len);
-
-			// loading the nodes
-			for (int i = 0; i < len; i++) {
-				org.w3c.dom.Node node = nl.item(i);
-				if (node.getNodeName().equalsIgnoreCase("Well")) {
-					String wellName = null;
-					String threshold_nuc_channel = "";
-					String threshold_cyto_channel = "";
-					float threshold_nucleus = 0;
-					float threshold_cell = 0;
-					float threshold_bkgd = 0;
-					float topXBrightestPixels = -1;
-					int annulusSize = -1;
-					String meanOrIntegrated = "MEAN";
-					String processType = Model_ParameterSet.UNPROCESSED;
-
-					int length = (node.getAttributes() != null) ? node
-							.getAttributes().getLength() : 0;
-							for (int loopIndex = 0; loopIndex < length; loopIndex++) {
-								Attr att = (Attr) node.getAttributes().item(loopIndex);
-								if (att.getNodeName().equalsIgnoreCase("name"))
-									wellName = att.getNodeValue().trim();
-								else if (att.getNodeName()
-										.equalsIgnoreCase("Processed"))
-									processType = att.getNodeValue().trim();
-								else if (att.getNodeName().equalsIgnoreCase(
-								"ThresholdChannel_nuc"))
-									threshold_nuc_channel = att.getNodeValue().trim();
-								else if (att.getNodeName().equalsIgnoreCase(
-								"ThresholdChannel_cyto"))
-									threshold_cyto_channel = att.getNodeValue().trim();
-								else if (att.getNodeName().equalsIgnoreCase(
-								"Threshold_Nucleus"))
-									threshold_nucleus = Float.parseFloat(att
-											.getNodeValue().trim());
-								else if (att.getNodeName().equalsIgnoreCase(
-								"Threshold_Cell"))
-									threshold_cell = Float.parseFloat(att
-											.getNodeValue().trim());
-								else if (att.getNodeName().equalsIgnoreCase(
-								"Threshold_Background"))
-									threshold_bkgd = Float.parseFloat(att
-											.getNodeValue().trim());
-								else if (att.getNodeName().equalsIgnoreCase(
-								"TopXBrightestPixels"))
-									topXBrightestPixels = Float.parseFloat(att
-											.getNodeValue().trim());
-								else if (att.getNodeName().equalsIgnoreCase(
-								"AnnulusSize"))
-									annulusSize = Integer.parseInt(att.getNodeValue()
-											.trim());
-								else if (att.getNodeName().equalsIgnoreCase(
-								"MeanOrIntegrated"))
-									meanOrIntegrated = (att.getNodeValue().trim());
-								else if (att.getNodeName().equalsIgnoreCase(
-								"StoreCells"))
-									LoadCellsImmediatelyCheckBox.setSelected(Boolean
-											.parseBoolean(att.getNodeValue().trim()));
-								// else if
-								// (att.getNodeName().equalsIgnoreCase("StorePixelInfo"))
-								// StorePixelInformationCheckBox.setSelected(Boolean.parseBoolean(att.getNodeValue().trim()));
-								// else if
-								// (att.getNodeName().equalsIgnoreCase("StoreMembraneRegion"))
-								// StoreMembranesCheckBox.setSelected(Boolean.parseBoolean(att.getNodeValue().trim()));
-							}
-
-							System.out.println("well: " + wellName + "  "
-									+ threshold_nucleus + "  " + meanOrIntegrated);
-
-							// TODO
-							Model_Well well = plate.getWell(wellName);
-							Wells.add(well);
-							Model_ParameterSet p = well.TheParameterSet;
-							p.setModified(true);
-							p.setWellName(wellName);
-							p.setProcessType(processType);
-							p.setThreshold_Background(threshold_bkgd);
-							p.setThreshold_Cytoplasm(threshold_cell);
-							p.setThreshold_Nucleus(threshold_nucleus);
-							p.setAnnulusSize(annulusSize);
-							p.setMeanOrIntegrated(meanOrIntegrated);
-							// p.TopXBrightPix = topXBrightestPixels;
-							p.setThresholdChannel_nuc_Name(threshold_nuc_channel);
-							p.setThresholdChannel_cyto_Name(threshold_cyto_channel);
-							// Finding the index of this channel name
-							for (int j = 0; j < TheMainGUI.getTheChannelNames().length; j++)
-								if (TheMainGUI.getTheChannelNames()[j]
-								                                    .equalsIgnoreCase(threshold_nuc_channel))
-									p.setThresholdChannel_nuc_Index(j);
-							// Finding the index of this channel name
-							for (int j = 0; j < TheMainGUI.getTheChannelNames().length; j++)
-								if (TheMainGUI.getTheChannelNames()[j]
-								                                    .equalsIgnoreCase(threshold_cyto_channel))
-									p.setThresholdChannel_cyto_Index(j);
-
-							System.out.println(p);
-				}
-			}
-			//
-			// Processing the wells
-			//
-			len = Wells.size();
-			ArrayList ss = new ArrayList();
-			ArrayList wm = new ArrayList();
-			for (int i = 0; i < len; i++) {
-				Model_Well w = (Model_Well) Wells.get(i);
-				System.out
-				.println("procTYPE: "
-						+ w.TheParameterSet.getProcessType());
-
-				if (w.TheParameterSet.getProcessType()
-						.equalsIgnoreCase(Model_ParameterSet.SINGLECELL))
-					ss.add(w);
-				else if (w.TheParameterSet.getProcessType()
-						.equalsIgnoreCase(Model_ParameterSet.WELLMEAN))
-					wm.add(w);
-			}
-			// Processing the SingleCell Wells
-			if (ss.size() > 0) {
-				int num = ss.size();
-				Model_Well[] wellsToProcess = new Model_Well[num];
-				for (int i = 0; i < num; i++)
-					wellsToProcess[i] = (Model_Well) ss.get(i);
-
-				// Starting the Processor
-				Processor_SingleCells tasker = new Processor_SingleCells(
-						wellsToProcess, new DefaultSegmentor());
-				tasker.start();
-			}
-			// Processing the WellMean Wells
-			if (wm.size() > 0) {
-				int num = wm.size();
-				Model_Well[] wellsToProcess = new Model_Well[num];
-				for (int i = 0; i < num; i++)
-					wellsToProcess[i] = (Model_Well) wm.get(i);
-				// Starting the Processor
-				Processor_WellAverage tasker = new Processor_WellAverage(
-						wellsToProcess);
-				tasker.start();
-			}
-		} catch (Exception e) {
-			e.printStackTrace(System.err);
-		}
-
-	}
 
 	/**
 	 * Loads the plate with the TIFF images in the given directory
@@ -1911,6 +1753,13 @@ public class MainGUI extends JFrame {
 				if (names != null && names.length > 0)
 					ChannelNames = names;
 
+				// System.out.println(dir.getAbsolutePath());
+				//
+				// int len = ChannelNames.length;
+				// for (int j = 0; j < len; j++) {
+				// System.out.println(ChannelNames[j]);
+				// }
+
 				if (dir != null && dir.exists()) {
 					for (int r = 0; r < plate.getNumRows(); r++)
 						for (int c = 0; c < plate.getNumColumns(); c++) {
@@ -1963,6 +1812,7 @@ public class MainGUI extends JFrame {
 			e.printStackTrace();
 		}
 
+		if (true) {
 		// Checking that the loaded project contains the same
 		// features as that of this version of ImageRail
 		Feature[] feat = getFeatures();
@@ -1993,6 +1843,7 @@ public class MainGUI extends JFrame {
 									+ st,
 							"alert", JOptionPane.OK_OPTION);
 			System.exit(0);
+		}
 		}
 	}
 

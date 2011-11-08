@@ -53,6 +53,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
+import models.Model_Field;
 import models.Model_ParameterSet;
 import models.Model_Well;
 import processors.Processor_SingleCells;
@@ -82,11 +83,12 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 				- height / 2);
 		setModal(true);
 
-		Model_ParameterSet pset = Model_ParameterSet.doWellsHaveSameParameterSet(wells);
-		if (pset != null)
-			if (!pset.getProcessType()
-					.equalsIgnoreCase(Model_ParameterSet.SINGLECELL))
-				pset = null;
+		// Model_ParameterSet pset =
+		// Model_ParameterSet.doWellsHaveSameParameterSet(wells);
+		// if (pset != null)
+		// if (!pset.getProcessType()
+		// .equalsIgnoreCase(Model_ParameterSet.SINGLECELL))
+		// pset = null;
 
 		/** Features comboBox */
 		ArrayList<String> list = new ArrayList<String>();
@@ -183,49 +185,49 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 		MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
 
 		//
-		if (pset != null) {
-			// nucBoundChannel
-			int num = channelBox_nuc.getItemCount();
-			for (int i = 0; i < num; i++) {
-				String name = (String) channelBox_nuc.getItemAt(i);
-				if (name.equalsIgnoreCase(pset.getThresholdChannel_nuc_Name()))
-					channelBox_nuc.setSelectedIndex(i);
-			}
-
-			// markerBoundChannel
-			num = channelBox_marker.getItemCount();
-			for (int i = 0; i < num; i++) {
-				String name = (String) channelBox_marker.getItemAt(i);
-				if (name.equalsIgnoreCase(pset
-						.getThresholdChannel_marker_Name()))
-					channelBox_marker.setSelectedIndex(i);
-			}
-
-			// memBoundChannel
-			num = channelBox_membrane.getItemCount();
-			for (int i = 0; i < num; i++) {
-				String name = (String) channelBox_membrane.getItemAt(i);
-				if (name.equalsIgnoreCase(pset
-						.getThresholdChannel_membrane_Name()))
-					channelBox_membrane.setSelectedIndex(i);
-			}
-
-			// cytoBoundChannel
-			num = channelBox_cyto.getItemCount();
-			for (int i = 0; i < num; i++) {
-				String name = (String) channelBox_cyto.getItemAt(i);
-				if (name.equalsIgnoreCase(pset.getThresholdChannel_cyto_Name()))
-					channelBox_cyto.setSelectedIndex(i);
-			}
-
-			MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(
-					false);
-			textField[0].setText("" + pset.getThreshold_Nucleus());
-			textField[1].setText("" + pset.getThreshold_Marker());
-			textField[2].setText("" + pset.getThreshold_Membrane());
-			textField[4].setText("" + pset.getThreshold_Cytoplasm());
-
-		}
+		// if (pset != null) {
+		// // nucBoundChannel
+		// int num = channelBox_nuc.getItemCount();
+		// for (int i = 0; i < num; i++) {
+		// String name = (String) channelBox_nuc.getItemAt(i);
+		// if (name.equalsIgnoreCase(pset.getParameter_String("Thresh_Nuc_ChannelName")))
+		// channelBox_nuc.setSelectedIndex(i);
+		// }
+		//
+		// // markerBoundChannel
+		// num = channelBox_marker.getItemCount();
+		// for (int i = 0; i < num; i++) {
+		// String name = (String) channelBox_marker.getItemAt(i);
+		// if (name.equalsIgnoreCase(pset
+		// .getParameter_String("ThreshChannel_marker_Name")))
+		// channelBox_marker.setSelectedIndex(i);
+		// }
+		//
+		// // memBoundChannel
+		// num = channelBox_membrane.getItemCount();
+		// for (int i = 0; i < num; i++) {
+		// String name = (String) channelBox_membrane.getItemAt(i);
+		// if (name.equalsIgnoreCase(pset
+		// .getParameter_String("ThreshChannel_membrane_Name")))
+		// channelBox_membrane.setSelectedIndex(i);
+		// }
+		//
+		// // cytoBoundChannel
+		// num = channelBox_cyto.getItemCount();
+		// for (int i = 0; i < num; i++) {
+		// String name = (String) channelBox_cyto.getItemAt(i);
+		// if (name.equalsIgnoreCase(pset.getParameter_String("Thresh_Cyt_ChannelName")))
+		// channelBox_cyto.setSelectedIndex(i);
+		// }
+		//
+		// MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(
+		// false);
+		// textField[0].setText("" + pset.getParameter_float("Thresh_Nuc_Value"));
+		// textField[1].setText("" + pset.getParameter_float("Thresh_Marker"));
+		// textField[2].setText("" + pset.getParameter_float("Thresh_Membrane"));
+		// textField[4].setText("" + pset.getParameter_float("Thresh_Cyt_Value"));
+		//
+		// }
 
 
 		// Create an array of the text and components to be displayed.
@@ -327,87 +329,93 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 					int MarkerBoundaryChannel = channelBox_marker
 							.getSelectedIndex();
 
-					float Threshold_Nucleus = Float.parseFloat(strings[0]);
-					float Threshold_Marker = Float.parseFloat(strings[1]);
-					float Threshold_Background = 0;
-					float Threshold_Membrane = Float.parseFloat(strings[2]);
+					float Thresh_Nuc_Value = Float.parseFloat(strings[0]);
+					float Thresh_Marker = Float.parseFloat(strings[1]);
+					float Thresh_Bkgd_Value = 0;
+					float Thresh_Membrane = Float.parseFloat(strings[2]);
 					float MergeFactor = Float.parseFloat(strings[3]);
-					float Threshold_CellBoundary = Float.parseFloat(strings[4]);
+					float Thresh_CellBoundary = Float.parseFloat(strings[4]);
 
 					// Storing the Parameters for each Model_Well
 					int len = TheWells.length;
 					for (int i = 0; i < len; i++) {
 						Model_Well well = TheWells[i];
-						Model_ParameterSet pset = well.TheParameterSet;
-						pset.setModified(true);
+						Model_Field[] fields = well.getFields();
+						for (int p = 0; p < fields.length; p++) {
+
+							Model_ParameterSet pset = fields[p]
+									.getParameterSet();
 						// ProcessType
-						pset.setProcessType(Model_ParameterSet.SINGLECELL);
+						// pset.setProcessType(Model_ParameterSet.SINGLECELL);
 						// Threshold Channel Nucleus
-						pset.setThresholdChannel_nuc_Name(MainGUI.getGUI()
+						pset.setParameter("Thresh_Nuc_ChannelName",""+MainGUI.getGUI()
 								.getTheChannelNames()[NucBoundaryChannel]);
 						// Threshold Channel Marker
-						pset.setThresholdChannel_marker_Name(MainGUI.getGUI()
+						pset.setParameter("ThreshChannel_marker_Name",""+MainGUI.getGUI()
 								.getTheChannelNames()[MarkerBoundaryChannel]);
 						// Threshold Channel Cytoplasm
-						pset.setThresholdChannel_cyto_Name(MainGUI.getGUI()
+						pset.setParameter("Thresh_Cyt_ChannelName",MainGUI.getGUI()
 								.getTheChannelNames()[CytoBoundaryChannel]);
 						// Nuc bound threshold
-						pset.setThreshold_Nucleus(Threshold_Nucleus);
+						pset.setParameter("Thresh_Nuc_Value",""+Thresh_Nuc_Value);
 						// Marker bound threshold
-						pset.setThreshold_Marker(Threshold_Marker);
+						pset.setParameter("Thresh_Marker",""+Thresh_Marker);
 						// Cell bound Threshold
-						pset.setThreshold_Cytoplasm(Threshold_CellBoundary);
+						pset.setParameter("Thresh_Cyt_Value",""+Thresh_CellBoundary);
 						// Bkgd threshold
-						pset.setThreshold_Background( Threshold_Background);
+						pset.setParameter("Thresh_Bkgd_Value",""+ Thresh_Bkgd_Value);
 						// Thresh channel Membrane
-						pset.setThresholdChannel_membrane_Name(MainGUI.getGUI()
+						pset.setParameter("ThreshChannel_membrane_Name",""+MainGUI.getGUI()
 								.getTheChannelNames()[MembraneBoundaryChannel]);
 						// Mem threshold
-						pset.setThreshold_Membrane(Threshold_Membrane);
+						pset.setParameter("Thresh_Membrane",""+Thresh_Membrane);
 
 						if (CoordsToSave == 0)
-							pset.setCoordsToSaveToHDF("BoundingBox");
+							pset.setParameter("CoordsToSaveToHDF","BoundingBox");
 						else if (CoordsToSave == 1)
-							pset.setCoordsToSaveToHDF("Centroid");
+							pset.setParameter("CoordsToSaveToHDF","Centroid");
 						else if (CoordsToSave == 2)
-							pset.setCoordsToSaveToHDF("Outlines");
+							pset.setParameter("CoordsToSaveToHDF","Outlines");
 						else if (CoordsToSave == 3)
-							pset.setCoordsToSaveToHDF("Everything");
-						well.TheParameterSet.setNumThreads(1);
+							pset.setParameter("CoordsToSaveToHDF","Everything");
+							pset.setParameter("NumThreads",""+1);
 
-						pset.clearGeneralParameters();
-						pset.addGeneralParameter("MergeFactor", MergeFactor);
+							pset.setParameter("MergeFactor", "" + MergeFactor);
 
-						well.TheParameterSet.setMeanOrIntegrated(well.TheParameterSet.MEAN);
+							pset.setParameter("Algorithm", "Segmentor_Osteo_v1");
+
 
 						// Finding the index of this channel name
 						for (int j = 0; j < MainGUI.getGUI()
 								.getTheChannelNames().length; j++)
 							if (MainGUI.getGUI().getTheChannelNames()[j]
-									.equalsIgnoreCase(pset.getThresholdChannel_nuc_Name()))
-								pset.setThresholdChannel_nuc_Index ( j);
+									.equalsIgnoreCase(pset.getParameter_String("Thresh_Nuc_ChannelName")))
+									pset.setParameter(
+											"Thresh_Nuc_ChannelIndex", ""
+													+ j);
 						// Finding the index of this channel name
 						for (int j = 0; j < MainGUI.getGUI()
 								.getTheChannelNames().length; j++)
 							if (MainGUI.getGUI().getTheChannelNames()[j]
 									.equalsIgnoreCase(pset
-											.getThresholdChannel_marker_Name()))
-								pset.setThresholdChannel_marker_Index(j);
+											.getParameter_String("ThreshChannel_marker_Name")))
+								pset.setParameter("ThreshChannel_marker_Index",""+j);
 						// Finding the index of this channel name
 						for (int j = 0; j < MainGUI.getGUI()
 								.getTheChannelNames().length; j++)
 							if (MainGUI.getGUI().getTheChannelNames()[j]
-									.equalsIgnoreCase(pset.getThresholdChannel_cyto_Name()))
-								pset.setThresholdChannel_cyto_Index (j);
+									.equalsIgnoreCase(pset.getParameter_String("Thresh_Cyt_ChannelName")))
+								pset.setParameter("Thresh_Cyt_ChannelIndex",""+j);
 						// Finding the index of this channel name
 						for (int j = 0; j < MainGUI.getGUI()
 								.getTheChannelNames().length; j++)
 							if (MainGUI.getGUI().getTheChannelNames()[j]
 									.equalsIgnoreCase(pset
-											.getThresholdChannel_membrane_Name()))
-								pset.setThresholdChannel_membrane_Index(j);
+											.getParameter_String("ThreshChannel_membrane_Name")))
+								pset.setParameter("ThreshChannel_membrane_Index",""+j);
+						}
 					}
-					if (Threshold_Background > 0)
+					if (Thresh_Bkgd_Value > 0)
 						MainGUI.getGUI().setBackgroundSubtract(true);
 
 					// Only getting wells with Images that we can process

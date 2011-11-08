@@ -397,86 +397,86 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 			// ----
 			// TODO-X
-			if (false) {
-			 g2.setColor(Color.magenta);
-			 ArrayList<Cell> selCells = TheCellBank.getSelectedCells();
-			 ArrayList<Cell> allCells = TheCellBank.getCells();
-			 int selLen = selCells.size();
-			 int allLen = allCells.size();
-			 Raster raster = getCurrentRaster();
-			 int numBands = raster.getNumBands();
-			 int[] pix = new int[numBands];
-			 for (int c = 0; c < selLen; c++) {
-			 imagerailio.Point p1 = selCells.get(c).getCoordinates()
-			 .getCentroid_subcompartment("Outline");
-			 for (int r = 0; r < allLen; r++) {
-			 if (c != r) {
-			 imagerailio.Point p2 = allCells.get(r)
-			 .getCoordinates()
-			 .getCentroid_subcompartment("Outline");
-			
-			 int xDist = p2.x - p1.x;
-			 int yDist = p2.y - p1.y;
-			 int yStart = p1.y;
-			 int xStart = p1.x;
-			 // compute slope btw points
-			 float m = ((float) yDist) / ((float) xDist);
-			
-			 boolean staysAboveBkgd = true;
-			 int bkgd = (int) TheWell.getParameterSet()
-			 .getThreshold_Background();
-			 // Need to invert line tracking if slope too
-			 // vertical
-			 // (ex: walk along y axis not x axis)
-			 if (m != Float.NaN || m != 0) {
-			 // st = "";
-			 if (Math.abs(m) < 1) {
-			 for (int x = 0; x < Math.abs(xDist); x++) {
-			
-			 int xI = x;
-			 if (xDist < 0)
-			 xI = -x;
-			
-			 int xP = xStart + xI;
-			 int y = (int) (m * xI + yStart);
-			
-			 raster.getPixel(xP, y, pix);
-			
-			 if (pix[0] < bkgd) {
-			 staysAboveBkgd = false;
-			 break;
-			 }
-			 }
-			
-			 } else {
-			 for (int y = 0; y < Math.abs(yDist); y++) {
-			
-			 float yI = y;
-			 if (yDist < 0)
-			 yI = -y;
-			
-			 float yP = (float) yStart + yI;
-			 int x = (int) (1f / m * yI + xStart);
-			
-			 raster.getPixel(x, (int) yP, pix);
-			
-			 if (pix[0] < bkgd) {
-			 staysAboveBkgd = false;
-			 break;
-			 }
-			 }
-			 }
-			 if (staysAboveBkgd)
-			 g2.drawLine((int) (scalingFactor * p2.x),
-			 (int) (scalingFactor * p2.y),
-			 (int) (scalingFactor * p1.x),
-			 (int) (scalingFactor * p1.y));
-			 }
-			
-			 }
-			 }
-			 }
-			 }
+			// if (false) {
+			// g2.setColor(Color.magenta);
+			// ArrayList<Cell> selCells = TheCellBank.getSelectedCells();
+			// ArrayList<Cell> allCells = TheCellBank.getCells();
+			// int selLen = selCells.size();
+			// int allLen = allCells.size();
+			// Raster raster = getCurrentRaster();
+			// int numBands = raster.getNumBands();
+			// int[] pix = new int[numBands];
+			// for (int c = 0; c < selLen; c++) {
+			// imagerailio.Point p1 = selCells.get(c).getCoordinates()
+			// .getCentroid_subcompartment("Outline");
+			// for (int r = 0; r < allLen; r++) {
+			// if (c != r) {
+			// imagerailio.Point p2 = allCells.get(r)
+			// .getCoordinates()
+			// .getCentroid_subcompartment("Outline");
+			//
+			// int xDist = p2.x - p1.x;
+			// int yDist = p2.y - p1.y;
+			// int yStart = p1.y;
+			// int xStart = p1.x;
+			// // compute slope btw points
+			// float m = ((float) yDist) / ((float) xDist);
+			//
+			// boolean staysAboveBkgd = true;
+			// int bkgd = (int) TheWell.getParameterSet()
+			// .getParameter_float("Thresh_Bkgd_Value");
+			// // Need to invert line tracking if slope too
+			// // vertical
+			// // (ex: walk along y axis not x axis)
+			// if (m != Float.NaN || m != 0) {
+			// // st = "";
+			// if (Math.abs(m) < 1) {
+			// for (int x = 0; x < Math.abs(xDist); x++) {
+			//
+			// int xI = x;
+			// if (xDist < 0)
+			// xI = -x;
+			//
+			// int xP = xStart + xI;
+			// int y = (int) (m * xI + yStart);
+			//
+			// raster.getPixel(xP, y, pix);
+			//
+			// if (pix[0] < bkgd) {
+			// staysAboveBkgd = false;
+			// break;
+			// }
+			// }
+			//
+			// } else {
+			// for (int y = 0; y < Math.abs(yDist); y++) {
+			//
+			// float yI = y;
+			// if (yDist < 0)
+			// yI = -y;
+			//
+			// float yP = (float) yStart + yI;
+			// int x = (int) (1f / m * yI + xStart);
+			//
+			// raster.getPixel(x, (int) yP, pix);
+			//
+			// if (pix[0] < bkgd) {
+			// staysAboveBkgd = false;
+			// break;
+			// }
+			// }
+			// }
+			// if (staysAboveBkgd)
+			// g2.drawLine((int) (scalingFactor * p2.x),
+			// (int) (scalingFactor * p2.y),
+			// (int) (scalingFactor * p1.x),
+			// (int) (scalingFactor * p1.y));
+			// }
+			//
+			// }
+			// }
+			// }
+			// }
 			// -----
 			// pw.flush();
 			// pw.close();
@@ -498,11 +498,11 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		// && TheField.getParentWell().getParameterSet() != null) {
 		//
 		// int index = TheField.getParentWell().getParameterSet()
-		// .getThresholdChannel_cyto_Index();
+		// .getParameter_int("Thresh_Cyt_ChannelIndex");
 		//
 		// if (ImageSelected_index == index) {
 		// float bkgd = TheField.getParentWell().getParameterSet()
-		// .getThreshold_Background();
+		// .getParameter_float("Thresh_Bkgd_Value");
 		//
 		// g2.setColor(Color.white);
 		//

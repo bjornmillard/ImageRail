@@ -33,7 +33,7 @@ import segmentors.DefaultSegmentor_v1;
 import features.Feature;
 import features.FeatureSorter;
 
-public class Segment {
+public class Segment2 {
 	static ArrayList<Feature> features;
 
 	/** For commandline segmentation */
@@ -55,8 +55,6 @@ public class Segment {
 				// ARG_10 ---> CoordsToSave-> "Centroid", "BoundingBox",
 				// "Outlines", "Everything"
 
-
-
 				// ARG_0 --- Project name that we want to process
 				File in = null;
 				try {
@@ -74,12 +72,13 @@ public class Segment {
 				Model_ParameterSet pset = new Model_ParameterSet();
 				// (0) init a pset
 
+
 				// ARG_1 ---> Path desired for new HDF5 file for stored data
 				File f_out = new File(args[1]);
 				File newF = new File(f_out.getAbsolutePath() + ".sdc");
 				newF.mkdir();
-				ImageRail_SDCube io = new ImageRail_SDCube(newF
-						.getAbsolutePath());
+				ImageRail_SDCube io = new ImageRail_SDCube(
+						newF.getAbsolutePath());
 				try {
 					io.createProject();
 				} catch (H5IO_Exception e) {
@@ -114,7 +113,6 @@ public class Segment {
 				String CoordsToSave = args[10];
 				pset.setParameter("CoordsToSaveToHDF",CoordsToSave);
 
-
 				// (1) Getting all the channel images for this field
 				File[] allFiles = in.listFiles();
 				// Calling this method to make sure wavelengths sorted
@@ -127,8 +125,8 @@ public class Segment {
 				String[] channelNames = new String[numChannels];
 				for (int i = 0; i < numChannels; i++) {
 					String name = files[i].getName();
-					channelNames[i] = name.substring(name.indexOf("w"), name
-							.indexOf(".tif"));
+					channelNames[i] = name.substring(name.indexOf("w"),
+							name.indexOf(".tif"));
 					System.out.println(channelNames[i]);
 				}
 				initFeatures(channelNames);
@@ -174,8 +172,7 @@ public class Segment {
 								+ "_t"
 								+ imagerailio.ImageRail_SDCube.getTimeStamp();
 						io.createField(well_ID, plateIndex, wellIndex,
-								fieldIndex,
- fieldDimensions, null);
+								fieldIndex, fieldDimensions, null);
 						io.writePlateCountAndSizes(1, 96);
 
 						// Writing data matrix to HDF
@@ -189,15 +186,13 @@ public class Segment {
 						io.writeFeatureNames(plateIndex, wellIndex, fieldIndex,
 								fNames);
 
-						String whatToSave = pset
-								.getParameter_String("CoordsToSaveToHDF");
+						String whatToSave = pset.getParameter_String("CoordsToSaveToHDF");
 						if (whatToSave.equalsIgnoreCase("BoundingBox")) {
 							// Only save the cell BoundingBoxes to file
 							ArrayList<CellCoordinates> bbox = segmentedobject.CellCoordinates
 									.getBoundingBoxOfCoordinates(cellCoords);
 							io.writeCellBoundingBoxes(plateIndex, wellIndex,
-									fieldIndex,
-									bbox);
+									fieldIndex, bbox);
 
 							killCellCoordinates(bbox);
 							killCellCoordinates(cellCoords);
@@ -206,8 +201,7 @@ public class Segment {
 							ArrayList<CellCoordinates> centroids = segmentedobject.CellCoordinates
 									.getCentroidOfCoordinates(cellCoords);
 							io.writeCellCentroids(plateIndex, wellIndex,
-									fieldIndex,
-									centroids);
+									fieldIndex, centroids);
 
 							killCellCoordinates(centroids);
 							killCellCoordinates(cellCoords);
@@ -217,15 +211,13 @@ public class Segment {
 									.getSingleCompartmentCoords(cellCoords,
 											"Outline");
 							io.writeWholeCells(plateIndex, wellIndex,
-									fieldIndex,
-									outlines);
+									fieldIndex, outlines);
 
 							killCellCoordinates(outlines);
 							killCellCoordinates(cellCoords);
 						} else if (whatToSave.equalsIgnoreCase("Everything")) {
 							io.writeWholeCells(plateIndex, wellIndex,
-									fieldIndex,
-									cellCoords);
+									fieldIndex, cellCoords);
 							killCellCoordinates(cellCoords);
 						}
 
@@ -245,8 +237,7 @@ public class Segment {
 
 				raster = null;
 				System.gc();
-				}
- else {
+			} else {
 				String st = "\n\n\n\n";
 				st += "***********************************************\n";
 				st += "***********************************************\n";
@@ -275,13 +266,13 @@ public class Segment {
 		}
 	}
 
-
 	/** */
 	static void initFeatures(String[] channelNames) {
 
 		ArrayList<Feature> arr = new ArrayList<Feature>();
 		try {
-            // Try to load features from src tree, otherwise try deployed location 
+			// Try to load features from src tree, otherwise try deployed
+			// location
 			File f = new File("./src/features");
 			if (!f.exists())
 				f = new File("./features");
@@ -293,7 +284,7 @@ public class Segment {
 				if (fs[i].getAbsolutePath().indexOf(".java") > 0
 						&& !fs[i].getName().equalsIgnoreCase("Feature.java")
 						&& !fs[i].getName().equalsIgnoreCase(
-						"FeatureSorter.java")) {
+								"FeatureSorter.java")) {
 					String path = fs[i].getName();
 					int ind = path.indexOf(".java");
 					path = path.substring(0, ind);
@@ -334,7 +325,6 @@ public class Segment {
 
 	}
 
-
 	/**
 	 * Computes the main data matrix of size NumCells x numFeatures.
 	 * 
@@ -345,7 +335,6 @@ public class Segment {
 	 */
 	static float[][] computeFeatureValues(ArrayList<CellCoordinates> cells,
 			int[][][] raster, float[] backgroundValues) {
-
 
 		int numFeatures = features.size();
 
