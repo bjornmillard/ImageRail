@@ -51,7 +51,7 @@ public class Model_Field {
 		ROIs = new ArrayList<Shape>();
 		ROIs_selected = new ArrayList<Boolean>();
 		ImageFiles = imageFiles;
-		TheParameterSet = new Model_ParameterSet();
+		loadParameterSet();
 	}
 
 	public int getIndexInWell() {
@@ -391,6 +391,28 @@ public class Model_Field {
 	public void setParameterSet(Model_ParameterSet pset) {
 		TheParameterSet = pset;
 		/* Write the parameter set to the HDF5 file for this well */
+
+	}
+
+	/**
+	 * Tries to load the parameter set from the projects HDF5 file
+	 * 
+	 * @author BLM
+	 * */
+	public void loadParameterSet() {
+		TheParameterSet = new Model_ParameterSet();
+		String h5path = gui.MainGUI.getGUI().getProjectDirectory()
+				.getAbsolutePath()
+				+ "/Data.h5";
+		ImageRail_SDCube io = gui.MainGUI.getGUI().getImageRailio();
+
+		String pathToSample = io.getHashtable().get(
+				io.getIndexKey(getParentWell().getPlate().getID(),
+						getParentWell()
+						.getWellIndex()));
+		if (pathToSample != null)
+			TheParameterSet.load(h5path, ("/" + pathToSample + "/Children/"
+					+ getIndexInWell() + "/Meta"));
 
 	}
 }

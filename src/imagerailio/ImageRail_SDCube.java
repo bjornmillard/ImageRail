@@ -2074,4 +2074,49 @@ public class ImageRail_SDCube
 
 	}
 
+	/**
+	 * Attempts to read and init a parameter set located at the given relative
+	 * path within the given HDF5 file path. NOTE that intra-H5 path points to
+	 * the parent group that contains the two String arrays:
+	 * "Segmentation_Parameters_Names" and "Segmentation_Parameters_Values".
+	 * 
+	 * @author BLM
+	 * @param String
+	 *            pathToH5File, String
+	 *            pathToParentDirContainingParamNamesAndValues
+	 * @return Hashtable<String, String> theParametersReferenceTable
+	 * */
+	public Hashtable<String, String> readParameterSet(String hdfPath,
+			String pathToParentDir) {
+
+		if (hdfPath != null && pathToParentDir != null) {
+			StringBuffer[] st1 = null;
+			StringBuffer[] st2 = null;
+			String path1 = null;
+			String path2 = null;
+			try {
+				path1 = pathToParentDir + "/Segmentation_Parameters_Names";
+				path2 = pathToParentDir + "/Segmentation_Parameters_Values";
+				st1 = io.readDataset_String(hdfPath, path1);
+				st2 = io.readDataset_String(hdfPath, path2);
+				if (st1 == null || st2 == null)
+					return null;
+				if (st1.length != st2.length)
+					return null;
+				Hashtable<String, String> hash = new Hashtable<String, String>();
+				int len = st1.length;
+				for (int i = 0; i < len; i++)
+					hash.put(st1[i].toString().trim(), st2[i].toString().trim());
+				return hash;
+
+			} catch (H5IO_Exception e) {
+				System.out.println("**Failed to load Model_ParameterSet for: "
+						+ pathToParentDir);
+				e.printStackTrace();
+			}
+		}
+
+		return null;
+	}
+
 }

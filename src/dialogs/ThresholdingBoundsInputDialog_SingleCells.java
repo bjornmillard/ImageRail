@@ -83,11 +83,11 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 				- height / 2);
 		setModal(true);
 
-		// Model_ParameterSet pset =
-		// Model_ParameterSet.doWellsHaveSameParameterSet(wells);
+		Model_ParameterSet pset = Model_ParameterSet
+				.doWellsHaveSameParameterSet(wells);
 		// if (pset != null)
-		// if (!pset.getProcessType()
-		// .equalsIgnoreCase(Model_ParameterSet.SINGLECELL))
+		// if (!pset.getProcessType().equalsIgnoreCase(
+		// Model_ParameterSet.SINGLECELL))
 		// pset = null;
 
 		/** Features comboBox */
@@ -194,39 +194,42 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 
 		MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
 
-		//
-		// if (pset != null) {
-		// // nucBoundChannel
-		// int num = channelBox_nuc.getItemCount();
-		// for (int i = 0; i < num; i++) {
-		// String name = (String) channelBox_nuc.getItemAt(i);
-		// if (name.equalsIgnoreCase(pset.getParameter_String("Thresh_Nuc_ChannelName")))
-		// channelBox_nuc.setSelectedIndex(i);
-		// }
-		// // cytoBoundChannel
-		// num = channelBox_cyto.getItemCount();
-		// for (int i = 0; i < num; i++) {
-		// String name = (String) channelBox_cyto.getItemAt(i);
-		// if (name.equalsIgnoreCase(pset.getParameter_String("Thresh_Cyt_ChannelName")))
-		// channelBox_cyto.setSelectedIndex(i);
-		// }
-		//
-		// MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(
-		// false);
-		// textField[0].setText("" + pset.getParameter_float("Thresh_Nuc_Value"));
-		// textField[1].setText("" + pset.getParameter_float("Thresh_Cyt_Value"));
-		// textField[2].setText("" + pset.getParameter_float("Thresh_Bkgd_Value"));
-		//
-		// // if (pset.getAnnulusSize() != Model_ParameterSet.NOVALUE) {
-		// // MainGUI.getGUI().getCytoplasmAnnulusCheckBox()
-		// // .setSelected(true);
-		// // textField[3].setText("" + pset.getAnnulusSize());
-		// // textField[3].setEnabled(true);
-		// // } else
-		// // MainGUI.getGUI().getCytoplasmAnnulusCheckBox().setSelected(
-		// // false);
-		// }
-		//
+		if (pset != null) {
+			// nucBoundChannel
+			int num = channelBox_nuc.getItemCount();
+			for (int i = 0; i < num; i++) {
+				String name = (String) channelBox_nuc.getItemAt(i);
+				String par = pset.getParameter_String("Thresh_Nuc_ChannelName");
+				if (par != null && name.equalsIgnoreCase(par))
+					channelBox_nuc.setSelectedIndex(i);
+			}
+			// cytoBoundChannel
+			num = channelBox_cyto.getItemCount();
+			for (int i = 0; i < num; i++) {
+				String name = (String) channelBox_cyto.getItemAt(i);
+				if (name.equalsIgnoreCase(pset
+						.getParameter_String("Thresh_Cyt_ChannelName")))
+					channelBox_cyto.setSelectedIndex(i);
+			}
+
+			MainGUI.getGUI().getLoadCellsImmediatelyCheckBox()
+					.setSelected(false);
+			textField[0].setText(""
+					+ pset.getParameter_float("Thresh_Nuc_Value"));
+			textField[1].setText(""
+					+ pset.getParameter_float("Thresh_Cyt_Value"));
+			textField[2].setText(""
+					+ pset.getParameter_float("Thresh_Bkgd_Value"));
+
+			String co = pset.getParameter_String("CoordsToSaveToHDF");
+			if (co.equalsIgnoreCase("BoundingBox"))
+				r0.setSelected(true);
+			if (co.equalsIgnoreCase("Centroid"))
+				r1.setSelected(true);
+			if (co.equalsIgnoreCase("Outlines"))
+				r2.setSelected(true);
+
+		}
 
 		// Create an array of the text and components to be displayed.
 		String[] mess = new String[6];
@@ -389,7 +392,6 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 							if (NumThreads > 0)
 								pset.setParameter("NumThreads",""+(int) NumThreads);
 
-							// pset.setMeanOrIntegrated(Model_ParameterSet.MEAN);
 
 							// Finding the index of this channel name
 							for (int j = 0; j < MainGUI.getGUI()

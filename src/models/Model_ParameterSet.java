@@ -134,7 +134,7 @@ public class Model_ParameterSet {
 	 * @param String parameterName, String paramVal
 	 *  */
 	public void setParameter(String name, String val) {
-		System.out.println(name + " , " + val);
+		// System.out.println(name + " , " + val);
 		TheParameters.put(name.trim(), val.trim());
 	}
 
@@ -156,6 +156,8 @@ public class Model_ParameterSet {
 	 * @return float paramValue
 	 *  */
 	public float getParameter_float(String name) {
+		if (TheParameters == null || TheParameters.get(name.trim()) == null)
+			return -1;
 		return(Float.parseFloat(TheParameters.get(name.trim()).trim()));
 	}
 	/**
@@ -166,6 +168,8 @@ public class Model_ParameterSet {
 	 * @return float paramValue
 	 *  */
 	public int getParameter_int(String name) {
+		if (TheParameters == null || TheParameters.get(name.trim()) == null)
+			return -1;
 		return(Integer.parseInt(TheParameters.get(name.trim()).trim()));
 	}
 	/**
@@ -176,6 +180,9 @@ public class Model_ParameterSet {
 	 * @return float paramValue
 	 *  */
 	public double getParameter_double(String name) {
+		if (TheParameters == null || TheParameters.get(name.trim()) == null)
+			return -1;
+
 		return(Double.parseDouble(TheParameters.get(name.trim()).trim()));
 	}
 	/**
@@ -186,6 +193,8 @@ public class Model_ParameterSet {
 	 * @return float paramValue
 	 *  */
 	public String getParameter_String(String name) {
+		if (TheParameters == null || TheParameters.get(name.trim()) == null)
+			return null;
 		return TheParameters.get(name.trim()).trim();
 	}
 
@@ -197,6 +206,9 @@ public class Model_ParameterSet {
  * @return float paramValue
  *  */
 public boolean getParameter_boolean(String name) {
+		if (TheParameters == null || TheParameters.get(name.trim()) == null)
+			return false;
+
 	String p = TheParameters.get(name.trim()).trim();
 	if(p.equalsIgnoreCase("TRUE"))
 		return true;
@@ -244,5 +256,111 @@ public boolean getParameter_boolean(String name) {
 		}
 	}
 
+	/**
+	 * Checks to see if the given Parameter set is the same as the current one
+	 * 
+	 * @author BLM
+	 * @param Model_ParameterSet
+	 *            pset1, Model_ParameterSet pset2
+	 * @return boolean same
+	 */
+	static public boolean isSame(Model_ParameterSet p1, Model_ParameterSet p2) {
+		String[][] thisPars = p1.getParameters();
+		String[][] thatPars = p2.getParameters();
 
+		if (thisPars == null || thatPars == null || thisPars.length != 2
+				|| thatPars.length != 2)
+			return false;
+		if (thisPars[0].length != thatPars[0].length || thisPars[0].length == 0
+				|| thatPars[0].length == 0)
+			return false;
+		int len = thisPars[0].length;
+
+		for (int c = 0; c < len; c++) {
+			String par = thisPars[0][c];
+			// find this par in the other pset
+			boolean foundItAndMatch = false;
+			for (int j = 0; j < len; j++)
+				if (par.equals(thatPars[0][j])
+						&& thisPars[1][c].equals(thatPars[1][j])) {
+					foundItAndMatch = true;
+					break;
+				}
+
+			if (!foundItAndMatch)
+				return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Checks to see if the given wells have the same parameter sets, if so,
+	 * then it returns a copy of the common parameter set... else null.
+	 * 
+	 * @author BLM
+	 * @param Model_Well
+	 *            [] wells
+	 * @return Model_ParameterSett commonPset
+	 */
+	static public Model_ParameterSet doWellsHaveSameParameterSet(
+			Model_Well[] wells) {
+		Model_ParameterSet pCommon = null;
+		if (wells != null && wells.length > 0 && wells[0].getFields() != null
+				&& wells[0].getFields().length > 0
+				&& wells[0].getFields()[0] != null)
+			pCommon = wells[0].getFields()[0].getParameterSet();
+		
+		if (pCommon == null)
+			return null;
+		
+		int len = wells.length;
+		for (int i = 0; i < len; i++) {
+			Model_Field[] fields = wells[i].getFields();
+			for (int j = 0; j < fields.length; j++) {
+				Model_ParameterSet pset = fields[j].getParameterSet();
+				if (pset == null)
+					return null;
+				if (!isSame(pCommon, pset))
+					return null;
+			}
+		}
+
+		return pCommon;
+	}
+
+	public String toString() {
+
+		String[][] thisPars = getParameters();
+
+		if (thisPars == null || thisPars.length != 2)
+			return "**Null Model_ParameterSet";
+
+		String st = "*******PSET*********";
+		int len = thisPars[0].length;
+		for (int c = 0; c < len; c++)
+			st += "\n  " + thisPars[0][c] + " = " + thisPars[1][c];
+		st += "\n********************";
+		return st;
+	}
+
+	/**
+	 * Attempts to read and init a parameter set located at the given relative
+	 * path within the given HDF5 file path. NOTE that intra-H5 path points to
+	 * the parent group that contains the two String arrays:
+	 * "Segmentation_Parameters_Names" and "Segmentation_Parameters_Values".
+	 * Returns a new ParameterSet if fails to load.
+	 * 
+	 * @author BLM
+	 * @param String
+	 *            pathToH5File, String
+	 *            pathToParentDirContainingParamNamesAndValues
+	 * */
+	public void load(String H5Path, String pathToParentDir) {
+		ImageRail_SDCube io = gui.MainGUI.getGUI().getImageRailio();
+		Hashtable<String, String> hash = io.readParameterSet(H5Path,
+				pathToParentDir);
+		if (hash != null)
+			TheParameters = hash;
+	}
 }
