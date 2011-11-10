@@ -46,13 +46,13 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 
 import models.Model_Field;
+import models.Model_Main;
 import models.Model_Plate;
 import models.Model_PlateRepository;
 import models.Model_Well;
 import sdcubeio.H5IO_Exception;
 import segmentedobject.Cell;
 import segmentedobject.CellCoordinates;
-import gui.MainGUI;
 
 public class DotFilterQueue extends JFrame implements Runnable {
 
@@ -304,9 +304,8 @@ public class DotFilterQueue extends JFrame implements Runnable {
 	public void run() {
 
 		System.out.println("Filtering all HDF files");
-		MainGUI theGUI = gui.MainGUI.getGUI();
-		Model_PlateRepository platePanel = theGUI.getPlateHoldingPanel()
-				.getModel();
+		Model_Main theModel = models.Model_Main.getModel();
+		Model_PlateRepository platePanel = theModel.getThePlateHoldingPanel();
 		int numPlates = platePanel.getNumPlates();
 		Model_Plate[] plates = platePanel.getPlates();
 
@@ -328,7 +327,7 @@ public class DotFilterQueue extends JFrame implements Runnable {
 		}
 
 		// for each well:
-		ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
+		ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 
 		for (int i = 0; i < numPlates; i++) {
 			Model_Plate plate = plates[i];
@@ -422,7 +421,8 @@ public class DotFilterQueue extends JFrame implements Runnable {
 					plate.getGUI().repaint();
 				}
 		}
-		theGUI.getPlateHoldingPanel().getModel().updateMinMaxValues();
-		theGUI.updateDotPlot();
+		theModel.getThePlateHoldingPanel().updateMinMaxValues();
+		if (theModel.getGUI() != null)
+			theModel.getGUI().updateDotPlot();
 	}
 }

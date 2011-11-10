@@ -26,8 +26,6 @@
 
 package dialogs;
 
-import gui.MainGUI;
-
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -40,7 +38,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -73,43 +70,15 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 		
 		setModal(true);
 		
-		// Model_ParameterSet pset =
-		// Model_ParameterSet.doWellsHaveSameParameterSet(wells);
-		// if (pset!=null)
-		// if
-		// (!pset.getProcessType().equalsIgnoreCase(Model_ParameterSet.WELLMEAN))
-		// pset = null;
-		
-		
-		MainGUI.getGUI().setStoreCytoAndNuclearWellMeans(new JCheckBoxMenuItem("Nucleus Threshold"));
-		MainGUI.getGUI().getStoreCytoAndNuclearWellMeans().setSelected(false);
-		MainGUI.getGUI().getStoreCytoAndNuclearWellMeans().addActionListener(new ActionListener()
-																			 {
-					public void actionPerformed(ActionEvent ae)
-					{
-						if (MainGUI.getGUI().getStoreCytoAndNuclearWellMeans().isSelected())
-						{
-							textField[1].setText("0");
-							textField[1].setEnabled(true);
-						}
-						else
-						{
-							textField[1].setText("N/A");
-							textField[1].setEnabled(false);
-						}
-						
-						validate();
-						repaint();
-					}
-				});
-		
+		Model_ParameterSet pset = Model_ParameterSet
+				.doWellsHaveSameParameterSet(wells);
 		
 		/** Features comboBox*/
 		ArrayList list = new ArrayList();
-		int len = MainGUI.getGUI().getTheChannelNames().length;
+		int len = models.Model_Main.getModel().getTheChannelNames().length;
 		
 		for (int i = 0; i < len; i++)
-			list.add(MainGUI.getGUI().getTheChannelNames()[i]);
+			list.add(models.Model_Main.getModel().getTheChannelNames()[i]);
 		
 		Object[] obX = new Object[list.size()];
 		if (list.size()>0)
@@ -117,46 +86,35 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 				obX[i] = list.get(i);
 		channelBox = new JComboBox(obX);
 		
-		
-		
-		TheWells =wells;
-		textField = new JTextField[3];
+		TheWells = wells;
+		textField = new JTextField[1];
 		textField[0] = new JTextField(10);
-		textField[1] = new JTextField(10);
-		textField[1].setEnabled(false);
-		textField[1].setText("N/A");
-		textField[2] = new JTextField(10);
-		textField[2].setText("0");
 		
 		
-		//
-		// if(pset!=null)
-		// {
-		// int num = channelBox.getItemCount();
-		// for (int i = 0; i < num; i++)
-		// {
-		// String name = (String)channelBox.getItemAt(i);
-		// if (name.equalsIgnoreCase(pset.getParameter_String("Thresh_Cyt_ChannelName")))
-		// channelBox.setSelectedIndex(i);
-		// }
-		//
-		// textField[0].setText("" + pset.getParameter_float("Thresh_Cyt_Value"));
-		// if (pset.getParameter_float("Thresh_Nuc_Value") != Model_ParameterSet.NOVALUE)
-		// {
-		// textField[1].setEnabled(true);
-		// textField[1].setText("" + pset.getParameter_float("Thresh_Nuc_Value"));
-		// }
-		//
-		// textField[2].setText("" + pset.getParameter_float("Thresh_Bkgd_Value"));
-		// }
-		//
+		 if (pset != null) {
+			if (pset.exists("Thresh_Cyt_ChannelName")) {
+				int num = channelBox.getItemCount();
+				for (int i = 0; i < num; i++) {
+					String name = (String) channelBox.getItemAt(i);
+					if (name.equalsIgnoreCase(pset
+							.getParameter_String("Thresh_Cyt_ChannelName")))
+						channelBox.setSelectedIndex(i);
+				}
+			}
+
+			if (pset.exists("Thresh_Cyt_Value"))
+				textField[0].setText(""
+					+ pset.getParameter_float("Thresh_Cyt_Value"));
+
+		}
+		
 		
 		
 		//Create an array of the text and components to be displayed.
 		String[] mess = new String[3];
 		
 		mess[0] = "Thresholding Channel";
-		mess[1] = "Cytoplasm/Background Threshold";
+		mess[1] = "Cell Threshold";
 		// mess[2] = "Background Threshold";
 		
 		Object[] array = { mess[0], channelBox, mess[1], textField[0] };
@@ -239,17 +197,13 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 			if (btnString1.equals(value))
 			{
 				String[] strings  = null;
-					strings = new String[2];
+				strings = new String[1];
 					strings[0] = textField[0].getText();
-					strings[1] = textField[2].getText();
 					//make sure the inputed values are numbers only
 					if (tools.MathOps.areNumbers(strings))
 					{
 						int CellBoundaryChannel = channelBox.getSelectedIndex();
 						float Thresh_CellBoundary = Float.parseFloat(strings[0]);
-						float Thresh_Bkgd_Value = Float.parseFloat(strings[1]);
-						float Thresh_Nuc_Value = -1;
-						MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
 						
 						//Storing the Parameters for each Model_Well
 						int len = TheWells.length;
@@ -263,18 +217,16 @@ public class ThresholdingBoundsInputDialog_WellMeans extends JDialog implements 
 										.getParameterSet();
 
 								// Threshold Channel
-								pset.setParameter("Thresh_Cyt_ChannelName",MainGUI
-										.getGUI().getTheChannelNames()[CellBoundaryChannel]);
+							pset.setParameter(
+									"Thresh_Cyt_ChannelName",
+									models.Model_Main.getModel()
+											.getTheChannelNames()[CellBoundaryChannel]);
 								pset.setParameter(
 										"Thresh_Cyt_ChannelIndex", ""
 												+ CellBoundaryChannel);
-								// Nuc bound threshold
-								pset.setParameter("Thresh_Nuc_Value",""+Thresh_Nuc_Value);
 								// Cell bound Threshold
 								pset.setParameter("Thresh_Cyt_Value",""+Thresh_CellBoundary);
-								// Bkgd threshold
-								pset.setParameter("Thresh_Bkgd_Value",""+Thresh_Bkgd_Value);
-							pset.setParameter("Algorithm", "WellAverage");
+							pset.setParameter("Algorithm", "WellAverage_v1");
 
 							}
 						}

@@ -22,7 +22,6 @@ package processors;
 
 
 import features.Feature;
-import gui.MainGUI;
 import imagerailio.ImageRail_SDCube;
 import imagerailio.Point;
 
@@ -197,7 +196,7 @@ public class Processor_SingleCells extends Thread implements Processor
 	 * @author BLM*/
 	float[][] computeFeatureValues(ArrayList<CellCoordinates> cells, int[][][] raster, float[] backgroundValues)
 	{
-		ArrayList<Feature> features = gui.MainGUI.getGUI().getTheFeatures();
+		ArrayList<Feature> features = models.Model_Main.getModel().getTheFeatures();
 		int numFeatures = features.size();
 
 		if (cells == null || cells.size() == 0)
@@ -231,20 +230,20 @@ public class Processor_SingleCells extends Thread implements Processor
 	 * @author BLM*/
 	public void processWells(Model_Well[] wells, CellSegmentor theSegmentor)
 	{
-		ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
+		ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 		if (io != null)
 		try
  {
 
 			//Initializing some storage variables
-			float[] backgroundValues = new float[MainGUI.getGUI().getNumberOfChannels()];
+			float[] backgroundValues = new float[models.Model_Main.getModel().getNumberOfChannels()];
 			int numWells = wells.length;
 			long StartTime  = System.currentTimeMillis();
-			MainGUI.getGUI().setProcessing(true);
+			models.Model_Main.getModel().setProcessing(true);
 			
 			for (int w = 0; w < numWells; w++)
 			{
-				if (!MainGUI.getGUI().shouldStop())
+				if (!models.Model_Main.getModel().shouldStop())
 					break;
 
 				Model_Well well = wells[w];
@@ -257,7 +256,7 @@ public class Processor_SingleCells extends Thread implements Processor
 				
 				//Making the current well green
 				well.processing = true;
-				MainGUI.getGUI().getPlateHoldingPanel().updatePanel();
+				models.Model_Main.getModel().getPlateHoldingPanel().updatePanel();
 				
 				int wellIndex = (well.getPlate().getNumRows()*well.Column)+well.Row;
 				int plateIndex = well.getPlate().getID();
@@ -268,7 +267,7 @@ public class Processor_SingleCells extends Thread implements Processor
 				ArrayList<float[][]> allDataForThisWell = new ArrayList<float[][]>();
 				for (int f = 0; f < numFields; f++)
 				{
-					if (!MainGUI.getGUI().shouldStop())
+					if (!models.Model_Main.getModel().shouldStop())
 						break;
 
 					System.out.println("	Field: " + (f + 1));
@@ -279,7 +278,7 @@ public class Processor_SingleCells extends Thread implements Processor
 					
 					//  (2) Converting the images files to a raster
 					Raster = tools.ImageTools.getImageRaster_FromFiles_copy(
-							images_oneField, gui.MainGUI.getGUI()
+							images_oneField, models.Model_Main.getModel()
 									.getTheChannelNames());
 					
 					//  (3) Computing the background from each channel
@@ -303,7 +302,7 @@ public class Processor_SingleCells extends Thread implements Processor
 					long time = System.currentTimeMillis();
 					System.out.println("-->> Performing Feature Computations");
 					// Compute
-					int numChannels = gui.MainGUI.getGUI()
+					int numChannels = models.Model_Main.getModel()
 							.getNumberOfChannels();
 
 					float[][] cellFeatureMatrix = computeFeatureValues(cellCoords, Raster, backgroundValues);
@@ -323,14 +322,14 @@ public class Processor_SingleCells extends Thread implements Processor
 									Raster[0].length, numChannels };
 							io.createField(well.getID(), plateIndex, wellIndex,
 									f,
-									fieldDimensions, gui.MainGUI.getGUI()
+									fieldDimensions, models.Model_Main.getModel()
 											.getExpDesignConnector());
 
 							//Writing data matrix to HDF
 							io.writeFeatures(plateIndex, wellIndex, f,
 									cellFeatureMatrix);
 							//Writing the feature names to file
-							Feature[] features = MainGUI.getGUI().getFeatures();
+							Feature[] features = models.Model_Main.getModel().getFeatures();
 							String[] fNames = new String[features.length];
 							for (int i = 0; i < features.length; i++)
 								fNames[i] = new String(features[i].toString());
@@ -386,7 +385,7 @@ public class Processor_SingleCells extends Thread implements Processor
 						
 						
 							// Storing Parameters used to process this field
-							String hdfPath = gui.MainGUI.getGUI()
+							String hdfPath = models.Model_Main.getModel()
 									.getProjectDirectory().getAbsolutePath()
 									+ "/Data.h5";
 							field.getParameterSet().writeParameters(hdfPath,
@@ -404,7 +403,8 @@ public class Processor_SingleCells extends Thread implements Processor
 					System.gc();
 				}
 				
-				if(gui.MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().isSelected())
+					if (gui.MainGUI.getGUI().getLoadCellsImmediatelyCheckBox()
+							.isSelected())
 					well.loadCells(io, true, true);
 				
 				well.processing = false;
@@ -414,7 +414,7 @@ public class Processor_SingleCells extends Thread implements Processor
 					
 				}
 				
-				Feature[] features = gui.MainGUI.getGUI().getFeatures();
+				Feature[] features = models.Model_Main.getModel().getFeatures();
 				StringBuffer[] featureNames = null;
 				if(features!=null && features.length>0)
 				{
@@ -445,7 +445,7 @@ public class Processor_SingleCells extends Thread implements Processor
 			
 			
 			System.out.println("*** Finished: "+ (System.currentTimeMillis()-StartTime));
-			MainGUI.getGUI().setProcessing(false);
+			models.Model_Main.getModel().setProcessing(false);
 			System.gc();
 			
 		} // END writing HDF data to project
@@ -468,10 +468,10 @@ public class Processor_SingleCells extends Thread implements Processor
 	
 	public Model_Well getWellForGivenImage(String fileName)
 	{
-		for (int p = 0; p < MainGUI.getGUI().getPlateHoldingPanel().getModel()
+		for (int p = 0; p < models.Model_Main.getModel().getPlateHoldingPanel().getModel()
 				.getNumPlates(); p++)
 		{
-			Model_Plate plate = MainGUI.getGUI().getPlateHoldingPanel()
+			Model_Plate plate = models.Model_Main.getModel().getPlateHoldingPanel()
 					.getModel().getPlates()[p];
 			int rows = plate.getNumRows();
 			int cols = plate.getNumColumns();

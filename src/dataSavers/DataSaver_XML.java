@@ -32,24 +32,26 @@ import java.io.PrintWriter;
 
 import javax.swing.JFileChooser;
 
+import models.Model_Main;
 import models.Model_Plate;
 import features.Feature;
 import gui.MainGUI;
 
 public class DataSaver_XML implements DataSaver
 {
-	public void save(Feature[] featuresToSave, MainGUI TheMainGUI)
+	public void save(Feature[] featuresToSave, Model_Main TheMainModel)
 	{
 		JFileChooser fc = null;
-		if (TheMainGUI.getTheDirectory()!=null)
-			fc = new JFileChooser(TheMainGUI.getTheDirectory());
+		if (models.Model_Main.getModel().getTheDirectory() != null)
+			fc = new JFileChooser(models.Model_Main.getModel()
+					.getTheDirectory());
 		else
 			fc = new JFileChooser();
 		
 		File outDir = null;
 		
 		fc.setDialogTitle("Save as...");
-		int returnVal = fc.showSaveDialog(TheMainGUI);
+		int returnVal = fc.showSaveDialog(TheMainModel.getGUI());
 		if (returnVal == JFileChooser.APPROVE_OPTION)
 		{
 			outDir = fc.getSelectedFile();
@@ -60,8 +62,9 @@ public class DataSaver_XML implements DataSaver
 		
 		if (outDir!=null)
 		{
-			TheMainGUI.setTheDirectory(new File(outDir.getParent()));
-			printXML(outDir, true, TheMainGUI, featuresToSave);
+			models.Model_Main.getModel().setTheDirectory(
+					new File(outDir.getParent()));
+			printXML(outDir, true, TheMainModel.getGUI(), featuresToSave);
 		}
 	}
 	
@@ -70,8 +73,9 @@ public class DataSaver_XML implements DataSaver
 	public void save(Feature featureToSave, float[][] tenFiftyNinty, MainGUI TheMainGUI, boolean log)
 	{
 		JFileChooser fc = null;
-		if (TheMainGUI.getTheDirectory()!=null)
-			fc = new JFileChooser(TheMainGUI.getTheDirectory());
+		if (models.Model_Main.getModel().getTheDirectory() != null)
+			fc = new JFileChooser(models.Model_Main.getModel()
+					.getTheDirectory());
 		else
 			fc = new JFileChooser();
 		
@@ -89,7 +93,8 @@ public class DataSaver_XML implements DataSaver
 		
 		if (outDir!=null)
 		{
-			TheMainGUI.setTheDirectory(new File(outDir.getParent()));
+			models.Model_Main.getModel().setTheDirectory(
+					new File(outDir.getParent()));
 			printXML(outDir, true, featureToSave, tenFiftyNinty, log);
 		}
 	}
@@ -108,10 +113,11 @@ public class DataSaver_XML implements DataSaver
 					.getPlates()[0];
 			
 			//printing out each well's value
-			int numF  = TheMainGUI.getTheFeatures().size();
+			int numF = models.Model_Main.getModel().getTheFeatures().size();
 			for (int i = 0; i < numF; i++)
 			{
-				Feature feature = ((Feature)TheMainGUI.getTheFeatures().get(i));
+				Feature feature = ((Feature) models.Model_Main.getModel()
+						.getTheFeatures().get(i));
 				//Only Print Certain Features
 				if (shouldPrint(feature, featuresToSave))
 				{
@@ -158,7 +164,7 @@ public class DataSaver_XML implements DataSaver
 		
 		try
 		{
-			MainGUI TheMainGUI =  MainGUI.getGUI();
+			MainGUI TheMainGUI = models.Model_Main.getModel().getGUI();
 			PrintWriter pw = new PrintWriter(outDir);
 			pw.println("<?xml version='1.0' encoding='UTF-8'?>");
 			pw.println("<parsedData>");
@@ -166,10 +172,11 @@ public class DataSaver_XML implements DataSaver
 			Model_Plate plate = TheMainGUI.getPlateHoldingPanel().getModel()
 					.getPlates()[0];
 			//printing out each well's value
-			int numF  = TheMainGUI.getTheFeatures().size();
+			int numF = models.Model_Main.getModel().getTheFeatures().size();
 			for (int i = 0; i < numF; i++)
 			{
-				Feature feature = ((Feature)TheMainGUI.getTheFeatures().get(i));
+				Feature feature = ((Feature) models.Model_Main.getModel()
+						.getTheFeatures().get(i));
 				double[][] bimodalDistance = plate.getBimodalDistance(feature);
 				//Only Print Certain Features
 				if (shouldPrint(feature, featuresToSave))

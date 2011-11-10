@@ -22,7 +22,6 @@ package models;
 
 import features.Feature;
 import gui.Gui_Plate;
-import gui.MainGUI;
 import imagerailio.ImageRail_SDCube;
 
 import java.awt.Color;
@@ -187,10 +186,10 @@ public class Model_Plate
 	// * @author BLM*/
 	// private void initMetaDataConnector()
 	// {
-	// if(gui.MainGUI.getGUI().getProjectDirectory()!=null)
+	// if(models.Model_Main.getModel().getProjectDirectory()!=null)
 	// {
 	// String projPath =
-	// gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
+	// models.Model_Main.getModel().getProjectDirectory().getAbsolutePath();
 	// TheMetaDataWriter = null;
 	// try
 	// {
@@ -237,15 +236,15 @@ public class Model_Plate
 
 		// Hashtable xmlHassh = new Hashtable();
 		// Hashtable hdfHash = null;
-		// if (gui.MainGUI.getGUI().getImageRailio() != null) {
-		// hdfHash = gui.MainGUI.getGUI().getImageRailio()
+		// if (models.Model_Main.getModel().getImageRailio() != null) {
+		// hdfHash = models.Model_Main.getModel().getImageRailio()
 		// .getHashtable();
 		// }
 
-		// sampleID = gui.MainGUI.getGUI().getImageRailio()
+		// sampleID = models.Model_Main.getModel().getImageRailio()
 		// .readSampleID_fromHDF5(ID, counter);
 		//		
-		// sampleID = gui.MainGUI.getGUI().getImageRailio()
+		// sampleID = models.Model_Main.getModel().getImageRailio()
 		// .readSampleID_fromXML(ID, counter);
 		//		
 		// long hdfTime = 0;
@@ -262,10 +261,10 @@ public class Model_Plate
 				String sampleID = null;
 
 				if (seekSampleIDsFromFiles
-						&& gui.MainGUI.getGUI().getImageRailio() != null) {
+						&& models.Model_Main.getModel().getImageRailio() != null) {
 
 					// long sTime = System.currentTimeMillis();
-				sampleID = gui.MainGUI.getGUI().getImageRailio()
+				sampleID = models.Model_Main.getModel().getImageRailio()
 						.readSampleID_fromHDF5(ID, counter);
 
 					// String path = (String)hdfHash.get("p"+ID+"w"+counter);
@@ -278,7 +277,7 @@ public class Model_Plate
 					// sTime = System.currentTimeMillis();
 					// System.out.println("hdfDone");
 				if(sampleID==null) //Trying to get from XML if not in HDF5
-					sampleID = gui.MainGUI.getGUI().getImageRailio()
+					sampleID = models.Model_Main.getModel().getImageRailio()
 							.readSampleID_fromXML(ID, counter);
 					// System.out.println("xmlDone");
 					// xmlTime += (System.currentTimeMillis() - sTime);
@@ -388,7 +387,7 @@ public class Model_Plate
 		
 		if (normalizeAcrossAllPlates)
 		{
-			Model_Plate[] thePlates = MainGUI.getGUI().getPlateHoldingPanel()
+			Model_Plate[] thePlates = models.Model_Main.getModel().getPlateHoldingPanel()
 					.getModel().getPlates();
 			int numPlates = thePlates.length;
 			for (int p = 0; p < numPlates; p++)
@@ -396,11 +395,11 @@ public class Model_Plate
 				Model_Plate plate = thePlates[p];
 				for (int r = 0; r < plate.NumRows; r++)
 					for (int c = 0; c < plate.NumCols; c++)
-						if (plate.TheWells[r][c].Feature_Means != null && tools.MathOps.sum(plate.TheWells[r][c].Feature_Means)!=0 && plate.TheWells[r][c].Feature_Means.length > MainGUI.getGUI().getTheSelectedFeature_Index())
+						if (plate.TheWells[r][c].Feature_Means != null && tools.MathOps.sum(plate.TheWells[r][c].Feature_Means)!=0 && plate.TheWells[r][c].Feature_Means.length > models.Model_Main.getModel().getTheSelectedFeature_Index())
 						{
 							if (MeanOrCV == 0) { // MEAN
 							float val = 0;
-							val = plate.TheWells[r][c].Feature_Means[MainGUI.getGUI().getTheSelectedFeature_Index()];
+							val = plate.TheWells[r][c].Feature_Means[models.Model_Main.getModel().getTheSelectedFeature_Index()];
 							
 							if (val < arr[0])
 								arr[0] = val;
@@ -409,10 +408,11 @@ public class Model_Plate
 							}
  else if (MeanOrCV == 1) { // CV
 								float val = 0;
-								val = plate.TheWells[r][c].Feature_Stdev[MainGUI
-										.getGUI().getTheSelectedFeature_Index()]
-										/ plate.TheWells[r][c].Feature_Means[MainGUI
-												.getGUI()
+								val = plate.TheWells[r][c].Feature_Stdev[models.Model_Main
+										.getModel()
+										.getTheSelectedFeature_Index()]
+										/ plate.TheWells[r][c].Feature_Means[models.Model_Main
+												.getModel()
 												.getTheSelectedFeature_Index()];
 
 								if (val < arr[0])
@@ -429,11 +429,11 @@ public class Model_Plate
 			Model_Plate plate = this;
 			for (int r = 0; r < plate.NumRows; r++)
 				for (int c = 0; c < plate.NumCols; c++)
-					if (plate.TheWells[r][c].Feature_Means != null && tools.MathOps.sum(plate.TheWells[r][c].Feature_Means)!=0 && plate.TheWells[r][c].Feature_Means.length > MainGUI.getGUI().getTheSelectedFeature_Index())
+					if (plate.TheWells[r][c].Feature_Means != null && tools.MathOps.sum(plate.TheWells[r][c].Feature_Means)!=0 && plate.TheWells[r][c].Feature_Means.length > models.Model_Main.getModel().getTheSelectedFeature_Index())
 					{
 						if (MeanOrCV == 0) {
 						float val = 0;
-						val = plate.TheWells[r][c].Feature_Means[MainGUI.getGUI().getTheSelectedFeature_Index()];
+						val = plate.TheWells[r][c].Feature_Means[models.Model_Main.getModel().getTheSelectedFeature_Index()];
 						
 						if (val < arr[0])
 							arr[0] = val;
@@ -442,10 +442,10 @@ public class Model_Plate
 						} else if (MeanOrCV == 1) { // CV
 							float val = 0;
 
-							val = plate.TheWells[r][c].Feature_Stdev[MainGUI
-									.getGUI().getTheSelectedFeature_Index()]
-									/ plate.TheWells[r][c].Feature_Means[MainGUI
-											.getGUI()
+							val = plate.TheWells[r][c].Feature_Stdev[models.Model_Main
+									.getModel().getTheSelectedFeature_Index()]
+									/ plate.TheWells[r][c].Feature_Means[models.Model_Main
+											.getModel()
 											.getTheSelectedFeature_Index()];
 
 							if (val < arr[0])
@@ -521,21 +521,21 @@ public class Model_Plate
 	{
 		Title = title;
 		// // writing to HDF file
-		// if (gui.MainGUI.getGUI() == null
-		// || gui.MainGUI.getGUI().getThePlateHoldingPanel() == null
-		// || gui.MainGUI.getGUI().getThePlateHoldingPanel().getPlates() ==
+		// if (models.Model_Main.getModel() == null
+		// || models.Model_Main.getModel().getThePlateHoldingPanel() == null
+		// || models.Model_Main.getModel().getThePlateHoldingPanel().getPlates() ==
 		// null)
 		// {
 		// System.out.println("GUI and/or Plates are null: "
-		// + gui.MainGUI.getGUI()
+		// + models.Model_Main.getModel()
 		// + ","
-		// + gui.MainGUI.getGUI().getThePlateHoldingPanel()
+		// + models.Model_Main.getModel().getThePlateHoldingPanel()
 		// + ","
-		// + gui.MainGUI.getGUI().getThePlateHoldingPanel()
+		// + models.Model_Main.getModel().getThePlateHoldingPanel()
 		// .getPlates());
 		// return;
 		// }
-		// Model_Plate[] ps = gui.MainGUI.getGUI().getThePlateHoldingPanel()
+		// Model_Plate[] ps = models.Model_Main.getModel().getThePlateHoldingPanel()
 		// .getPlates();
 		//
 		// int len = ps.length;
@@ -544,7 +544,7 @@ public class Model_Plate
 		// names[i] = ps[i].getTitle();
 		// names[getID()] = Title;
 		//
-		// ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+		// ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 		// if (io != null) {
 		// io.writePlateNames(names);
 		// System.out.println("Reading newly written plate names: ");
@@ -560,7 +560,7 @@ public class Model_Plate
 	public String getTitle()
 	{
 		// // loading plate names
-		// ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+		// ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 		// if (io == null)
 		// return "Plate #" + getID();
 		//
@@ -661,10 +661,10 @@ public class Model_Plate
 	 * @author BLM*/
 	public void initMinMaxFeatureValues()
 	{
-		if (MainGUI.getGUI().getTheFeatures() == null)
+		if (models.Model_Main.getModel().getTheFeatures() == null)
 			return;
 		
-		int len = MainGUI.getGUI().getTheFeatures().size();
+		int len = models.Model_Main.getModel().getTheFeatures().size();
 		MinMaxFeatureValues = new float[2][len];
 		for (int i = 0; i < len; i++)
 		{
@@ -695,7 +695,7 @@ public class Model_Plate
 	public void loadWellMeanAndStdevData() throws H5IO_Exception
 	{
 		System.out.println("Loading means and stdevs for plate: " + getID());
-		ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
+		ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 		//Trying to write mean value data to file
 		
 		int numRows = TheWells.length;
@@ -721,7 +721,8 @@ public class Model_Plate
 			 wellIndex++;
 		}
 
-		ThisGUI.repaint();
+		if (ThisGUI != null)
+			ThisGUI.repaint();
 	}
 	
 	
@@ -1098,8 +1099,8 @@ public class Model_Plate
 		{
 			// Project name
 			// String projectPath =
-			// gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
-			ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
+			// models.Model_Main.getModel().getProjectDirectory().getAbsolutePath();
+			ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 			if(wells!=null && wells.size()>0)
 				for (int i = 0; i < wells.size(); i++)
 					wells.get(i).loadCells(io, loadCoords, loadDataVals);

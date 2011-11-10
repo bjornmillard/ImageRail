@@ -70,7 +70,7 @@ public class FilterManager extends JFrame
 		Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 		setLocation((int)(d.width/2f)-width/2,(int)(d.height/5f)-height/2);
 		
-		TheMainGUI = gui.MainGUI.getGUI();
+		TheMainGUI = models.Model_Main.getModel().getGUI();
 		
 		
 		TheMainPanel = new JPanel();
@@ -149,42 +149,44 @@ public class FilterManager extends JFrame
 		
 		
 		//adding the possible filters
-		ThePossibleFilters = new JList(getAllPossibleFilters());
-		ThePossibleFilters.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-		ThePossibleFilters.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		ThePossibleFilters.setLayoutOrientation(JList.VERTICAL);
-		ThePossibleFilters.setSelectedIndex(0);
-		ThePossibleFilters.setVisibleRowCount(-1);
-		ThePossibleFilters.addListSelectionListener(new ListSelectionHandler());
-		possibleFiltersScroller = new JScrollPane(ThePossibleFilters);
-		possibleFiltersScroller.setPreferredSize(new Dimension(200, 150));
-		TheMainPanel.add(possibleFiltersScroller, 0);
+		ListModel filters = getAllPossibleFilters();
+		if (filters != null) {
+			ThePossibleFilters = new JList(filters);
+			ThePossibleFilters.setBorder(BorderFactory
+					.createBevelBorder(BevelBorder.LOWERED));
+			ThePossibleFilters
+					.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			ThePossibleFilters.setLayoutOrientation(JList.VERTICAL);
+			ThePossibleFilters.setSelectedIndex(0);
+			ThePossibleFilters.setVisibleRowCount(-1);
+			ThePossibleFilters
+					.addListSelectionListener(new ListSelectionHandler());
+			possibleFiltersScroller = new JScrollPane(ThePossibleFilters);
+			possibleFiltersScroller.setPreferredSize(new Dimension(200, 150));
+			TheMainPanel.add(possibleFiltersScroller, 0);
+
+			TheFilters = new JList(new DefaultListModel());
+			TheFilters.setBorder(BorderFactory
+					.createBevelBorder(BevelBorder.LOWERED));
+			TheFilters.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			TheFilters.setLayoutOrientation(JList.VERTICAL);
+			TheFilters.setSelectedIndex(0);
+			TheFilters.setVisibleRowCount(-1);
+			TheFilters.addListSelectionListener(new ListSelectionHandler());
+			selectedFiltersScroller = new JScrollPane(TheFilters);
+			selectedFiltersScroller.setPreferredSize(new Dimension(200, 150));
 		
-		
-		
-		TheFilters = new JList(new DefaultListModel());
-		TheFilters.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-		TheFilters.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		TheFilters.setLayoutOrientation(JList.VERTICAL);
-		TheFilters.setSelectedIndex(0);
-		TheFilters.setVisibleRowCount(-1);
-		TheFilters.addListSelectionListener(new ListSelectionHandler());
-		selectedFiltersScroller = new JScrollPane(TheFilters);
-		selectedFiltersScroller.setPreferredSize(new Dimension(200, 150));
-		
-		
-		FeatureFilter f = (FeatureFilter)ThePossibleFilters.getSelectedValue();
-		if(f!=null)
-		{
-			TheMainPanel.add(f.getParameterPanel(),1);
-			TheMainPanel.add(TheButtonPanel, 2);
-			TheMainPanel.add(selectedFiltersScroller, 3);
-		}
-		else
-		{
-			getContentPane().removeAll();
-			getContentPane().setLayout(new BorderLayout());
-			getContentPane().add(new EmptyPanel());
+			FeatureFilter f = (FeatureFilter) ThePossibleFilters
+					.getSelectedValue();
+			if (f != null) {
+				TheMainPanel.add(f.getParameterPanel(), 1);
+				TheMainPanel.add(TheButtonPanel, 2);
+				TheMainPanel.add(selectedFiltersScroller, 3);
+			} else {
+				getContentPane().removeAll();
+				getContentPane().setLayout(new BorderLayout());
+				getContentPane().add(new EmptyPanel());
+			}
 		}
 	}
 	
@@ -246,7 +248,7 @@ public class FilterManager extends JFrame
 			return null;
 		DefaultListModel listModel = new DefaultListModel();
 
-		ArrayList<Feature> arr = TheMainGUI.getTheFeatures();
+		ArrayList<Feature> arr = models.Model_Main.getModel().getTheFeatures();
 		if (arr==null)
 			return null;
 		

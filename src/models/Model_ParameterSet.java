@@ -230,7 +230,7 @@ public boolean getParameter_boolean(String name) {
 		String[] pNames = getParameterNames();
 		String[] pVals = getParameterValues();
 
-		ImageRail_SDCube imagerail_io = gui.MainGUI.getGUI().getH5IO();
+		ImageRail_SDCube imagerail_io = models.Model_Main.getModel().getH5IO();
 		H5IO h5 = imagerail_io.getH5IO();
 
 		Hashtable<String, String> hashtable_indexToPath = imagerail_io
@@ -254,6 +254,23 @@ public boolean getParameter_boolean(String name) {
 					+ "Segmentation_Parameters_Values", pVals);
 
 		}
+	}
+
+	/**
+	 * Checks if given parameter exists
+	 * 
+	 * @author BLM
+	 * @param String
+	 *            ParameterName
+	 * @return boolean exists
+	 */
+	public boolean exists(String pname) {
+
+		if (TheParameters == null)
+			return false;
+		if (TheParameters.get(pname) == null)
+			return false;
+		return true;
 	}
 
 	/**
@@ -357,7 +374,7 @@ public boolean getParameter_boolean(String name) {
 	 *            pathToParentDirContainingParamNamesAndValues
 	 * */
 	public void load(String H5Path, String pathToParentDir) {
-		ImageRail_SDCube io = gui.MainGUI.getGUI().getImageRailio();
+		ImageRail_SDCube io = models.Model_Main.getModel().getImageRailio();
 		Hashtable<String, String> hash = io.readParameterSet(H5Path,
 				pathToParentDir);
 		if (hash != null)

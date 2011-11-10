@@ -248,7 +248,7 @@ public class DensityScatter
 	
 	public Color getColor(float x, float y)
 	{
-		tools.ColorMaps.getColorValue(getDensityValue(x,y), 0, 1, color, gui.MainGUI.getGUI().getTheColorMapIndex());
+		tools.ColorMaps.getColorValue(getDensityValue(x,y), 0, 1, color, models.Model_Main.getModel().getTheColorMapIndex());
 		for (int i = 0; i < 3; i++)
 		{
 			if (color[i]<0)

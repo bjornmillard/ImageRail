@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 
 import models.Model_Field;
 import models.Model_FieldCellRepository;
+import models.Model_Main;
 import models.Model_Plate;
 import models.Model_Well;
 import plots.DotSelectionListener;
@@ -154,8 +155,8 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		ID = (int) (Math.random() * 1000000000);
 
 		ThePanel.setLayout(new BorderLayout());
-		MaxValueSlider = new JSlider(0, MainGUI.MAXPIXELVALUE,
-				MainGUI.MAXPIXELVALUE);
+		MaxValueSlider = new JSlider(0, Model_Main.MAXPIXELVALUE,
+				Model_Main.MAXPIXELVALUE);
 
 		MaxValueSlider.setToolTipText("Max = "+MaxValueSlider.getValue());
 		MaxValueSlider.setName("Max");
@@ -163,7 +164,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		SliderListener_RescaleDisplay listener = new SliderListener_RescaleDisplay();
 		MaxValueSlider.addChangeListener(listener);
 
-		MinValueSlider = new JSlider(0, MainGUI.MAXPIXELVALUE, 0);
+		MinValueSlider = new JSlider(0, Model_Main.MAXPIXELVALUE, 0);
 		MinValueSlider.setEnabled(true);
 		MinValueSlider.setToolTipText("Min = "+MinValueSlider.getValue());
 		MinValueSlider.setName("Min");
@@ -211,11 +212,11 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			set(TheCurrentImage);
 			TheDisplayedImage = TheCurrentImage;
 
-			int numP = MainGUI.getGUI().getThePlateHoldingPanel()
+			int numP = models.Model_Main.getModel().getThePlateHoldingPanel()
 					.getPlates().length;
 			ThePlates = new Model_Plate[numP];
 			for (int p = 0; p < numP; p++) {
-				ThePlates[p] = MainGUI.getGUI().getThePlateHoldingPanel()
+				ThePlates[p] = models.Model_Main.getModel().getThePlateHoldingPanel()
 						.getPlates()[p].copy();
 				ThePlates[p].getGUI().allowImageCountDisplay(false);
 				ThePlates[p].getGUI().setSize(200, 400);
@@ -224,7 +225,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				int cols = ThePlates[p].getWells()[0].length;
 				for (int i = 0; i < rows; i++)
 					for (int c = 0; c < cols; c++) {
-						Model_Well w = MainGUI.getGUI()
+						Model_Well w = models.Model_Main.getModel()
 								.getThePlateHoldingPanel().getPlates()[p]
 								.getWells()[i][c];
 						Model_Well w2 = ThePlates[p].getWells()[i][c];
@@ -276,7 +277,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				}
 			}
 			//create histogram for this raster
-			float[][] hist = tools.ImageTools.getHistogram_bounds_norm(im, numBins, (int)MainGUI.getGUI().getMinValues_ImageDisplay()[j], (int)MainGUI.getGUI().getMaxValues_ImageDisplay()[j]);
+			float[][] hist = tools.ImageTools.getHistogram_bounds_norm(im, numBins, (int)models.Model_Main.getModel().getMinValues_ImageDisplay()[j], (int)models.Model_Main.getModel().getMaxValues_ImageDisplay()[j]);
 			histograms[j] = hist[1];
 			im = null;
 		}
@@ -1678,7 +1679,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			int channel = ImageSelectionSlider.getValue();
 			if (j.getName().equalsIgnoreCase("Max")
 					&& !MaxValueSlider.getValueIsAdjusting())
-				MainGUI.getGUI().getMaxValues_ImageDisplay()[channel] = MaxValueSlider
+				models.Model_Main.getModel().getMaxValues_ImageDisplay()[channel] = MaxValueSlider
 						.getValue();
 			else if (j.getName().equalsIgnoreCase("Min")
 					&& !MinValueSlider.getValueIsAdjusting())
@@ -1689,7 +1690,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					MinValueSlider.setValue(MaxValueSlider.getValue()-1);
 					MinValueSlider.repaint();
 				}
-				MainGUI.getGUI().getMinValues_ImageDisplay()[channel] = MinValueSlider
+				models.Model_Main.getModel().getMinValues_ImageDisplay()[channel] = MinValueSlider
 						.getValue();
 			}
 
@@ -1750,9 +1751,9 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			// now rescaling it
 			int channel = ImageSelectionSlider.getValue();
 
-			MaxValueSlider.setValue((int) MainGUI.getGUI()
+			MaxValueSlider.setValue((int) models.Model_Main.getModel()
 					.getMaxValues_ImageDisplay()[channel]);
-			MinValueSlider.setValue((int) MainGUI.getGUI()
+			MinValueSlider.setValue((int) models.Model_Main.getModel()
 					.getMinValues_ImageDisplay()[channel]);
 
 			// Now we can rescale the pixels gray levels:
@@ -1771,8 +1772,8 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	 * Rescales the given RenderedImage 
 	 * */
 	static public RenderedImage rescale(RenderedImage image, int channel) {
-		int minValue = (int) MainGUI.getGUI().getMinValues_ImageDisplay()[channel];
-		int maxValue = (int) MainGUI.getGUI().getMaxValues_ImageDisplay()[channel];
+		int minValue = (int) Model_Main.getModel().getMinValues_ImageDisplay()[channel];
+		int maxValue = (int) Model_Main.getModel().getMaxValues_ImageDisplay()[channel];
 	
 		// set the levels for the dynamic
 		final ParameterBlock pb = new ParameterBlock();
@@ -1780,8 +1781,8 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		// rescaling each band 
 		final double[] scale = new double[1];
 		final double[] offset = new double[1];
-		scale[0] = (double)gui.MainGUI.MAXPIXELVALUE / (maxValue - minValue);
-		offset[0] = -(((double)gui.MainGUI.MAXPIXELVALUE * minValue) / (maxValue - minValue));
+		scale[0] = (double) Model_Main.MAXPIXELVALUE / (maxValue - minValue);
+		offset[0] = -(((double) Model_Main.MAXPIXELVALUE * minValue) / (maxValue - minValue));
 		pb.add(scale);
 		pb.add(offset);
 		return JAI.create("rescale", pb);
@@ -1810,9 +1811,9 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 
 		// now rescaling it
 		int channel = ImageSelectionSlider.getValue();
-		MaxValueSlider.setValue((int) MainGUI.getGUI()
+		MaxValueSlider.setValue((int) models.Model_Main.getModel()
 				.getMaxValues_ImageDisplay()[channel]);
-		MinValueSlider.setValue((int) MainGUI.getGUI()
+		MinValueSlider.setValue((int) models.Model_Main.getModel()
 				.getMinValues_ImageDisplay()[channel]);
 
 		RenderedImage newImage = rescale(TheCurrentImage, ImageSelectionSlider
@@ -2166,7 +2167,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		int height = raster.getHeight();
 		int width = raster.getWidth();
 
-		int bands = gui.MainGUI.getGUI().getNumberOfChannels();
+		int bands = models.Model_Main.getModel().getNumberOfChannels();
 		int[] dims = new int[] { height, width, bands };
 		return dims;
 	}

@@ -21,7 +21,6 @@
 package models;
 
 import gui.Gui_PlateRepository;
-import gui.MainGUI;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -265,7 +264,7 @@ public class Model_PlateRepository
 		if (values==null || values.length<=0)
 			return null;
 		
-		int numF = MainGUI.getGUI().getTheFeatures().size();
+		int numF = models.Model_Main.getModel().getTheFeatures().size();
 		
 		int numCells = values.length;
 		float[][] data = new float[2][numF];
@@ -302,14 +301,14 @@ public class Model_PlateRepository
 	 * @author BLM*/
 	public void updateMinMaxValues()
 	{
-		int largeInt = 999999999;
+		int largeInt = Integer.MAX_VALUE;
 		for (int p = 0; p < getNumPlates(); p++)
 		{
 			Model_Plate plate = ThePlates[p];
 			plate.initMinMaxFeatureValues();
 			float[][] plateMinMax = plate.getMinMaxFeatureValues();
 			float[][] plateMinMax_log =  plate.getMinMaxFeatureValues_log();
-			int numF = MainGUI.getGUI().getTheFeatures().size();
+			int numF = models.Model_Main.getModel().getTheFeatures().size();
 			for (int r = 0; r < plate.getNumRows(); r++)
 				for (int c = 0; c < plate.getNumColumns(); c++)
 				{
@@ -347,7 +346,9 @@ public class Model_PlateRepository
 							}
 					}
 				}
-			ThisGUI.updatePanel();
+
+			if (ThisGUI != null)
+				ThisGUI.updatePanel();
 		}
 	}
 	

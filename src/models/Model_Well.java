@@ -22,7 +22,6 @@ package models;
 
 import features.Feature;
 import gui.Gui_Well;
-import gui.MainGUI;
 import imagerailio.ImageRail_SDCube;
 
 import java.util.ArrayList;
@@ -148,7 +147,7 @@ public class Model_Well
 	{
 		cellsModified = boo;
 		if(boo)
-			MainGUI.getGUI().setCellsModified(true);
+			models.Model_Main.getModel().setCellsModified(true);
 
 	}
 	
@@ -346,7 +345,7 @@ public class Model_Well
 	{
 		if (Feature_Means==null)
 			return 0;
-		return Feature_Means[MainGUI.getGUI().getTheSelectedFeature_Index()];
+		return Feature_Means[models.Model_Main.getModel().getTheSelectedFeature_Index()];
 	}
 	
 	/** Returns the standard deviation value of selected feature
@@ -355,14 +354,14 @@ public class Model_Well
 	{
 		if (Feature_Stdev==null)
 			return 0;
-		return Feature_Stdev[MainGUI.getGUI().getTheSelectedFeature_Index()];
+		return Feature_Stdev[models.Model_Main.getModel().getTheSelectedFeature_Index()];
 	}
 	
 	/** Returns the coefficient of variation value of selected feature
 	 * @author BLM*/
 	public float getCurrentValue_CV()
 	{
-		return Feature_Means[MainGUI.getGUI().getTheSelectedFeature_Index()]/Feature_Means[MainGUI.getGUI().getTheSelectedFeature_Index()];
+		return Feature_Means[models.Model_Main.getModel().getTheSelectedFeature_Index()]/Feature_Means[models.Model_Main.getModel().getTheSelectedFeature_Index()];
 	}
 	
 	/**
@@ -374,7 +373,7 @@ public class Model_Well
 		if (Feature_Means == null)
 			return 0;
 
-		return Feature_Means[MainGUI.getGUI().getFeature_Index(featureName)];
+		return Feature_Means[models.Model_Main.getModel().getFeature_Index(featureName)];
 	}
 	
 	/**
@@ -385,7 +384,7 @@ public class Model_Well
 	public float getValue_Stdev(String featureName) {
 		if (Feature_Stdev == null)
 			return 0;
-		return Feature_Stdev[MainGUI.getGUI().getFeature_Index(featureName)];
+		return Feature_Stdev[models.Model_Main.getModel().getFeature_Index(featureName)];
 	}
 	
 	
@@ -416,7 +415,7 @@ public class Model_Well
 		
 		int len = TheFields.length;
 		for (int i = 0; i < len; i++)
-			if (TheFields[i].doesDataExist(gui.MainGUI.getGUI()
+			if (TheFields[i].doesDataExist(models.Model_Main.getModel()
 					.getProjectDirectory().getAbsolutePath()
 					+ "/Data.h5"))
  {
@@ -489,17 +488,17 @@ public class Model_Well
 //		double minVal = 0;
 //		double maxVal = 1;
 //
-//		if (!MainGUI.getGUI().getPlateHoldingPanel().isLogScaled())
+//		if (!models.Model_Main.getModel().getPlateHoldingPanel().isLogScaled())
 //		{
-//			minVal = ThePlate.getMinMaxFeatureValues()[0][MainGUI.getGUI().getTheSelectedFeature_Index()];
-//			maxVal = ThePlate.getMinMaxFeatureValues()[1][MainGUI.getGUI().getTheSelectedFeature_Index()];
+//			minVal = ThePlate.getMinMaxFeatureValues()[0][models.Model_Main.getModel().getTheSelectedFeature_Index()];
+//			maxVal = ThePlate.getMinMaxFeatureValues()[1][models.Model_Main.getModel().getTheSelectedFeature_Index()];
 //		}
 //		else
 //		{
 //			if (ThePlate.getMinMaxFeatureValues_log()!=null)
 //			{
-//				minVal = ThePlate.getMinMaxFeatureValues_log()[0][MainGUI.getGUI().getTheSelectedFeature_Index()];
-//				maxVal = ThePlate.getMinMaxFeatureValues_log()[1][MainGUI.getGUI().getTheSelectedFeature_Index()];
+//				minVal = ThePlate.getMinMaxFeatureValues_log()[0][models.Model_Main.getModel().getTheSelectedFeature_Index()];
+//				maxVal = ThePlate.getMinMaxFeatureValues_log()[1][models.Model_Main.getModel().getTheSelectedFeature_Index()];
 //			}
 //		}
 //
@@ -507,7 +506,7 @@ public class Model_Well
 //		for (int i = 0; i < len; i++)
 //		{
 //			double val = feature.getValue(TheCells[i]);
-//			if (MainGUI.getGUI().getPlateHoldingPanel().isLogScaled())
+//			if (models.Model_Main.getModel().getPlateHoldingPanel().isLogScaled())
 //			{
 //				if (val<=1)
 //					val = 1;
@@ -648,7 +647,7 @@ public class Model_Well
 		Feature_Stdev = data[1];
 		
 		//updating the min/max of plate date
-		MainGUI.getGUI().getPlateHoldingPanel().getModel().updateMinMaxValues();
+		models.Model_Main.getModel().getPlateHoldingPanel().getModel().updateMinMaxValues();
 		
 	}
 	
@@ -664,7 +663,7 @@ public class Model_Well
 		Feature_Stdev = data[1];
 		
 		//updating the min/max of plate date
-		MainGUI.getGUI().getPlateHoldingPanel().getModel().updateMinMaxValues();	
+		models.Model_Main.getModel().getPlateHoldingPanel().getModel().updateMinMaxValues();	
 	}
 	
 	/** Sets this wells means and stdevs with the given float arrays
@@ -675,7 +674,8 @@ public class Model_Well
 		Feature_Stdev = stdevs;
 		
 		//updating the min/max of plate date
-		MainGUI.getGUI().getPlateHoldingPanel().getModel().updateMinMaxValues();
+		models.Model_Main.getModel().getThePlateHoldingPanel()
+				.updateMinMaxValues();
 	}
 	
 	
@@ -815,21 +815,21 @@ public class Model_Well
 	// + TheParameterSet.getMeanOrIntegrated()
 	// + "' "
 	// + "  StoreCells='"
-	// + MainGUI.getGUI().getLoadCellsImmediatelyCheckBox()
+	// + models.Model_Main.getModel().getLoadCellsImmediatelyCheckBox()
 	// .isSelected() + "' " +
 	// //
-	// "  StorePixelInfo='"+MainGUI.getGUI().getStorePixelInformationCheckBox().isSelected()+"' "
+	// "  StorePixelInfo='"+models.Model_Main.getModel().getStorePixelInformationCheckBox().isSelected()+"' "
 	// // +
 	// //
-	// "  StoreMembraneRegion='"+MainGUI.getGUI().getStoreMembranesCheckBox().isSelected()+"' "
+	// "  StoreMembraneRegion='"+models.Model_Main.getModel().getStoreMembranesCheckBox().isSelected()+"' "
 	// // +
 	// " />");
 	// }
 
 	public void deleteSelectedCells() {
 		purgeSelectedCellsAndRecomputeWellMeans();
-		MainGUI.getGUI().getPlateHoldingPanel().getModel().updateMinMaxValues();
-		MainGUI.getGUI().updateAllPlots();
+		models.Model_Main.getModel().getPlateHoldingPanel().getModel().updateMinMaxValues();
+		models.Model_Main.getModel().getGUI().updateAllPlots();
 	}
 
 	/** Clears the RAM of all cell data in this well, not mean values

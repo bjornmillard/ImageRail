@@ -45,7 +45,7 @@ public class Gate_DotPlot
 		
 		featureX_index = 0;
 		featureY_index = 0;
-		Feature[] features = gui.MainGUI.getGUI().getFeatures();
+		Feature[] features = models.Model_Main.getModel().getFeatures();
 		for (int i = 0; i < features.length; i++)
 		{
 			if(features[i].toString().equalsIgnoreCase(featureX.toString()))

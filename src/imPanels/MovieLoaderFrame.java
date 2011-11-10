@@ -57,11 +57,11 @@ public class MovieLoaderFrame extends JFrame{
 		int numRows = 1;
 		int numCols = 1;
 	
-		boolean worked = gui.MainGUI.getGUI()
+		boolean worked = models.Model_Main.getModel()
 				.initNewPlates(1, numRows, numCols);
 		if (worked) {
 
-			gui.MainGUI.getGUI().setVisible(true);
+			models.Model_Main.getModel().getGUI().setVisible(true);
 		}
 	}
 	

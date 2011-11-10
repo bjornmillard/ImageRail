@@ -55,7 +55,7 @@ public class GlassPane_Blocker extends JComponent implements MouseListener
 	
 	public GlassPane_Blocker()
 	{
-		TheMainGUI = MainGUI.getGUI();
+		TheMainGUI = models.Model_Main.getModel().getGUI();
 		ThePanel = this;
 		Width = TheMainGUI.getWidth(); Height = TheMainGUI.getHeight();
 		setSize(Width, Height);

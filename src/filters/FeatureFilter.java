@@ -30,8 +30,8 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import models.Model_Main;
 import features.Feature;
-import gui.MainGUI;
 
 public class FeatureFilter
 {
@@ -47,7 +47,7 @@ public class FeatureFilter
 		
 		name = TheFeature.toString();
 		lowerBound = 0;
-		upperBound = MainGUI.MAXPIXELVALUE;
+		upperBound = Model_Main.MAXPIXELVALUE;
 		
 		InputFields = new JTextField[2];
 		InputFields[0] = new JTextField(5);

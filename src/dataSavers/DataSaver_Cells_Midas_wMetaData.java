@@ -33,27 +33,27 @@ import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
 
+import models.Model_Main;
 import models.Model_Plate;
 import models.Model_Well;
 import sdcubeio.ExpDesign_Description;
 import sdcubeio.ExpDesign_Model;
 import features.Feature;
-import gui.MainGUI;
 
 public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 {
-	public void save(Feature[] featuresToSave, MainGUI TheMainGUI)
+	public void save(Feature[] featuresToSave, Model_Main TheMainModel)
 	{
 		JFileChooser fc = null;
-		if (TheMainGUI.getTheDirectory()!=null)
-			fc = new JFileChooser(TheMainGUI.getTheDirectory());
+		if (TheMainModel.getTheDirectory() != null)
+			fc = new JFileChooser(TheMainModel.getTheDirectory());
 		else
 			fc = new JFileChooser();
 
 		File outDir = null;
 
 		fc.setDialogTitle("Save as...");
-		int returnVal = fc.showSaveDialog(TheMainGUI);
+		int returnVal = fc.showSaveDialog(TheMainModel.getGUI());
 		if (returnVal == JFileChooser.APPROVE_OPTION)
 		{
 			outDir = fc.getSelectedFile();
@@ -64,7 +64,7 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 
 		if (outDir!=null)
 		{
-			MainGUI.getGUI().setTheDirectory(new File(outDir.getParent()));
+			TheMainModel.setTheDirectory(new File(outDir.getParent()));
 			try
 			{
 				PrintWriter pw = new PrintWriter(outDir);
@@ -78,7 +78,7 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 				headers.add("Description");
 				
 				//Need to get indicies of the features we want to print
-				ArrayList<Feature> arr = TheMainGUI.getTheFeatures();
+				ArrayList<Feature> arr = TheMainModel.getTheFeatures();
 				int counter = 0;
 				int num = arr.size();
 				int len = featuresToSave.length;
@@ -106,10 +106,10 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 				ArrayList<ExpDesign_Description> uniqueT = new ArrayList<ExpDesign_Description>();
 				ArrayList<ExpDesign_Description> uniqueM = new ArrayList<ExpDesign_Description>();
 				int numF = featuresToSave.length;
-				Model_Plate[] thePlates = TheMainGUI.getPlateHoldingPanel()
-						.getModel().getPlates();
+				Model_Plate[] thePlates = TheMainModel
+						.getThePlateHoldingPanel().getPlates();
 				int numPlates = thePlates.length;
-				ExpDesign_Model io = TheMainGUI.getExpDesignConnector();
+				ExpDesign_Model io = TheMainModel.getExpDesignConnector();
 
 				for (int p = 0; p < numPlates; p++)
 				{

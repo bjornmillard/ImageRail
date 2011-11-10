@@ -82,7 +82,7 @@ public class DotFilter {
 		int width = 85;
 		int height = 60;
 		int offset = (int) (width / 2f);
-		TheMainGUI = gui.MainGUI.getGUI();
+		TheMainGUI = models.Model_Main.getModel().getGUI();
 		if (upDown == 1) // Up Arrow
 		{
 			// Making Arrow
@@ -357,7 +357,7 @@ public class DotFilter {
 		int numPlates = platePanel.getNumPlates();
 		Model_Plate[] plates = platePanel.getPlates();
 		// for each well:
-		ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+		ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 		for (int i = 0; i < numPlates; i++) {
 			Model_Plate plate = plates[i];
 			int numC = plate.getNumColumns();
@@ -462,7 +462,7 @@ public class DotFilter {
 				io.createField(sampleID, plateIndex, wellIndex, fieldIndex,
  io
 						.getFieldDimensions(plateIndex, wellIndex, fieldIndex),
-						gui.MainGUI.getGUI().getExpDesignConnector());
+						models.Model_Main.getModel().getExpDesignConnector());
 
 				writeCoordinates(io, coords, plateIndex, wellIndex,
 						fieldIndex);
@@ -479,7 +479,7 @@ public class DotFilter {
 			io.writeFeatures(plateIndex, wellIndex, fieldIndex, data);
 
 			// Writing the feature names to file
-			Feature[] features = MainGUI.getGUI().getFeatures();
+			Feature[] features = models.Model_Main.getModel().getFeatures();
 			String[] fNames = new String[features.length];
 			for (int i = 0; i < features.length; i++)
 				fNames[i] = features[i].toString();

@@ -26,9 +26,6 @@
 
 package dialogs;
 
-import features.Feature;
-import gui.MainGUI;
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -55,9 +52,12 @@ import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 
+import features.Feature;
+
 public class FeatureSelectionDialog extends JDialog
 {
-	static final JDialog TheDialog = new JDialog(MainGUI.getGUI(),
+	static final JDialog TheDialog = new JDialog(models.Model_Main.getModel()
+			.getGUI(),
 												 "Select Features to Use",
 												 true);
 	static public boolean readyToReturn;
@@ -99,7 +99,7 @@ public class FeatureSelectionDialog extends JDialog
 		
 		
 		TheDialog.pack();
-		TheDialog.setLocationRelativeTo(MainGUI.getGUI());
+		TheDialog.setLocationRelativeTo(models.Model_Main.getModel().getGUI());
 		TheDialog.setVisible(true);
 		
 		//Im an idiot and cant figure out how to use dialogs properly.
@@ -137,7 +137,7 @@ public class FeatureSelectionDialog extends JDialog
 			setLocation((int)(d.width/2f)-width/2,(int)(d.height/2f)-height/2);
 			
 			//Creating the CheckBoxes
-			TheFeatures = MainGUI.getGUI().getTheFeatures();
+			TheFeatures = models.Model_Main.getModel().getTheFeatures();
 			int numF = TheFeatures.size();
 			checkBoxes = new CheckListItem[numF];
 			Object[] arr = new Object[numF];

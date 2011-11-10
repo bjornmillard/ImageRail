@@ -20,8 +20,6 @@
 
 package imageViewers;
 
-import gui.MainGUI;
-
 import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -41,6 +39,7 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import models.Model_Main;
 import models.Model_Well;
 
 import com.sun.media.jai.widget.DisplayJAI;
@@ -75,7 +74,7 @@ public class ThresholdWizard extends JFrame {
 		setSize(width, height);
 
 		// finding min/max of raster for default Slider settings
-		min = MainGUI.MAXPIXELVALUE;
+		min = Model_Main.MAXPIXELVALUE;
 		max = 0;
 		int numBands = raster.getNumBands();
 		int[] pix = new int[numBands];
@@ -191,7 +190,7 @@ public class ThresholdWizard extends JFrame {
 		// public void mouseClicked(MouseEvent e) {
 		// if (e.isShiftDown()) {
 		// if (clickTargetRect.contains(e.getPoint())) {
-		// Model_Plate[] plates = MainGUI.getGUI()
+		// Model_Plate[] plates = models.Model_Main.getModel()
 		// .getPlateHoldingPanel().getModel().getPlates();
 		// int numPlates = plates.length;
 		// for (int p = 0; p < numPlates; p++) {
@@ -202,10 +201,10 @@ public class ThresholdWizard extends JFrame {
 		// // ProcessType
 		// pset.setProcessType(Model_ParameterSet.SINGLECELL);
 		// // Threshold Channel Nucleus
-		// pset.setParameter("Thresh_Nuc_ChannelName",""+MainGUI.getGUI()
+		// pset.setParameter("Thresh_Nuc_ChannelName",""+models.Model_Main.getModel()
 		// .getTheChannelNames()[0]);
 		// // Threshold Channel Cytoplasm
-		// pset.setParameter("Thresh_Cyt_ChannelName",MainGUI.getGUI()
+		// pset.setParameter("Thresh_Cyt_ChannelName",models.Model_Main.getModel()
 		// .getTheChannelNames()[0]);
 		// // Nuc bound threshold
 		// pset.setParameter("Thresh_Nuc_Value",""+NucThreshold);
@@ -220,16 +219,16 @@ public class ThresholdWizard extends JFrame {
 		// .setMeanOrIntegrated(wells[i].TheParameterSet.MEAN);
 		//
 		// // Finding the index of this channel name
-		// for (int j = 0; j < MainGUI.getGUI()
+		// for (int j = 0; j < models.Model_Main.getModel()
 		// .getTheChannelNames().length; j++)
-		// if (MainGUI.getGUI().getTheChannelNames()[j]
+		// if (models.Model_Main.getModel().getTheChannelNames()[j]
 		// .equalsIgnoreCase(pset
 		// .getParameter_String("Thresh_Nuc_ChannelName")))
 		// pset.setParameter("Thresh_Nuc_ChannelIndex",""+j);
 		// // Finding the index of this channel name
-		// for (int j = 0; j < MainGUI.getGUI()
+		// for (int j = 0; j < models.Model_Main.getModel()
 		// .getTheChannelNames().length; j++)
-		// if (MainGUI.getGUI().getTheChannelNames()[j]
+		// if (models.Model_Main.getModel().getTheChannelNames()[j]
 		// .equalsIgnoreCase(pset
 		// .getParameter_String("Thresh_Cyt_ChannelName")))
 		// pset.setParameter("Thresh_Cyt_ChannelIndex",""+j);

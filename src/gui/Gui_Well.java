@@ -221,8 +221,10 @@ public class Gui_Well {
 
 		// Drawing the number of images text display
 		if (AllowImageCountDisplay
-				&& MainGUI.getGUI().getDisplayNumberLoadedImagesCheckBox() != null
-				&& MainGUI.getGUI().getDisplayNumberLoadedImagesCheckBox()
+				&& models.Model_Main.getModel().getGUI()
+						.getDisplayNumberLoadedImagesCheckBox() != null
+				&& models.Model_Main.getModel().getGUI()
+						.getDisplayNumberLoadedImagesCheckBox()
 						.isSelected() && TheModel.getFields() != null) {
 			g2.setFont(new Font("Helvetca", Font.PLAIN, 9));
 			if (TheModel.getFields().length > 0)
@@ -233,7 +235,7 @@ public class Gui_Well {
 		}
 
 		// Checking to see if any HDF files are available for this well
-		if (MainGUI.getGUI().shouldDisplayHDFicons()) {
+		if (models.Model_Main.getModel().getGUI().shouldDisplayHDFicons()) {
 			int numHDF = TheModel.getHDFcount();
 
 			if (numHDF > 0) {
@@ -266,7 +268,7 @@ public class Gui_Well {
 
 		// drawing the histograms if desired
 		if (!TheModel.isLoading()
-				&& MainGUI.getGUI().getPlateHoldingPanel()
+				&& models.Model_Main.getModel().getPlateHoldingPanel()
 						.shouldDisplayHistograms()
 				&& TheModel.containsCellData()
 				&& TheModel.getCell_values() != null) {
@@ -330,38 +332,38 @@ public class Gui_Well {
 		int numCells = cells.length;
 		float dX = (float) xLen / (float) numBins;
 		int[] bins = new int[numBins];
-		int feature_index = MainGUI.getGUI().getTheSelectedFeature_Index();
+		int feature_index = models.Model_Main.getModel().getTheSelectedFeature_Index();
 
 		double minVal = Double.POSITIVE_INFINITY;
 		double maxVal = Double.NEGATIVE_INFINITY;
 
 		// Getting the min/max pre-stored values
-		if (!MainGUI.getGUI().getPlateHoldingPanel().isLogScaled()) {
+		if (!models.Model_Main.getModel().getPlateHoldingPanel().isLogScaled()) {
 			if (TheModel.getPlate().getMinMaxFeatureValues() != null
 					&& TheModel.getPlate().getMinMaxFeatureValues().length > 0
 					&& TheModel.getPlate().getMinMaxFeatureValues()[0].length > 0) {
-				minVal = TheModel.getPlate().getMinMaxFeatureValues()[0][MainGUI
-						.getGUI()
+				minVal = TheModel.getPlate().getMinMaxFeatureValues()[0][models.Model_Main
+						.getModel()
 						.getTheSelectedFeature_Index()];
-				maxVal = TheModel.getPlate().getMinMaxFeatureValues()[1][MainGUI
-						.getGUI()
+				maxVal = TheModel.getPlate().getMinMaxFeatureValues()[1][models.Model_Main
+						.getModel()
 						.getTheSelectedFeature_Index()];
 			}
 		} else {
 			if (TheModel.getPlate().getMinMaxFeatureValues_log() != null
 					&& TheModel.getPlate().getMinMaxFeatureValues_log().length > 0
 					&& TheModel.getPlate().getMinMaxFeatureValues_log()[0].length > 0) {
-				minVal = TheModel.getPlate().getMinMaxFeatureValues_log()[0][MainGUI
-						.getGUI().getTheSelectedFeature_Index()];
-				maxVal = TheModel.getPlate().getMinMaxFeatureValues_log()[1][MainGUI
-						.getGUI().getTheSelectedFeature_Index()];
+				minVal = TheModel.getPlate().getMinMaxFeatureValues_log()[0][models.Model_Main
+						.getModel().getTheSelectedFeature_Index()];
+				maxVal = TheModel.getPlate().getMinMaxFeatureValues_log()[1][models.Model_Main
+						.getModel().getTheSelectedFeature_Index()];
 			}
 		}
 
 		// Binning values
 		for (int i = 0; i < numCells; i++) {
 			double val = cells[i][feature_index];
-			if (MainGUI.getGUI().getPlateHoldingPanel().isLogScaled()) {
+			if (models.Model_Main.getModel().getPlateHoldingPanel().isLogScaled()) {
 				if (val <= 1)
 					val = 1;
 				val = tools.MathOps.log(val);

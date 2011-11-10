@@ -26,7 +26,6 @@
 
 package dialogs;
 
-import gui.MainGUI;
 import imPanels.ImageCapturePanel;
 
 import java.awt.Dimension;
@@ -165,15 +164,16 @@ public class CaptureImage_Dialog extends JDialog implements ActionListener,Prope
 				setVisible(false);
 
 				JFileChooser fc = null;
-				if (MainGUI.getGUI().getTheDirectory()!=null)
-					fc = new JFileChooser(MainGUI.getGUI().getTheDirectory());
+				if (models.Model_Main.getModel().getTheDirectory()!=null)
+					fc = new JFileChooser(models.Model_Main.getModel().getTheDirectory());
 				else
 					fc = new JFileChooser();
 				
 				File outDir = null;
 				
 				fc.setDialogTitle("Save as...");
-				int returnVal = fc.showSaveDialog(MainGUI.getGUI());
+				int returnVal = fc.showSaveDialog(models.Model_Main.getModel()
+						.getGUI());
 				if (returnVal == JFileChooser.APPROVE_OPTION)
 				{
 					outDir = fc.getSelectedFile();
@@ -183,7 +183,7 @@ public class CaptureImage_Dialog extends JDialog implements ActionListener,Prope
 				
 				if (outDir!=null)
 				{
-					MainGUI.getGUI().setTheDirectory(new File(outDir.getParent()));
+					models.Model_Main.getModel().setTheDirectory(new File(outDir.getParent()));
 					//
 					//		JPEG image format
 					//

@@ -41,6 +41,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import models.Model_Main;
 import dialogs.PlateInputDialog;
 
 public class MainStartupDialog extends JFrame
@@ -182,9 +183,12 @@ public class MainStartupDialog extends JFrame
 						public void mouseClicked(java.awt.event.MouseEvent evt)
 						{
 							if(evt.getClickCount() > 0)
-							{
-						MainGUI theGUI = gui.MainGUI.getGUI();
-								File dir = gui.MainGUI.getGUI().getTheDirectory();
+ {
+						// Get current model first if exists
+						Model_Main TheMainModel = models.Model_Main.getModel();
+						if (TheMainModel == null)
+							TheMainModel = new Model_Main();
+						File dir = TheMainModel.getTheDirectory();
 								JFileChooser fc = null;
 								if (dir!=null)
 									fc = new JFileChooser(dir);
@@ -204,8 +208,10 @@ public class MainStartupDialog extends JFrame
 								if (f.getName().indexOf(".sdc") > 0)
 										{
 											TheStartUpDialog.setVisible(false);
-									theGUI.loadProject(f);
-									theGUI.setVisible(true);
+									TheMainModel.loadProject(f);
+									MainGUI TheMainGUI = new MainGUI(
+											TheMainModel);
+									TheMainGUI.setVisible(true);
 										}
 										else
 										{

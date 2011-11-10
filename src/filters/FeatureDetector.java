@@ -70,7 +70,7 @@ public class FeatureDetector {
 //		}
 		boolean foundOne = false;
 		int numChannels = images.length;
-		String[] channelNames = gui.MainGUI.getGUI().getTheChannelNames();
+		String[] channelNames = models.Model_Main.getModel().getTheChannelNames();
 		for (int j = 0; j < numChannels; j++) {
 
 			if (channelNames[j].equalsIgnoreCase(channel.trim())
@@ -83,7 +83,7 @@ public class FeatureDetector {
 				float stdev = field.getParentWell().getValue_Stdev(featureName);
 
 				int numC = cells.size();
-				int fIndex = gui.MainGUI.getGUI().getFeature_Index(featureName);
+				int fIndex = models.Model_Main.getModel().getFeature_Index(featureName);
 				for (int i = 0; i < numC; i++) {
 					float thisVal = cells.get(i).getFeatureValues()[fIndex];
 					float zScore = (thisVal - mean) / stdev;

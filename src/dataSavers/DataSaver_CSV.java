@@ -32,24 +32,25 @@ import java.io.PrintWriter;
 
 import javax.swing.JFileChooser;
 
+import models.Model_Main;
 import models.Model_Plate;
 import features.Feature;
 import gui.MainGUI;
 
 public class DataSaver_CSV implements DataSaver
 {
-	public void save(Feature[] featuresToSave, MainGUI TheMainGUI)
+	public void save(Feature[] featuresToSave, Model_Main TheMainModel)
 	{
 		JFileChooser fc = null;
-		if (MainGUI.getGUI().getTheDirectory()!=null)
-			fc = new JFileChooser(MainGUI.getGUI().getTheDirectory());
+		if (models.Model_Main.getModel().getTheDirectory()!=null)
+			fc = new JFileChooser(models.Model_Main.getModel().getTheDirectory());
 		else
 			fc = new JFileChooser();
 		
 		File outDir = null;
 		
 		fc.setDialogTitle("Save as...");
-		int returnVal = fc.showSaveDialog(TheMainGUI);
+		int returnVal = fc.showSaveDialog(TheMainModel.getGUI());
 		if (returnVal == JFileChooser.APPROVE_OPTION)
 		{
 			outDir = fc.getSelectedFile();
@@ -60,19 +61,21 @@ public class DataSaver_CSV implements DataSaver
 		
 		if (outDir!=null)
 		{
-			MainGUI.getGUI().setTheDirectory(new File(outDir.getParent()));
-			printCSV(outDir, true, TheMainGUI, featuresToSave);
+			models.Model_Main.getModel().setTheDirectory(new File(outDir.getParent()));
+			printCSV(outDir, true, TheMainModel.getGUI(), featuresToSave);
 		}
 	}
 	
-	public void save(MainGUI TheMainGUI, File outFile)
+	public void save(Model_Main TheMainModel, File outFile)
 	{
 		System.out.println("Saving results to: "+outFile.getAbsolutePath());
 		File outDir = outFile;
 		if (outDir!=null)
 		{
-			MainGUI.getGUI().setTheDirectory(new File(outDir.getParent()));
-			printCSV(outDir, true, TheMainGUI, TheMainGUI.getFeatures());
+			models.Model_Main.getModel().setTheDirectory(new File(outDir.getParent()));
+			printCSV(outDir, true, TheMainModel.getGUI(), models.Model_Main
+					.getModel()
+					.getFeatures());
 		}
 		else
 		{
@@ -85,8 +88,8 @@ public class DataSaver_CSV implements DataSaver
 	public void save(Feature featureToSave, float[][] tenFiftyNinty, MainGUI TheMainGUI, boolean log)
 	{
 		JFileChooser fc = null;
-		if (MainGUI.getGUI().getTheDirectory()!=null)
-			fc = new JFileChooser(MainGUI.getGUI().getTheDirectory());
+		if (models.Model_Main.getModel().getTheDirectory()!=null)
+			fc = new JFileChooser(models.Model_Main.getModel().getTheDirectory());
 		else
 			fc = new JFileChooser();
 		
@@ -104,7 +107,7 @@ public class DataSaver_CSV implements DataSaver
 		
 		if (outDir!=null)
 		{
-			MainGUI.getGUI().setTheDirectory(new File(outDir.getParent()));
+			models.Model_Main.getModel().setTheDirectory(new File(outDir.getParent()));
 			printCSV(outDir, true, featureToSave, tenFiftyNinty, log);
 		}
 	}
@@ -135,10 +138,11 @@ public class DataSaver_CSV implements DataSaver
 				
 				
 				//printing out each well's value
-				int numF  = TheMainGUI.getTheFeatures().size();
+				int numF = models.Model_Main.getModel().getTheFeatures().size();
 				for (int i = 0; i < numF; i++)
 				{
-					Feature feature = ((Feature)TheMainGUI.getTheFeatures().get(i));
+					Feature feature = ((Feature) models.Model_Main.getModel()
+							.getTheFeatures().get(i));
 					//Only Print Certain Features
 					if (shouldPrint(feature, featuresToSave))
 					{
@@ -196,7 +200,7 @@ public class DataSaver_CSV implements DataSaver
 	{
 		try
 		{
-			MainGUI TheMainGUI =  MainGUI.getGUI();
+			MainGUI TheMainGUI = models.Model_Main.getModel().getGUI();
 			PrintWriter pw = new PrintWriter(outDir);
 			
 			Model_Plate[] thePlates = TheMainGUI.getPlateHoldingPanel()
@@ -211,10 +215,11 @@ public class DataSaver_CSV implements DataSaver
 				
 				
 				//printing out each well's value
-				int numF  = TheMainGUI.getTheFeatures().size();
+				int numF = models.Model_Main.getModel().getTheFeatures().size();
 				for (int i = 0; i < numF; i++)
 				{
-					Feature feature = ((Feature)TheMainGUI.getTheFeatures().get(i));
+					Feature feature = ((Feature) models.Model_Main.getModel()
+							.getTheFeatures().get(i));
 					//Only Print Certain Features
 					if (shouldPrint(feature, featuresToSave))
 					{

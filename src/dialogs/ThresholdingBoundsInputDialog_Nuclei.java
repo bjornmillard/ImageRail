@@ -26,8 +26,6 @@
 
 package dialogs;
 
-import gui.MainGUI;
-
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
@@ -43,7 +41,6 @@ import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -92,7 +89,8 @@ public class ThresholdingBoundsInputDialog_Nuclei extends JDialog
 
 		/** Features comboBox */
 		ArrayList<String> list = new ArrayList<String>();
-		String[] channelNames = MainGUI.getGUI().getTheChannelNames();
+		String[] channelNames = models.Model_Main.getModel()
+				.getTheChannelNames();
 		int len = channelNames.length;
 
 		for (int i = 0; i < len; i++)
@@ -153,18 +151,16 @@ public class ThresholdingBoundsInputDialog_Nuclei extends JDialog
 		radioPanel.add(r2);
 		// radioPanel.add(r3);
 
-		MainGUI.getGUI().setWatershedNucleiCheckBox(
-				new JCheckBoxMenuItem("Watershed Nuclei"));
-		MainGUI.getGUI().getWatershedNucleiCheckBox().setSelected(true);
-
 
 		//
 		// Loading parameters if common (pset!=null)
 		//
-		// MainGUI.getGUI().getCytoplasmAnnulusCheckBox().setSelected(false);
-		MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
+		// models.Model_Main.getModel().getCytoplasmAnnulusCheckBox().setSelected(false);
+		models.Model_Main.getModel().getGUI().getLoadCellsImmediatelyCheckBox()
+				.setSelected(false);
 
-		MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
+		models.Model_Main.getModel().getGUI().getLoadCellsImmediatelyCheckBox()
+				.setSelected(false);
 
 		//
 		// if (pset != null) {
@@ -177,19 +173,20 @@ public class ThresholdingBoundsInputDialog_Nuclei extends JDialog
 		// }
 		//
 		//
-		// MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(
+		// models.Model_Main.getModel().getLoadCellsImmediatelyCheckBox().setSelected(
 		// false);
 		// textField[0].setText("" + pset.getParameter_float("Thresh_Nuc_Value"));
 		// textField[1].setText("" + pset.getParameter_float("Thresh_Cyt_Value"));
 		// textField[2].setText("" + pset.getParameter_float("Thresh_Bkgd_Value"));
 		//
 		// // if (pset.getAnnulusSize() != Model_ParameterSet.NOVALUE) {
-		// // MainGUI.getGUI().getCytoplasmAnnulusCheckBox()
+		// // models.Model_Main.getModel().getCytoplasmAnnulusCheckBox()
 		// // .setSelected(true);
 		// // textField[3].setText("" + pset.getAnnulusSize());
 		// // textField[3].setEnabled(true);
 		// // } else
-		// // MainGUI.getGUI().getCytoplasmAnnulusCheckBox().setSelected(
+		// //
+		// models.Model_Main.getModel().getCytoplasmAnnulusCheckBox().setSelected(
 		// // false);
 		// }
 		//
@@ -283,10 +280,15 @@ public class ThresholdingBoundsInputDialog_Nuclei extends JDialog
 							// ProcessType
 							// pset.setProcessType(Model_ParameterSet.SINGLECELL);
 							// Threshold Channel Nucleus
-							pset.setParameter("Thresh_Nuc_ChannelName",""+MainGUI.getGUI()
+							pset.setParameter(
+									"Thresh_Nuc_ChannelName",
+									""
+											+ models.Model_Main.getModel()
 									.getTheChannelNames()[NucBoundaryChannel]);
 							// Threshold Channel Cytoplasm
-							pset.setParameter("Thresh_Cyt_ChannelName",MainGUI.getGUI()
+							pset.setParameter(
+									"Thresh_Cyt_ChannelName",
+									models.Model_Main.getModel()
 									.getTheChannelNames()[NucBoundaryChannel]);
 							// Nuc bound threshold
 							pset.setParameter("Thresh_Nuc_Value",""+Thresh_Nuc_Value);
@@ -307,23 +309,25 @@ public class ThresholdingBoundsInputDialog_Nuclei extends JDialog
 							// pset.setMeanOrIntegrated(Model_ParameterSet.MEAN);
 
 							// Finding the index of this channel name
-							for (int j = 0; j < MainGUI.getGUI()
+							for (int j = 0; j < models.Model_Main.getModel()
 									.getTheChannelNames().length; j++)
-								if (MainGUI.getGUI().getTheChannelNames()[j]
+								if (models.Model_Main.getModel()
+										.getTheChannelNames()[j]
 										.equalsIgnoreCase(pset
 												.getParameter_String("Thresh_Nuc_ChannelName")))
 									pset.setParameter("Thresh_Nuc_ChannelIndex",""+j);
 							// Finding the index of this channel name
-							for (int j = 0; j < MainGUI.getGUI()
+							for (int j = 0; j < models.Model_Main.getModel()
 									.getTheChannelNames().length; j++)
-								if (MainGUI.getGUI().getTheChannelNames()[j]
+								if (models.Model_Main.getModel()
+										.getTheChannelNames()[j]
 										.equalsIgnoreCase(pset
 												.getParameter_String("Thresh_Cyt_ChannelName")))
 									pset.setParameter("Thresh_Cyt_ChannelIndex",""+j);
 						}
 					}
 
-					MainGUI.getGUI().setBackgroundSubtract(false);
+					models.Model_Main.getModel().setBackgroundSubtract(false);
 
 					// Only getting wells with Images that we can process
 					int numWells = TheWells.length;
@@ -340,7 +344,7 @@ public class ThresholdingBoundsInputDialog_Nuclei extends JDialog
 					// TODO - need to reinstate multithreading, but till then
 					// dont let them start a new
 					// proces until previous one is complete
-					if (gui.MainGUI.getGUI().isProcessing())
+					if (models.Model_Main.getModel().isProcessing())
  {
 						JOptionPane
 								.showMessageDialog(

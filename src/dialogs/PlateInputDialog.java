@@ -33,17 +33,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -51,6 +46,8 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
+
+import models.Model_Main;
 
 public class PlateInputDialog extends JDialog implements ActionListener,PropertyChangeListener
 {
@@ -245,93 +242,101 @@ public class PlateInputDialog extends JDialog implements ActionListener,Property
 				{
 					int numP = Integer.parseInt(strings[0]);
 					if (numRows != -1 && numCols != -1) {
-						boolean worked = gui.MainGUI.getGUI().initNewPlates(
+						Model_Main TheMainModel = models.Model_Main.getModel();
+						if (TheMainModel == null)
+							TheMainModel = new Model_Main();
+						boolean worked = TheMainModel.initNewPlates(
 								numP, numRows, numCols);
 						if (worked) {
 							if (ParentFrame != null)
 								ParentFrame.setVisible(false);
-							gui.MainGUI.getGUI().setVisible(true);
+							MainGUI TheMainGUI = new MainGUI(TheMainModel);
+							TheMainGUI
+									.setVisible(true);
 						}
-					} else // display a frame that can autodetect the number of
-							// cols and rows
-					{
-						// new MovieLoaderFrame();
-						JFileChooser fc = new JFileChooser();
-						fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-
-						int returnVal = fc.showOpenDialog(null);
-						if (returnVal == JFileChooser.APPROVE_OPTION) {
-
-							File file = fc.getSelectedFile();
-							if (file.isDirectory()) {
-								// Hashing wellNames
-								Hashtable<String, String> hash = new Hashtable<String, String>();
-								File[] fileList = file.listFiles();
-								for (int i = 0; i < fileList.length; i++) {
-									String name = fileList[i].getName();
-									System.out.println(name);
-									int index = name.indexOf("_t");
-									int indexEnd = -1;
-									if (index != -1) {
-										for (int j = index + 1; j < name
-												.length(); j++) {
-										if (name.substring(j, j + 1)
-												.equalsIgnoreCase("_")) {
-											indexEnd = j;
-											break;
-										}
-									}
-										if (indexEnd != -1) {
-											String wellName = name.substring(
-													index + 2, indexEnd);
-											System.out.println(wellName);
-											if (hash.get(wellName) == null)
-												hash.put(wellName, wellName);
-										}
-									}
-								}
-
-								// Found X number of time points
-								int num = hash.size();
-								System.out.println("Found " + num
-										+ " timepoints:");
-								int[] arr = new int[num];
-								int counter = 0;
-								for (Enumeration<String> en = hash.keys(); en
-										.hasMoreElements();) {
-									arr[counter] = Integer.parseInt(en
-											.nextElement().trim());
-									counter++;
-								}
-								Arrays.sort(arr);
-
-								for (int i = 0; i < arr.length; i++) {
-									System.out.println(arr[i]);
-								}
-
-								numCols = num;
-								numRows = 1;
-
-								boolean worked = gui.MainGUI.getGUI()
-										.initNewPlates(1, numRows, numCols);
-								if (worked) {
-									if (ParentFrame != null)
-										ParentFrame.setVisible(false);
-									gui.MainGUI.getGUI().setVisible(true);
-									// Trying to load the images
-									MainGUI.getGUI().load(
-											file,
-											gui.MainGUI.getGUI()
-													.getPlateHoldingPanel()
-													.getModel().getPlates()[0]);
-								}
-
-							}
-						}
-
-						if (ParentFrame != null)
-							ParentFrame.setVisible(false);
 					}
+					// else // display a frame that can autodetect the number of
+					// // cols and rows
+					// {
+					// // new MovieLoaderFrame();
+					// JFileChooser fc = new JFileChooser();
+					// fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+					//
+					// int returnVal = fc.showOpenDialog(null);
+					// if (returnVal == JFileChooser.APPROVE_OPTION) {
+					//
+					// File file = fc.getSelectedFile();
+					// if (file.isDirectory()) {
+					// // Hashing wellNames
+					// Hashtable<String, String> hash = new Hashtable<String,
+					// String>();
+					// File[] fileList = file.listFiles();
+					// for (int i = 0; i < fileList.length; i++) {
+					// String name = fileList[i].getName();
+					// System.out.println(name);
+					// int index = name.indexOf("_t");
+					// int indexEnd = -1;
+					// if (index != -1) {
+					// for (int j = index + 1; j < name
+					// .length(); j++) {
+					// if (name.substring(j, j + 1)
+					// .equalsIgnoreCase("_")) {
+					// indexEnd = j;
+					// break;
+					// }
+					// }
+					// if (indexEnd != -1) {
+					// String wellName = name.substring(
+					// index + 2, indexEnd);
+					// System.out.println(wellName);
+					// if (hash.get(wellName) == null)
+					// hash.put(wellName, wellName);
+					// }
+					// }
+					// }
+					//
+					// // Found X number of time points
+					// int num = hash.size();
+					// System.out.println("Found " + num
+					// + " timepoints:");
+					// int[] arr = new int[num];
+					// int counter = 0;
+					// for (Enumeration<String> en = hash.keys(); en
+					// .hasMoreElements();) {
+					// arr[counter] = Integer.parseInt(en
+					// .nextElement().trim());
+					// counter++;
+					// }
+					// Arrays.sort(arr);
+					//
+					// for (int i = 0; i < arr.length; i++) {
+					// System.out.println(arr[i]);
+					// }
+					//
+					// numCols = num;
+					// numRows = 1;
+					//
+					// boolean worked = models.Model_Main.getModel()
+					// .initNewPlates(1, numRows, numCols);
+					// if (worked) {
+					// if (ParentFrame != null)
+					// ParentFrame.setVisible(false);
+					// models.Model_Main.getModel().getGUI()
+					// .setVisible(true);
+					// // Trying to load the images
+					// models.Model_Main.getModel().load(
+					// file,
+					// models.Model_Main.getModel()
+					// .getPlateHoldingPanel()
+					// .getModel().getPlates()[0]);
+					// }
+					//
+					// }
+					// }
+					//
+					// if (ParentFrame != null)
+					// ParentFrame.setVisible(false);
+					// }
 				}
 				else
 				{

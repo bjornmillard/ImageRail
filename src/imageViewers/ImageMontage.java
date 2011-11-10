@@ -61,6 +61,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import models.Model_Field;
+import models.Model_Main;
 import models.Model_Plate;
 import models.Model_Well;
 
@@ -104,9 +105,9 @@ public class ImageMontage extends JFrame implements WindowListener {
 		FieldSelected = fieldIndex;
 		imHeight = -1;
 		imWidth = -1;
-		MaxValueSlider = new JSlider(0, gui.MainGUI.getGUI().MAXPIXELVALUE,
-				gui.MainGUI.getGUI().MAXPIXELVALUE);
-		MinValueSlider = new JSlider(0, gui.MainGUI.getGUI().MAXPIXELVALUE, 0);
+		MaxValueSlider = new JSlider(0, Model_Main.MAXPIXELVALUE,
+				Model_Main.MAXPIXELVALUE);
+		MinValueSlider = new JSlider(0, Model_Main.MAXPIXELVALUE, 0);
 		// Adding the intensity sliders
 		MaxValueSlider.setToolTipText("Maximum");
 		MaxValueSlider.setName("Max");
@@ -204,7 +205,7 @@ public class ImageMontage extends JFrame implements WindowListener {
 		// Channel Selection
 		mItem = new JMenu("Channel");
 		ButtonGroup bg = new ButtonGroup();
-		String[] names = gui.MainGUI.getGUI().getTheChannelNames();
+		String[] names = models.Model_Main.getModel().getTheChannelNames();
 		OptionsMenu.add(mItem);
 		for (int i = 0; i < names.length; i++) {
 			item = new JCheckBoxMenuItem("" + names[i]);
@@ -273,7 +274,7 @@ public class ImageMontage extends JFrame implements WindowListener {
 		}
 		// Rescale the image with the parameters
 		double[] multiplyBy = new double[1];
-		multiplyBy[0] = gui.MainGUI.MAXPIXELVALUE / (maxValue - minValue);
+		multiplyBy[0] = Model_Main.MAXPIXELVALUE / (maxValue - minValue);
 		double[] addThis = new double[1];
 		addThis[0] = -minValue * multiplyBy[0];
 		// Now we can rescale the pixels gray levels:
@@ -330,9 +331,9 @@ public class ImageMontage extends JFrame implements WindowListener {
 			FieldSelected = fieldIndex;
 			Dragging = false;
 			ChannelSelected = channelIndex;
-			MaxValueSlider.setValue((int) gui.MainGUI.getGUI()
+			MaxValueSlider.setValue((int) models.Model_Main.getModel()
 					.getMaxValues_ImageDisplay()[ChannelSelected]);
-			MinValueSlider.setValue((int) gui.MainGUI.getGUI()
+			MinValueSlider.setValue((int) models.Model_Main.getModel()
 					.getMinValues_ImageDisplay()[ChannelSelected]);
 
 			numWellsWithFields = 0;
@@ -396,7 +397,7 @@ public class ImageMontage extends JFrame implements WindowListener {
 						RenderedImage im2 = rescale(
 									resizeImage(im, scale, scale),
 									0,
-								(int) gui.MainGUI.getGUI()
+								(int) models.Model_Main.getModel()
 											.getMaxValues_ImageDisplay()[ChannelSelected]);
 					widths[r][c] = im2.getWidth();
 					heights[r][c] = im2.getHeight();
@@ -457,8 +458,8 @@ public class ImageMontage extends JFrame implements WindowListener {
 													/ rows_display, scale
 													/ cols_display),
 											0,
-											(int) gui.MainGUI
-													.getGUI()
+											(int) models.Model_Main
+													.getModel()
 													.getMaxValues_ImageDisplay()[ChannelSelected]);
 									widths[r][c] = im2.getWidth();
 									heights[r][c] = im2.getHeight();
@@ -823,7 +824,7 @@ public class ImageMontage extends JFrame implements WindowListener {
 			int channel = ChannelSelected;
 			if (j.getName().equalsIgnoreCase("Max")
 					&& !MaxValueSlider.getValueIsAdjusting()) {
-				gui.MainGUI.getGUI().getMaxValues_ImageDisplay()[channel] = MaxValueSlider
+				models.Model_Main.getModel().getMaxValues_ImageDisplay()[channel] = MaxValueSlider
 						.getValue();
 				TheDisplayPanel = new DisplayPanel(ThePlate.getWells(),
 						ChannelSelected, FieldSelected);
@@ -832,7 +833,7 @@ public class ImageMontage extends JFrame implements WindowListener {
 				TheFrame.repaint();
 			} else if (j.getName().equalsIgnoreCase("Min")
 					&& !MinValueSlider.getValueIsAdjusting()) {
-				gui.MainGUI.getGUI().getMinValues_ImageDisplay()[channel] = MinValueSlider
+				models.Model_Main.getModel().getMinValues_ImageDisplay()[channel] = MinValueSlider
 						.getValue();
 				TheDisplayPanel = new DisplayPanel(ThePlate.getWells(),
 						ChannelSelected, FieldSelected);

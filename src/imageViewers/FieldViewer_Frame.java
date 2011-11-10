@@ -20,8 +20,6 @@
 
 package imageViewers;
 
-import gui.MainGUI;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -33,19 +31,12 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
-import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.imageio.ImageIO;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RasterFactory;
 import javax.media.jai.TiledImage;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -103,9 +94,11 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		
 		//Setting up the ImageScalings
 		JMenu scalingMenu = new JMenu("Image Scale");
-		for (int i = 0; i < MainGUI.getGUI().getTheImageScalings().length; i++)
+		for (int i = 0; i < models.Model_Main.getModel().getGUI()
+				.getTheImageScalings().length; i++)
 		{
-			MainGUI.getGUI().getTheImageScalings()[i].addActionListener(new ActionListener()
+			models.Model_Main.getModel().getGUI().getTheImageScalings()[i]
+					.addActionListener(new ActionListener()
 																		{
 						public void actionPerformed(ActionEvent ae)
 						{
@@ -114,7 +107,8 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 							MovieFrameSlider.repaint();
 						}
 					});
-			scalingMenu.add(MainGUI.getGUI().getTheImageScalings()[i]);
+			scalingMenu.add(models.Model_Main.getModel().getGUI()
+					.getTheImageScalings()[i]);
 		}
 		
 		FileMenu.add(scalingMenu);
@@ -209,15 +203,16 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 								BufferedImage bf = ts.getAsBufferedImage();
 								
 								JFileChooser fc = null;
-								if (MainGUI.getGUI().getTheDirectory()!=null)
-									fc = new JFileChooser(MainGUI.getGUI().getTheDirectory());
+								if (models.Model_Main.getModel().getTheDirectory()!=null)
+									fc = new JFileChooser(models.Model_Main.getModel().getTheDirectory());
 								else
 									fc = new JFileChooser();
 								
 								File outDir = null;
 								
 								fc.setDialogTitle("Save as...");
-								int returnVal = fc.showSaveDialog(MainGUI.getGUI());
+						int returnVal = fc.showSaveDialog(models.Model_Main
+								.getModel().getGUI());
 								if (returnVal == JFileChooser.APPROVE_OPTION)
 								{
 									outDir = fc.getSelectedFile();
@@ -227,7 +222,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 								
 								if (outDir!=null)
 								{
-									MainGUI.getGUI().setTheDirectory(new File(outDir.getParent()));
+									models.Model_Main.getModel().setTheDirectory(new File(outDir.getParent()));
 									//
 									//		PNG image format
 									//
@@ -476,8 +471,8 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 					{
 						//Open Printwriter
 						JFileChooser fc = null;
-						if (MainGUI.getGUI().getTheDirectory()!=null)
-							fc = new JFileChooser(MainGUI.getGUI().getTheDirectory());
+						if (models.Model_Main.getModel().getTheDirectory()!=null)
+							fc = new JFileChooser(models.Model_Main.getModel().getTheDirectory());
 						else
 							fc = new JFileChooser();
 						
@@ -555,8 +550,9 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 	{
 		setVisible(false);
 		
-		Model_PlateRepository p = MainGUI.getGUI().getPlateHoldingPanel()
-				.getModel();
+		Model_PlateRepository p = models.Model_Main.getModel()
+				.getThePlateHoldingPanel();
+
 		if (p.getGUI().isBlocked())
 			p.getGUI().unblock();
 		
@@ -631,10 +627,12 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 	
 	static public float getScaling()
 	{
-		for (int i = 0; i < MainGUI.getGUI().getTheImageScalings().length; i++)
+		for (int i = 0; i < models.Model_Main.getModel().getGUI()
+				.getTheImageScalings().length; i++)
 		{
-			if(MainGUI.getGUI().getTheImageScalings()[i].isSelected())
-				return MainGUI.getGUI().getScalingRatios()[i];
+			if (models.Model_Main.getModel().getGUI().getTheImageScalings()[i]
+					.isSelected())
+				return models.Model_Main.getModel().getScalingRatios()[i];
 		}
 		return 1f;
 	}
@@ -704,7 +702,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 	private void deleteSelectedCells(Model_Well well) {
 		well.setCellsModified(true);
 		well.purgeSelectedCellsAndRecomputeWellMeans();
-		gui.MainGUI.getGUI().getPlateHoldingPanel().getModel()
+		models.Model_Main.getModel().getThePlateHoldingPanel()
 				.updateMinMaxValues();
 	}
 

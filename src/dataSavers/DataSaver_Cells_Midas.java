@@ -34,25 +34,25 @@ import java.util.ArrayList;
 import javax.swing.JFileChooser;
 
 import midasGUI.Measurement;
+import models.Model_Main;
 import models.Model_Plate;
 import models.Model_Well;
 import features.Feature;
-import gui.MainGUI;
 
 public class DataSaver_Cells_Midas implements DataSaver
 {
-	public void save(Feature[] featuresToSave, MainGUI TheMainGUI)
+	public void save(Feature[] featuresToSave, Model_Main TheMainModel)
 	{
 		JFileChooser fc = null;
-		if (MainGUI.getGUI().getTheDirectory()!=null)
-			fc = new JFileChooser(MainGUI.getGUI().getTheDirectory());
+		if (models.Model_Main.getModel().getTheDirectory()!=null)
+			fc = new JFileChooser(models.Model_Main.getModel().getTheDirectory());
 		else
 			fc = new JFileChooser();
 		
 		File outDir = null;
 		
 		fc.setDialogTitle("Save as...");
-		int returnVal = fc.showSaveDialog(TheMainGUI);
+		int returnVal = fc.showSaveDialog(TheMainModel.getGUI());
 		if (returnVal == JFileChooser.APPROVE_OPTION)
 		{
 			outDir = fc.getSelectedFile();
@@ -63,7 +63,7 @@ public class DataSaver_Cells_Midas implements DataSaver
 		
 		if (outDir!=null)
 		{
-			MainGUI.getGUI().setTheDirectory(new File(outDir.getParent()));
+			models.Model_Main.getModel().setTheDirectory(new File(outDir.getParent()));
 			try
 			{
 				PrintWriter pw = new PrintWriter(outDir);
@@ -92,7 +92,8 @@ public class DataSaver_Cells_Midas implements DataSaver
 					pw.print(((String)headers.get(i))+",");
 				pw.println((String)headers.get(headers.size()-1));
 					
-				Model_Plate[] thePlates = TheMainGUI.getThePlateHoldingPanel().getPlates();
+				Model_Plate[] thePlates = models.Model_Main.getModel()
+						.getThePlateHoldingPanel().getPlates();
 				int numPlates = thePlates.length;
 				for (int p = 0; p < numPlates; p++)
 				{

@@ -259,7 +259,7 @@ public class Model_FieldCellRepository
 				io.createField(field.getParentWell().getID(), plateIndex,
 						wellIndex, field.getIndexInWell(),
 						io.getFieldDimensions(plateIndex, wellIndex, field
-								.getIndexInWell()), gui.MainGUI.getGUI()
+								.getIndexInWell()), models.Model_Main.getModel()
 								.getExpDesignConnector());
 				writeCoordinates(io);
 			}
@@ -271,7 +271,7 @@ public class Model_FieldCellRepository
 						dataValues);
 
 				// Writing the feature names to file
-				Feature[] features = MainGUI.getGUI().getFeatures();
+				Feature[] features = models.Model_Main.getModel().getFeatures();
 				String[] fNames = new String[features.length];
 				for (int i = 0; i < features.length; i++)
 					fNames[i] = features[i].toString();

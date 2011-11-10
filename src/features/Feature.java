@@ -104,7 +104,7 @@ public abstract class Feature
 	 * @author BLM*/
 	public int getGUIindex()
 	{
-		ArrayList<Feature> features = MainGUI.getGUI().getTheFeatures();
+		ArrayList<Feature> features = models.Model_Main.getModel().getTheFeatures();
 		int len = features.size();
 		for (int i = 0; i < len; i++)
 		{

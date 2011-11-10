@@ -160,7 +160,7 @@ public class LinePlot extends JPanel_highlightBox implements ImageCapturePanel
 		colors[2] = new Color(0.5f, 0.5f, 0.5f);
 		colors[3] = new Color(0.7f, 0.7f, 0.7f);
 		Type_yAxisScale = 0;
-		TheMainGUI = gui.MainGUI.getGUI();
+		TheMainGUI = models.Model_Main.getModel().getGUI();
 		yAxisLabelBox = new Rectangle();
 		Xstart_override = -1;
 		Ystart_override = -1;

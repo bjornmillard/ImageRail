@@ -26,12 +26,12 @@
 
 package dataSavers;
 
+import models.Model_Main;
 import features.Feature;
-import gui.MainGUI;
 
 public interface DataSaver
 {
-	public void save(Feature[] featuresToSave, MainGUI TheMainGUI);
+	public void save(Feature[] featuresToSave, Model_Main TheMainModel);
 	public boolean shouldPrint(Feature f, Feature[] featuresToPrint);
 }
 

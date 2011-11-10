@@ -73,7 +73,7 @@ public class FilmStrip_Cells  extends JFrame implements WindowListener
 			int num = cells_.length;
 			TheDisplayPanel = this;
 			TheDisplayPanel.setBackground(Color.black);
-			numC = gui.MainGUI.getGUI().getNumberOfChannels();
+			numC = models.Model_Main.getModel().getNumberOfChannels();
 			TheImageArray = new BufferedImage[numC][num];
 			yMax = 0;
 			xTotalLen = 0;
@@ -112,7 +112,7 @@ public class FilmStrip_Cells  extends JFrame implements WindowListener
 ////						double[] subtract = new double[1];
 ////						subtract[0] = 0;
 ////						double[] divide   = new double[1];
-////						divide[0]   = (double)MainGUI.MAXPIXELVALUE/(MainGUI.TheMainGUI.MaxValues_ImageDisplay[c]);
+////						divide[0]   = (double)Model_Main.MAXPIXELVALUE/(MainGUI.TheMainGUI.MaxValues_ImageDisplay[c]);
 ////						// Now we can rescale the pixels gray levels:
 ////						ParameterBlock pbRescale = new ParameterBlock();
 ////						pbRescale.add(divide);

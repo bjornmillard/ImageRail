@@ -109,7 +109,7 @@ public class Model_Field {
 			}
 			// Writing ROI To HDF5 file
 			Polygon polyIn = (Polygon) roi;
-			ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+			ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 
 			String pathToField = io.getHashtable().get(
 					io.getIndexKey(getParentWell().getPlate().getID(),
@@ -121,7 +121,7 @@ public class Model_Field {
 					io.createField(getParentWell().getID(), getParentWell()
 							.getPlate().getID(),
 							getParentWell().getWellIndex(), getIndexInWell(),
-							fieldDimensions, gui.MainGUI.getGUI()
+							fieldDimensions, models.Model_Main.getModel()
 									.getExpDesignConnector());
 				} catch (H5IO_Exception e) {
 					System.out
@@ -202,7 +202,7 @@ public class Model_Field {
 		ROIs_selected = new ArrayList<Boolean>();
 
 		// Deleting ROIs from HDF5 file
-		ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+		ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 		String pathToField = io.getHashtable().get(
 				io.getIndexKey(getParentWell().getPlate().getID(),
 						getParentWell().getWellIndex())
@@ -217,7 +217,7 @@ public class Model_Field {
 		ROIs_selected.remove(index);
 
 		// Deleting ROI from HDF5 file
-		ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+		ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 		String pathToField = io.getHashtable().get(
 				io.getIndexKey(getParentWell().getPlate().getID(),
 						getParentWell().getWellIndex())
@@ -260,7 +260,7 @@ public class Model_Field {
 	 */
 	public boolean doesDataExist(String hdfPath) {
 		// Seeing if path to this sample(well) exists
-		ImageRail_SDCube io = gui.MainGUI.getGUI().getH5IO();
+		ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 		String pathToField = io.getHashtable().get(
 				io.getIndexKey(getParentWell().getPlate().getID(),
 						getParentWell().getWellIndex())
@@ -401,10 +401,10 @@ public class Model_Field {
 	 * */
 	public void loadParameterSet() {
 		TheParameterSet = new Model_ParameterSet();
-		String h5path = gui.MainGUI.getGUI().getProjectDirectory()
+		String h5path = models.Model_Main.getModel().getProjectDirectory()
 				.getAbsolutePath()
 				+ "/Data.h5";
-		ImageRail_SDCube io = gui.MainGUI.getGUI().getImageRailio();
+		ImageRail_SDCube io = models.Model_Main.getModel().getImageRailio();
 
 		String pathToSample = io.getHashtable().get(
 				io.getIndexKey(getParentWell().getPlate().getID(),

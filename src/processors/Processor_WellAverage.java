@@ -20,7 +20,6 @@
 
 package processors;
 import features.Feature;
-import gui.MainGUI;
 import imagerailio.ImageRail_SDCube;
 
 import java.io.File;
@@ -55,28 +54,37 @@ public class Processor_WellAverage extends Thread implements Processor
 	{
 		int numWells = WellsToProcess.length;
 		long StartTime  = System.currentTimeMillis();
-		MainGUI.getGUI().setProcessing(true);
-		
-		ImageRail_SDCube io = MainGUI.getGUI().getH5IO();
+		models.Model_Main.getModel().setProcessing(true);
+		String[] featureNames = null;
+
+		ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 		
 		if (io != null)
 			try {
+
+				Feature[] features = models.Model_Main.getModel().getFeatures();
+				if (features != null && features.length > 0) {
+					featureNames = new String[features.length];
+					for (int i = 0; i < features.length; i++)
+						featureNames[i] = features[i].toString();
+
+				}
 		//Processing all the wells
 		for (int w = 0; w < numWells; w++)
 		{
-			if (!MainGUI.getGUI().shouldStop())
+			if (!models.Model_Main.getModel().shouldStop())
 				break;
 
 			Model_Well well = WellsToProcess[w];
 			well.processing = true;
-			MainGUI.getGUI().getPlateHoldingPanel().updatePanel();
+			models.Model_Main.getModel().getPlateHoldingPanel().updatePanel();
 			System.out.println("******** Processing Model_Well: "+ well.name +" ********");
 			
 			//Initializing mean value storage variables
-			float[] totalIntegration = new float[MainGUI.getGUI().getTheFeatures().size()];
+			float[] totalIntegration = new float[models.Model_Main.getModel().getTheFeatures().size()];
 			for (int p=0; p< totalIntegration.length; p++)
 				totalIntegration[p]=0;
-			float[] meanValues = new float[MainGUI.getGUI().getTheFeatures().size()];
+			float[] meanValues = new float[models.Model_Main.getModel().getTheFeatures().size()];
 			for (int p=0; p< meanValues.length; p++)
 				meanValues[p]=0;
 			
@@ -84,20 +92,21 @@ public class Processor_WellAverage extends Thread implements Processor
 			int totalPix=0;
 			for (int f = 0; f < numFields; f++)
 			{
-				if (!MainGUI.getGUI().shouldStop())
+				if (!models.Model_Main.getModel().shouldStop())
 					break;
 
 				Model_Field field = well.getFields()[f];
 				File[] images_oneField = field.getImageFiles();
 				int[][][] Raster_Channels = tools.ImageTools
 						.getImageRaster_FromFiles_copy(images_oneField,
-								gui.MainGUI.getGUI().getTheChannelNames());
+								models.Model_Main.getModel().getTheChannelNames());
 				int[] fieldDimensions = { Raster_Channels.length,
 						Raster_Channels[0].length, Raster_Channels[0][0].length };
 				try {
 					io.createField(well.getID(), well.getPlate().getID(), well
-							.getWellIndex(), f, fieldDimensions, gui.MainGUI
-							.getGUI().getExpDesignConnector());
+.getWellIndex(), f,
+									fieldDimensions, models.Model_Main
+											.getModel().getExpDesignConnector());
 				} catch (H5IO_Exception e) {
 					System.out
 							.println("** Error creating field in HDF5 file **");
@@ -113,17 +122,31 @@ public class Processor_WellAverage extends Thread implements Processor
 				totalPix += tempIntegration[0][1];
 				Raster_Channels = null;
 
+						// Storing Parameters used to process this field
+						String hdfPath = models.Model_Main.getModel()
+								.getProjectDirectory().getAbsolutePath()
+								+ "/Data.h5";
+						field.getParameterSet().writeParameters(hdfPath,
+								well.getPlate().getID(), well.getWellIndex(),
+								field.getIndexInWell());
+
+						// Storing the feature names computed for this field
+						if (featureNames != null)
+						io.writeFeatureNames(well.getPlate().getID(),
+								well.getWellIndex(), field.getIndexInWell(),
+								featureNames);
+
 			}
 			
 			
 			//Computing the features now
-			int numF = MainGUI.getGUI().getTheFeatures().size();
+			int numF = models.Model_Main.getModel().getTheFeatures().size();
 			float[] temp_all = new float[numF];
 			int counter = 0;
 			int counterInt =0;
 			for (int i = 0; i < numF; i++)
 			{
-				Feature f =	 (Feature)MainGUI.getGUI().getTheFeatures().get(i);
+				Feature f =	 (Feature)models.Model_Main.getModel().getTheFeatures().get(i);
 				if (f.Name.indexOf("w")>=0 && f.Name.indexOf("Whole_")>=0 && f.toString().indexOf("(Mean)")>=0)
 				{
 					temp_all[i] = totalIntegration[counter]/totalPix;
@@ -139,7 +162,7 @@ public class Processor_WellAverage extends Thread implements Processor
 			//Subtracting background if desired
 			// for (int i = 0; i < numF; i++)
 			// {
-			// Feature f = (Feature)MainGUI.getGUI().getTheFeatures().get(i);
+			// Feature f = (Feature)models.Model_Main.getModel().getTheFeatures().get(i);
 			// if (f.Name.indexOf("w")>=0 && f.Name.indexOf("Whole_")>=0 &&
 			// f.toString().indexOf("(Mean)")>=0)
 			// {
@@ -155,8 +178,8 @@ public class Processor_WellAverage extends Thread implements Processor
 			
 			if(!ClusterRun)
 			{
-				MainGUI.getGUI().getPlateHoldingPanel().updatePanel();
-				MainGUI.getGUI().updateAllPlots();
+				models.Model_Main.getModel().getPlateHoldingPanel().updatePanel();
+						models.Model_Main.getModel().getGUI().updateAllPlots();
 			}
 			
 			try
@@ -164,14 +187,7 @@ public class Processor_WellAverage extends Thread implements Processor
 				//Trying to write mean value data to file
 				int wellIndex = (well.getPlate().getNumRows()*well.Column)+well.Row;
 				int plateIndex = well.getPlate().getID();
-				Feature[] features = gui.MainGUI.getGUI().getFeatures();
-				StringBuffer[] featureNames = null;
-				if(features!=null && features.length>0)
-				{
-					featureNames = new StringBuffer[features.length];
-					for (int i = 0; i < features.length; i++)
-						featureNames[i] = new StringBuffer(features[i].toString());
-				}
+
 				
 				if(well.Feature_Means!=null && io!=null)
 				{
@@ -188,11 +204,8 @@ public class Processor_WellAverage extends Thread implements Processor
 				int totNumWells = well.getPlate().getNumRows()
 						* well.getPlate().getNumColumns();
 				io.writeParentPlateInfo(plateIndex, wellIndex, totNumWells);
-				// io.writeSegmentationParameters(plateIndex, wellIndex,
-				// (int) well.getParameterSet().getParameter_float("Thresh_Nuc_Value"),
-				// (int) well.getParameterSet().getParameter_float("Thresh_Cyt_Value"),
-				// (int) well.getParameterSet().getParameter_float("Thresh_Bkgd_Value"));
 				
+
 			}
 			catch (Exception e)
 			{
@@ -204,7 +217,7 @@ public class Processor_WellAverage extends Thread implements Processor
 		if (ResultsFile!=null)
 		{
 			System.out.println("***Finished****");
-			new DataSaver_CSV().save(MainGUI.getGUI(), ResultsFile);
+			new DataSaver_CSV().save(models.Model_Main.getModel(), ResultsFile);
 		}
 		
 			} catch (Exception e) {
@@ -219,7 +232,7 @@ public class Processor_WellAverage extends Thread implements Processor
 			}
 
 		System.out.println("*** Finished: "+ (System.currentTimeMillis()-StartTime));
-		MainGUI.getGUI().setProcessing(false);
+		models.Model_Main.getModel().setProcessing(false);
 	}
 	
 	/** If this file is set, then the Processor will immediately write results here after run is complete. USed mainly for the
@@ -232,10 +245,10 @@ public class Processor_WellAverage extends Thread implements Processor
 	
 	public Model_Well getWellForGivenImage(String fileName)
 	{
-		for (int p = 0; p < MainGUI.getGUI().getPlateHoldingPanel().getModel()
+		for (int p = 0; p < models.Model_Main.getModel().getPlateHoldingPanel().getModel()
 				.getNumPlates(); p++)
 		{
-			Model_Plate plate = MainGUI.getGUI().getPlateHoldingPanel()
+			Model_Plate plate = models.Model_Main.getModel().getPlateHoldingPanel()
 					.getModel().getPlates()[p];
 			int rows = plate.getNumRows();
 			int cols = plate.getNumColumns();

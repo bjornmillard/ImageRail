@@ -260,7 +260,7 @@ public class ContourPlot extends JPanel
 		float min = 0;
 		float max = ncv;
 		
-		tools.ColorMaps.getColorValue(val, min, max, color, gui.MainGUI.getGUI().getTheColorMapIndex());
+		tools.ColorMaps.getColorValue(val, min, max, color, models.Model_Main.getModel().getTheColorMapIndex());
 		Color c = new Color(color[0], color[1], color[2], color[3]);
 		
 //										  Color c = new Color(
@@ -282,7 +282,7 @@ public class ContourPlot extends JPanel
 		float min = 0;
 		float max = ncv;
 		
-		tools.ColorMaps.getColorValue(val, min, max, color, gui.MainGUI.getGUI().getTheColorMapIndex());
+		tools.ColorMaps.getColorValue(val, min, max, color, models.Model_Main.getModel().getTheColorMapIndex());
 		Color c = new Color(color[0], color[1], color[2], color[3]);
 		
 		g.setColor(c);

@@ -398,7 +398,7 @@ public class ImageRail_SDCube
 			int[] dims = { 1024, 1024, 3 };
 			try {
 				createField(sampleID, plateIndex, wellIndex, fieldIndex, dims,
-						gui.MainGUI.getGUI().getExpDesignConnector());
+						models.Model_Main.getModel().getExpDesignConnector());
 			} catch (H5IO_Exception e) {
 				e.printStackTrace();
 			}
@@ -1839,7 +1839,7 @@ public class ImageRail_SDCube
 						StringBuffer[] names = (StringBuffer[]) io.readDataset_String(hdfPath,path);
 						int len = featureNames.length;
 						
-						if(len!=names.length)
+						if (names == null || len != names.length)
 							return names;
 						
 						for (int p = 0; p < len; p++) {

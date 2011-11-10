@@ -34,20 +34,20 @@ import java.util.ArrayList;
 import javax.swing.JFileChooser;
 
 import midasGUI.Measurement;
+import models.Model_Main;
 import models.Model_Plate;
 import models.Model_Well;
 import features.Feature;
-import gui.MainGUI;
 
 public class DataSaver_WellMeans_Midas implements DataSaver
 {
-	public void save(Feature[] featuresToSave, MainGUI TheMainGUI)
+	public void save(Feature[] featuresToSave, Model_Main TheMainModel)
 	{
-		JFileChooser fc = new JFileChooser(MainGUI.getGUI().getTheDirectory());
+		JFileChooser fc = new JFileChooser(models.Model_Main.getModel().getTheDirectory());
 		File outDir = null;
 		
 		fc.setDialogTitle("Save as...");
-		int returnVal = fc.showSaveDialog(TheMainGUI);
+		int returnVal = fc.showSaveDialog(TheMainModel.getGUI());
 		if (returnVal == JFileChooser.APPROVE_OPTION)
 		{
 			outDir = fc.getSelectedFile();
@@ -69,7 +69,8 @@ public class DataSaver_WellMeans_Midas implements DataSaver
 				headers.add("Plate");
 				
 				//Need to get indicies of the features we want to print
-				ArrayList arr = TheMainGUI.getTheFeatures();
+				ArrayList<Feature> arr = models.Model_Main.getModel()
+						.getTheFeatures();
 				int counter = 0;
 				int num = arr.size();
 				int len = featuresToSave.length;
@@ -122,7 +123,7 @@ public class DataSaver_WellMeans_Midas implements DataSaver
 					pw.print(((String)headers.get(i))+",");
 				pw.println((String)headers.get(headers.size()-1));
 				
-				Model_Plate[] thePlates = TheMainGUI.getPlateHoldingPanel()
+				Model_Plate[] thePlates = TheMainModel.getPlateHoldingPanel()
 						.getModel().getPlates();
 				int numPlates = thePlates.length;
 				for (int rr = 0; rr < numPlates; rr++)

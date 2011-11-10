@@ -186,7 +186,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 					public void mouseClicked(MouseEvent e)
 					{
 						
-				MainGUI.getGUI().getPlateHoldingPanel()
+				gui.MainGUI.getGUI().getPlateHoldingPanel()
 						.setTab(TheModel.getID()+1);
 						if(e.getClickCount()>1)
 						{
@@ -199,7 +199,10 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 							
 					TheModel.setTitle(response);
 					titleLabel.setText(TheModel.getTitle());
-					MainGUI.getGUI().getPlateHoldingPanel().getTheMainPanel()
+					gui.MainGUI
+							.getGUI()
+							.getPlateHoldingPanel()
+							.getTheMainPanel()
 							.setTitleAt(TheModel.getID() + 1,
 									TheModel.getTitle());
 						}
@@ -230,7 +233,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 			 public void actionPerformed(ActionEvent ae)
 			 {
 				 //FileChooser
-					File dir = gui.MainGUI.getGUI().getTheDirectory();
+					File dir = models.Model_Main.getModel().getTheDirectory();
 					JFileChooser fc = null;
 					if (dir != null)
 						fc = new JFileChooser(dir);
@@ -240,7 +243,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 					int returnVal = fc.showOpenDialog(null);
 					if (returnVal == JFileChooser.APPROVE_OPTION) {
 						File file = fc.getSelectedFile();
-						gui.MainGUI.getGUI().setTheDirectory(new File(file.getParent()));
+						models.Model_Main.getModel().setTheDirectory(new File(file.getParent()));
 
 						//Make sure its the correct file format
 						// NOTE: currently we only support the IncuCyte XML metadata format
@@ -251,7 +254,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 						}
 						
 						ExpDesign_Model model = MetadataParser.parse_IncuCyteXML(file.getAbsolutePath(),
-								TheModel, gui.MainGUI.getGUI().getExpDesignConnector());
+								TheModel, models.Model_Main.getModel().getExpDesignConnector());
 						ExpDesign_IO.write(model);
 						
 						System.out.println("model: "+model.getSamples().size());
@@ -278,7 +281,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 		// if (getModel().TheMetaDataWriter == null)
 		// {
 		// String projPath =
-		// gui.MainGUI.getGUI().getProjectDirectory().getAbsolutePath();
+		// models.Model_Main.getModel().getProjectDirectory().getAbsolutePath();
 		// try
 		// {
 		// getModel().TheMetaDataWriter = new MetaDataConnector(projPath);
@@ -360,8 +363,8 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 	public void updatePanel() {
 		removeAll();
 		add(TheToolBar, ToolBarPosition);
-		if (MainGUI.getGUI().getPlateHoldingPanel() != null
-				&& MainGUI.getGUI().getPlateHoldingPanel().showData()) {
+		if (models.Model_Main.getModel().getPlateHoldingPanel() != null
+				&& gui.MainGUI.getGUI().getPlateHoldingPanel().showData()) {
 			add(getDataTable(), BorderLayout.CENTER);
 		}
 
@@ -581,11 +584,11 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 		if (DisplayType == NORMAL) {
 			int channel = 0;
 
-			Feature f = MainGUI.getGUI().getTheSelectedFeature();
+			Feature f = models.Model_Main.getModel().getTheSelectedFeature();
 			if (f != null)
  {
 				channel = 0;
-				String[] cnames = gui.MainGUI.getGUI().getTheChannelNames();
+				String[] cnames = models.Model_Main.getModel().getTheChannelNames();
 				if (cnames != null)
 					for (int i = 0; i < cnames.length; i++) {
 						if (f.getName().indexOf(cnames[i]) > 0)
@@ -594,14 +597,15 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 			}
 
 			// getting the selected feature index
-			int fIndex = MainGUI.getGUI().getTheSelectedFeature_Index();
+			int fIndex = models.Model_Main.getModel().getTheSelectedFeature_Index();
 
 			int MeanOrCV = 0;
 			if (shouldDisplayCV())
 				MeanOrCV = 1;
 
 			float[] minMax = TheModel
-					.getMinMaxAcrossPlates(MainGUI.getGUI()
+.getMinMaxAcrossPlates(gui.MainGUI
+					.getGUI()
 					.getPlateHoldingPanel()
 .shouldNormalizeAcrossAllPlates(),
 					MeanOrCV);
@@ -615,8 +619,8 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 					if (TheWells[r][c].Feature_Means != null
 							&& tools.MathOps
 .sum(TheWells[r][c].Feature_Means) != 0
-							&& TheWells[r][c].Feature_Means.length > MainGUI
-									.getGUI().getTheSelectedFeature_Index()) {
+							&& TheWells[r][c].Feature_Means.length > models.Model_Main
+									.getModel().getTheSelectedFeature_Index()) {
 						float val = 0;
 
 						// Option to plot CV vs Mean Value
@@ -668,7 +672,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 	 * @author BLM
 	 */
 	public boolean shouldDisplayCV() {
-		return MainGUI.getGUI().getPlateHoldingPanel().shouldDisplayCV();
+		return gui.MainGUI.getGUI().getPlateHoldingPanel().shouldDisplayCV();
 	}
 
 	/**
@@ -824,7 +828,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 			unHighlightAllWells();
 		}
 
-		MainGUI.getGUI().updateMidasInputPanel();
+		gui.MainGUI.getGUI().updateMidasInputPanel();
 
 		int[] inWell = getWellIndex(p1);
 
@@ -834,17 +838,18 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 			Model_Well[][] TheWells = getModel().getWells();
 			Model_Well well = TheWells[inWell[0]][inWell[1]];
 			well.toggleHighlightState();
-			MainGUI.getGUI().updateMidasInputPanel();
+			gui.MainGUI.getGUI().updateMidasInputPanel();
 			inWell = null;
 
 		}
 
 		updatePanel();
-		if (MainGUI.getGUI().getDotPlot() != null)
-			if (MainGUI.getGUI().getLeftDisplayPanelType() == MainGUI.getGUI().DOTPLOT)
-				MainGUI.getGUI().getDotPlot().UpdatePlotImage = true;
+		if (gui.MainGUI.getGUI().getDotPlot() != null)
+			if (gui.MainGUI.getGUI().getLeftDisplayPanelType() == models.Model_Main
+					.getModel().DOTPLOT)
+				gui.MainGUI.getGUI().getDotPlot().UpdatePlotImage = true;
 
-		MainGUI.getGUI().updateAllPlots();
+		gui.MainGUI.getGUI().updateAllPlots();
 	}
 
 	/**
@@ -854,16 +859,18 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 	 */
 	public void mouseReleased(MouseEvent p) {
 		Dragging = false;
-		if (MainGUI.getGUI().getDotPlot() != null)
-			if (MainGUI.getGUI().getLeftDisplayPanelType() == MainGUI.getGUI().DOTPLOT)
-				MainGUI.getGUI().getDotPlot().UpdatePlotImage = true;
+		if (gui.MainGUI.getGUI().getDotPlot() != null)
+			if (gui.MainGUI.getGUI().getLeftDisplayPanelType() == gui.MainGUI
+					.getGUI().DOTPLOT)
+				gui.MainGUI.getGUI().getDotPlot().UpdatePlotImage = true;
 
 		if (TheLegend != null)
 			TheLegend.setDragging(false);
 
-		MainGUI.getGUI().getPlateHoldingPanel().setLastTouched_PlateID(
+		gui.MainGUI.getGUI().getPlateHoldingPanel()
+				.setLastTouched_PlateID(
 				TheModel.getID());
-		MainGUI.getGUI().updateAllPlots();
+		gui.MainGUI.getGUI().updateAllPlots();
 	}
 
 	/**
@@ -917,15 +924,16 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 		highlightWells(highlightBox, p1.isShiftDown());
 		updatePanel();
 
-		if (MainGUI.getGUI().getDotPlot() != null)
-			if (MainGUI.getGUI().getLeftDisplayPanelType() == MainGUI.getGUI().DOTPLOT) {
-				MainGUI.getGUI().getDotPlot().UpdatePlotImage = false;
-				MainGUI.getGUI().getDotPlot().repaint();
-			} else if (MainGUI.getGUI().getLeftDisplayPanelType() == MainGUI
+		if (gui.MainGUI.getGUI().getDotPlot() != null)
+			if (gui.MainGUI.getGUI().getLeftDisplayPanelType() == gui.MainGUI
+					.getGUI().DOTPLOT) {
+				gui.MainGUI.getGUI().getDotPlot().UpdatePlotImage = false;
+				gui.MainGUI.getGUI().getDotPlot().repaint();
+			} else if (gui.MainGUI.getGUI().getLeftDisplayPanelType() == MainGUI
 					.getGUI().MIDASINPUT) {
 
 			} else
-				MainGUI.getGUI().updateAllPlots();
+				gui.MainGUI.getGUI().updateAllPlots();
 
 	}
 
@@ -935,7 +943,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 	 * @author BLM
 	 */
 	public void unHighlightAllWells() {
-		MainGUI.getGUI().getPlateHoldingPanel().unHighlightAllWells();
+		gui.MainGUI.getGUI().getPlateHoldingPanel().unHighlightAllWells();
 	}
 
 	/**
@@ -1009,7 +1017,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 
 
 		if (DisplayRowLegend) {
-			if (MainGUI.getGUI().getLinePlot().getPlotType() == LinePlot.ROWS) {
+			if (gui.MainGUI.getGUI().getLinePlot().getPlotType() == LinePlot.ROWS) {
 				for (int i = 0; i < NumRows; i++) {
 					int y = (int) (Ystart + i
 							* (TheWells[i][0].getGUI().outline.width + 3)

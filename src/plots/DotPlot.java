@@ -183,13 +183,13 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		FeatureY = featureY;
 		setFont(StandardFont);
 		if (FeatureX == null)
-			if (MainGUI.getGUI().getTheFeatures() != null
-					&& MainGUI.getGUI().getTheFeatures().size() > 0)
-				FeatureX = (Feature) MainGUI.getGUI().getTheFeatures().get(0);
+			if (models.Model_Main.getModel().getTheFeatures() != null
+					&& models.Model_Main.getModel().getTheFeatures().size() > 0)
+				FeatureX = (Feature) models.Model_Main.getModel().getTheFeatures().get(0);
 		if (FeatureY == null)
-			if (MainGUI.getGUI().getTheFeatures() != null
-					&& MainGUI.getGUI().getTheFeatures().size() > 0)
-				FeatureY = (Feature) MainGUI.getGUI().getTheFeatures().get(0);
+			if (models.Model_Main.getModel().getTheFeatures() != null
+					&& models.Model_Main.getModel().getTheFeatures().size() > 0)
+				FeatureY = (Feature) models.Model_Main.getModel().getTheFeatures().get(0);
 
 		PlotType_SideBySide = new JButton(new ImageIcon(
 				"icons/sideBySideDots.png"));
@@ -277,9 +277,9 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		ThePlot.add(TheGraphPanel, BorderLayout.CENTER);
 
 		ArrayList<Feature> listX = new ArrayList<Feature>();
-		int len = MainGUI.getGUI().getTheFeatures().size();
+		int len = models.Model_Main.getModel().getTheFeatures().size();
 		for (int i = 0; i < len; i++)
-			listX.add((Feature) MainGUI.getGUI().getTheFeatures().get(i));
+			listX.add((Feature) models.Model_Main.getModel().getTheFeatures().get(i));
 		Object[] obX = new Object[listX.size()];
 		if (listX.size() > 0)
 			for (int i = 0; i < listX.size(); i++)
@@ -295,7 +295,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		label.setHorizontalAlignment(JLabel.CENTER);
 		bottomPanel.add(label, 1);
 
-		int num = MainGUI.getGUI().getNumberOfChannels();
+		int num = models.Model_Main.getModel().getNumberOfChannels();
 		ComboBoxes[0] = new JComboBox(obX);
 		ComboBoxes[0].setToolTipText("X-Axis Feature");
 		int index = 0;
@@ -477,7 +477,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		// tbar.add(ContourPlotButton);
 
 		// final JButton buttt = new JButton(tools.Icons.Icon_Bkgd_selected);
-		// if (MainGUI.getGUI().getBackgroundSubtract())
+		// if (models.Model_Main.getModel().getBackgroundSubtract())
 		// {
 		// buttt.setIcon(tools.Icons.Icon_Bkgd_selected);
 		// buttt.setSelected(true);
@@ -493,9 +493,9 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		// {
 		// public void actionPerformed(ActionEvent ae)
 		// {
-		// MainGUI.getGUI().setBackgroundSubtract(!MainGUI.getGUI().getBackgroundSubtract());
-		// buttt.setSelected(MainGUI.getGUI().getBackgroundSubtract() );
-		// if(MainGUI.getGUI().getBackgroundSubtract() )
+		// models.Model_Main.getModel().setBackgroundSubtract(!models.Model_Main.getModel().getBackgroundSubtract());
+		// buttt.setSelected(models.Model_Main.getModel().getBackgroundSubtract() );
+		// if(models.Model_Main.getModel().getBackgroundSubtract() )
 		// buttt.setIcon(tools.Icons.Icon_Bkgd_selected);
 		// else
 		// buttt.setIcon(tools.Icons.Icon_Bkgd);
@@ -1198,7 +1198,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		// for (int p = 0; p < numPlates; p++)
 		// {
 		// Model_Plate plate =
-		// TheMainGUI.getGUI().getThePlateHoldingPanel().getThePlates()[p];
+		// Themodels.Model_Main.getModel().getThePlateHoldingPanel().getThePlates()[p];
 		// int rows = plate.getNumRows();
 		// int cols = plate.getNumColumns();
 		// for (int r = 0; r < rows; r++)
@@ -1324,8 +1324,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 		but.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				JFileChooser fc = null;
-				if (MainGUI.getGUI().getTheDirectory() != null)
-					fc = new JFileChooser(MainGUI.getGUI().getTheDirectory());
+				if (models.Model_Main.getModel().getTheDirectory() != null)
+					fc = new JFileChooser(models.Model_Main.getModel().getTheDirectory());
 				else
 					fc = new JFileChooser();
 
@@ -1340,7 +1340,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 					System.out.println("Open command cancelled by user.");
 
 				if (outDir != null) {
-					MainGUI.getGUI().setTheDirectory(
+					models.Model_Main.getModel().setTheDirectory(
 							new File(outDir.getParent()));
 					try {
 						ArrayList<Gate_DotPlot> arr = new ArrayList<Gate_DotPlot>();
@@ -1459,8 +1459,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 					validate();
 					repaint();
 
-					// MainGUI.getGUI().updateAllPlots();
-					MainGUI.getGUI().setCellsModified(true);
+					// models.Model_Main.getModel().updateAllPlots();
+					models.Model_Main.getModel().setCellsModified(true);
 				}
 			}
 		});
@@ -1553,7 +1553,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 	//
 
 	private int getFeatureIndex(String fname) {
-		Feature[] fs = gui.MainGUI.getGUI().getFeatures();
+		Feature[] fs = models.Model_Main.getModel().getFeatures();
 		for (int i = 0; i < fs.length; i++) {
 			// System.out.println("FeatureName: "+fs[i].toString()
 			// +"  vs   "+fname);
@@ -2901,9 +2901,10 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 						break;
 					}
 					else if (df.shouldAddToFilterQueue(p)) {
-						if (TheMainGUI.getFilterQueue() == null)
+						if (models.Model_Main.getModel().getFilterQueue() == null)
 							return;
-						TheMainGUI.getFilterQueue().addFilter(df);
+						models.Model_Main.getModel().getFilterQueue()
+								.addFilter(df);
 						TheDotFilters.remove(i);
 						break;
 					}

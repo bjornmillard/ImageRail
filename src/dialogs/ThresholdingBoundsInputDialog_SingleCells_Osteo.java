@@ -26,9 +26,7 @@
 
 package dialogs;
 
-   import gui.MainGUI;
-
-import java.awt.Dimension;
+   import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -43,7 +41,6 @@ import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -83,16 +80,10 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 				- height / 2);
 		setModal(true);
 
-		// Model_ParameterSet pset =
-		// Model_ParameterSet.doWellsHaveSameParameterSet(wells);
-		// if (pset != null)
-		// if (!pset.getProcessType()
-		// .equalsIgnoreCase(Model_ParameterSet.SINGLECELL))
-		// pset = null;
-
 		/** Features comboBox */
 		ArrayList<String> list = new ArrayList<String>();
-		String[] channelNames = MainGUI.getGUI().getTheChannelNames();
+		String[] channelNames = models.Model_Main.getModel()
+				.getTheChannelNames();
 		int len = channelNames.length;
 
 		for (int i = 0; i < len; i++)
@@ -173,61 +164,77 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 		radioPanel.add(r2);
 		// radioPanel.add(r3);
 
-		MainGUI.getGUI().setWatershedNucleiCheckBox(
-				new JCheckBoxMenuItem("Watershed Nuclei"));
-		MainGUI.getGUI().getWatershedNucleiCheckBox().setSelected(true);
 
-
-		MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
+		models.Model_Main.getModel().getGUI().getLoadCellsImmediatelyCheckBox()
+				.setSelected(false);
 		textField[2].setText("65536");
 		textField[3].setText("0.1");
 
-		MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(false);
+		models.Model_Main.getModel().getGUI().getLoadCellsImmediatelyCheckBox()
+				.setSelected(false);
 
-		//
-		// if (pset != null) {
-		// // nucBoundChannel
-		// int num = channelBox_nuc.getItemCount();
-		// for (int i = 0; i < num; i++) {
-		// String name = (String) channelBox_nuc.getItemAt(i);
-		// if (name.equalsIgnoreCase(pset.getParameter_String("Thresh_Nuc_ChannelName")))
-		// channelBox_nuc.setSelectedIndex(i);
-		// }
-		//
-		// // markerBoundChannel
-		// num = channelBox_marker.getItemCount();
-		// for (int i = 0; i < num; i++) {
-		// String name = (String) channelBox_marker.getItemAt(i);
-		// if (name.equalsIgnoreCase(pset
-		// .getParameter_String("ThreshChannel_marker_Name")))
-		// channelBox_marker.setSelectedIndex(i);
-		// }
-		//
-		// // memBoundChannel
-		// num = channelBox_membrane.getItemCount();
-		// for (int i = 0; i < num; i++) {
-		// String name = (String) channelBox_membrane.getItemAt(i);
-		// if (name.equalsIgnoreCase(pset
-		// .getParameter_String("ThreshChannel_membrane_Name")))
-		// channelBox_membrane.setSelectedIndex(i);
-		// }
-		//
-		// // cytoBoundChannel
-		// num = channelBox_cyto.getItemCount();
-		// for (int i = 0; i < num; i++) {
-		// String name = (String) channelBox_cyto.getItemAt(i);
-		// if (name.equalsIgnoreCase(pset.getParameter_String("Thresh_Cyt_ChannelName")))
-		// channelBox_cyto.setSelectedIndex(i);
-		// }
-		//
-		// MainGUI.getGUI().getLoadCellsImmediatelyCheckBox().setSelected(
-		// false);
-		// textField[0].setText("" + pset.getParameter_float("Thresh_Nuc_Value"));
-		// textField[1].setText("" + pset.getParameter_float("Thresh_Marker"));
-		// textField[2].setText("" + pset.getParameter_float("Thresh_Membrane"));
-		// textField[4].setText("" + pset.getParameter_float("Thresh_Cyt_Value"));
-		//
-		// }
+		Model_ParameterSet pset = Model_ParameterSet
+				.doWellsHaveSameParameterSet(wells);
+		if (pset != null) {
+			// nucBoundChannel
+			if (pset.exists("Thresh_Nuc_ChannelName")) {
+			int num = channelBox_nuc.getItemCount();
+			for (int i = 0; i < num; i++) {
+				String name = (String) channelBox_nuc.getItemAt(i);
+				if (name.equalsIgnoreCase(pset
+						.getParameter_String("Thresh_Nuc_ChannelName")))
+					channelBox_nuc.setSelectedIndex(i);
+			}
+			}
+
+			if (pset.exists("ThreshChannel_marker_Name"))
+				{
+				// markerBoundChannel
+				int num = channelBox_marker.getItemCount();
+				for (int i = 0; i < num; i++) {
+					String name = (String) channelBox_marker.getItemAt(i);
+					if (name.equalsIgnoreCase(pset
+							.getParameter_String("ThreshChannel_marker_Name")))
+						channelBox_marker.setSelectedIndex(i);
+				}
+				}
+
+			if (pset.exists("ThreshChannel_membrane_Name"))
+				{
+					// memBoundChannel
+					int num = channelBox_membrane.getItemCount();
+					for (int i = 0; i < num; i++) {
+						String name = (String) channelBox_membrane.getItemAt(i);
+						if (name.equalsIgnoreCase(pset
+								.getParameter_String("ThreshChannel_membrane_Name")))
+							channelBox_membrane.setSelectedIndex(i);
+					}
+				}
+			if (pset.exists("Thresh_Cyt_ChannelName"))
+				{
+					// cytoBoundChannel
+					int num = channelBox_cyto.getItemCount();
+					for (int i = 0; i < num; i++) {
+						String name = (String) channelBox_cyto.getItemAt(i);
+						if (name.equalsIgnoreCase(pset
+								.getParameter_String("Thresh_Cyt_ChannelName")))
+							channelBox_cyto.setSelectedIndex(i);
+					}
+				}
+
+			if (pset.exists("Thresh_Nuc_Value")) 
+			textField[0].setText(""
+					+ pset.getParameter_float("Thresh_Nuc_Value"));
+			if (pset.exists("Thresh_Marker")) 
+			textField[1].setText("" + pset.getParameter_float("Thresh_Marker"));
+			if (pset.exists("Thresh_Membrane")) 
+			textField[2].setText(""
+					+ pset.getParameter_float("Thresh_Membrane"));
+			if (pset.exists("Thresh_Cyt_Value")) 
+			textField[4].setText(""
+					+ pset.getParameter_float("Thresh_Cyt_Value"));
+
+		}
 
 
 		// Create an array of the text and components to be displayed.
@@ -348,13 +355,13 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 						// ProcessType
 						// pset.setProcessType(Model_ParameterSet.SINGLECELL);
 						// Threshold Channel Nucleus
-						pset.setParameter("Thresh_Nuc_ChannelName",""+MainGUI.getGUI()
+						pset.setParameter("Thresh_Nuc_ChannelName",""+models.Model_Main.getModel()
 								.getTheChannelNames()[NucBoundaryChannel]);
 						// Threshold Channel Marker
-						pset.setParameter("ThreshChannel_marker_Name",""+MainGUI.getGUI()
+						pset.setParameter("ThreshChannel_marker_Name",""+models.Model_Main.getModel()
 								.getTheChannelNames()[MarkerBoundaryChannel]);
 						// Threshold Channel Cytoplasm
-						pset.setParameter("Thresh_Cyt_ChannelName",MainGUI.getGUI()
+						pset.setParameter("Thresh_Cyt_ChannelName",models.Model_Main.getModel()
 								.getTheChannelNames()[CytoBoundaryChannel]);
 						// Nuc bound threshold
 						pset.setParameter("Thresh_Nuc_Value",""+Thresh_Nuc_Value);
@@ -365,7 +372,7 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 						// Bkgd threshold
 						pset.setParameter("Thresh_Bkgd_Value",""+ Thresh_Bkgd_Value);
 						// Thresh channel Membrane
-						pset.setParameter("ThreshChannel_membrane_Name",""+MainGUI.getGUI()
+						pset.setParameter("ThreshChannel_membrane_Name",""+models.Model_Main.getModel()
 								.getTheChannelNames()[MembraneBoundaryChannel]);
 						// Mem threshold
 						pset.setParameter("Thresh_Membrane",""+Thresh_Membrane);
@@ -386,37 +393,37 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 
 
 						// Finding the index of this channel name
-						for (int j = 0; j < MainGUI.getGUI()
+						for (int j = 0; j < models.Model_Main.getModel()
 								.getTheChannelNames().length; j++)
-							if (MainGUI.getGUI().getTheChannelNames()[j]
+							if (models.Model_Main.getModel().getTheChannelNames()[j]
 									.equalsIgnoreCase(pset.getParameter_String("Thresh_Nuc_ChannelName")))
 									pset.setParameter(
 											"Thresh_Nuc_ChannelIndex", ""
 													+ j);
 						// Finding the index of this channel name
-						for (int j = 0; j < MainGUI.getGUI()
+						for (int j = 0; j < models.Model_Main.getModel()
 								.getTheChannelNames().length; j++)
-							if (MainGUI.getGUI().getTheChannelNames()[j]
+							if (models.Model_Main.getModel().getTheChannelNames()[j]
 									.equalsIgnoreCase(pset
 											.getParameter_String("ThreshChannel_marker_Name")))
 								pset.setParameter("ThreshChannel_marker_Index",""+j);
 						// Finding the index of this channel name
-						for (int j = 0; j < MainGUI.getGUI()
+						for (int j = 0; j < models.Model_Main.getModel()
 								.getTheChannelNames().length; j++)
-							if (MainGUI.getGUI().getTheChannelNames()[j]
+							if (models.Model_Main.getModel().getTheChannelNames()[j]
 									.equalsIgnoreCase(pset.getParameter_String("Thresh_Cyt_ChannelName")))
 								pset.setParameter("Thresh_Cyt_ChannelIndex",""+j);
 						// Finding the index of this channel name
-						for (int j = 0; j < MainGUI.getGUI()
+						for (int j = 0; j < models.Model_Main.getModel()
 								.getTheChannelNames().length; j++)
-							if (MainGUI.getGUI().getTheChannelNames()[j]
+							if (models.Model_Main.getModel().getTheChannelNames()[j]
 									.equalsIgnoreCase(pset
 											.getParameter_String("ThreshChannel_membrane_Name")))
 								pset.setParameter("ThreshChannel_membrane_Index",""+j);
 						}
 					}
 					if (Thresh_Bkgd_Value > 0)
-						MainGUI.getGUI().setBackgroundSubtract(true);
+						models.Model_Main.getModel().setBackgroundSubtract(true);
 
 					// Only getting wells with Images that we can process
 					int numWells = TheWells.length;
@@ -431,7 +438,7 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 						wellsWithImages[i] = wellsWIm.get(i);
 
 
-					if (gui.MainGUI.getGUI().isProcessing())
+					if (models.Model_Main.getModel().isProcessing())
  {
 						JOptionPane
 								.showMessageDialog(

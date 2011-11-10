@@ -83,7 +83,7 @@ public class ZScoreFilterDialog extends JDialog
 
 		/** Features comboBox */
 		ArrayList<String> list = new ArrayList<String>();
-		String[] channelNames = MainGUI.getGUI().getTheChannelNames();
+		String[] channelNames = models.Model_Main.getModel().getTheChannelNames();
 		int len = channelNames.length;
 		for (int i = 0; i < len; i++)
 			list.add(channelNames[i]);

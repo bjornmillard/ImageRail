@@ -106,7 +106,7 @@ public class PanelDropTargetListener implements DropTargetListener {
 				while (iterator.hasNext())
 				{
 					File f = iterator.next();
-					MainGUI.getGUI().load(f, ThePlate);
+					models.Model_Main.getModel().load(f, ThePlate);
 				}
 			}
 			else

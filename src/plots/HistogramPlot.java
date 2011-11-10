@@ -172,7 +172,7 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 							LogScaleButton.setIcon(tools.Icons.Icon_Log_selected);
 						else
 							LogScaleButton.setIcon(tools.Icons.Icon_Log);
-						updateDataAndBins(TheWells, MainGUI.getGUI().getTheSelectedFeature_Index());
+						updateDataAndBins(TheWells, models.Model_Main.getModel().getTheSelectedFeature_Index());
 						updateHistograms_wBounds(TheData);
 						repaint();
 					}
@@ -242,8 +242,8 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 						if (TheWells!=null && TheBars!=null)
 						{
 							JFileChooser fc = null;
-							if (MainGUI.getGUI().getTheDirectory()!=null)
-								fc = new JFileChooser(MainGUI.getGUI().getTheDirectory());
+							if (models.Model_Main.getModel().getTheDirectory()!=null)
+								fc = new JFileChooser(models.Model_Main.getModel().getTheDirectory());
 							else
 								fc = new JFileChooser();
 							
@@ -261,7 +261,7 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 							
 							if (outDir!=null)
 							{
-								MainGUI.getGUI().setTheDirectory( new File(outDir.getParent()));
+								models.Model_Main.getModel().setTheDirectory( new File(outDir.getParent()));
 								PrintWriter pw = null;
 								try
 								{
@@ -322,7 +322,7 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 		// constructing the data from the wells based on the desired feature
 		NumBins = 100;
 		
-		int feature_index = MainGUI.getGUI().getTheSelectedFeature_Index();
+		int feature_index = models.Model_Main.getModel().getTheSelectedFeature_Index();
 		TheHistogram.updateBins(TheHistogram.constructData(TheWells, feature_index));
 		updateDataAndBins(TheWells, feature_index);
 		

@@ -177,6 +177,8 @@ public class Gui_PlateRepository extends JPanel {
 	 * @author BLM
 	 */
 	public boolean showData() {
+		if (DataViewButton == null)
+			return false;
 		return DataViewButton.isSelected();
 	}
 

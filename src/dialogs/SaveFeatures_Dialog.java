@@ -79,7 +79,7 @@ public class SaveFeatures_Dialog extends JFrame
 		setLocation((int)(d.width/2f)-width/2,(int)(d.height/2f)-height/2);
 		
 		//Creating the CheckBoxes
-		TheFeatures = MainGUI.getGUI().getTheFeatures();
+		TheFeatures = models.Model_Main.getModel().getTheFeatures();
 		int numF = TheFeatures.size();
 		checkBoxes = new CheckListItem[numF];
 		Object[] arr = new Object[numF];
@@ -253,7 +253,7 @@ public class SaveFeatures_Dialog extends JFrame
 								  {
 						public void actionPerformed(ActionEvent ae)
 						{
-							TheDataSaver.save(getSelectedFeatures(), MainGUI.getGUI());
+							TheDataSaver.save(getSelectedFeatures(), models.Model_Main.getModel());
 							TheFrame.setVisible(false);
 							TheFrame.dispose();
 						}
