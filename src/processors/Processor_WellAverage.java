@@ -77,7 +77,7 @@ public class Processor_WellAverage extends Thread implements Processor
 
 			Model_Well well = WellsToProcess[w];
 			well.processing = true;
-			models.Model_Main.getModel().getPlateHoldingPanel().updatePanel();
+			models.Model_Main.getModel().getPlateRepository_GUI().updatePanel();
 			System.out.println("******** Processing Model_Well: "+ well.name +" ********");
 			
 			//Initializing mean value storage variables
@@ -124,7 +124,7 @@ public class Processor_WellAverage extends Thread implements Processor
 
 						// Storing Parameters used to process this field
 						String hdfPath = models.Model_Main.getModel()
-								.getProjectDirectory().getAbsolutePath()
+								.getOutputProjectPath()
 								+ "/Data.h5";
 						field.getParameterSet().writeParameters(hdfPath,
 								well.getPlate().getID(), well.getWellIndex(),
@@ -178,7 +178,7 @@ public class Processor_WellAverage extends Thread implements Processor
 			
 			if(!ClusterRun)
 			{
-				models.Model_Main.getModel().getPlateHoldingPanel().updatePanel();
+				models.Model_Main.getModel().getPlateRepository_GUI().updatePanel();
 						models.Model_Main.getModel().getGUI().updateAllPlots();
 			}
 			
@@ -245,10 +245,10 @@ public class Processor_WellAverage extends Thread implements Processor
 	
 	public Model_Well getWellForGivenImage(String fileName)
 	{
-		for (int p = 0; p < models.Model_Main.getModel().getPlateHoldingPanel().getModel()
+		for (int p = 0; p < models.Model_Main.getModel().getPlateRepository_GUI().getModel()
 				.getNumPlates(); p++)
 		{
-			Model_Plate plate = models.Model_Main.getModel().getPlateHoldingPanel()
+			Model_Plate plate = models.Model_Main.getModel().getPlateRepository_GUI()
 					.getModel().getPlates()[p];
 			int rows = plate.getNumRows();
 			int cols = plate.getNumColumns();

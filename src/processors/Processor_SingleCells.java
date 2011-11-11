@@ -66,6 +66,7 @@ public class Processor_SingleCells extends Thread implements Processor
 			return;
 		
 		//Updating Model_Well colors to indicate they are in the queue to be processed
+		if (models.Model_Main.getModel().getGUI() != null)
 		for (int i = 0; i < WellsToProcess.length; i++)
 			WellsToProcess[i].getGUI().color_outline = Color.gray;
 		
@@ -78,6 +79,7 @@ public class Processor_SingleCells extends Thread implements Processor
 		//
 		
 		//Updating Model_Well colors to indicate we are finished
+		if (models.Model_Main.getModel().getGUI() != null)
 		for (int i = 0; i < WellsToProcess.length; i++)
 			WellsToProcess[i].getGUI().color_outline = Color.white;
 		
@@ -256,7 +258,9 @@ public class Processor_SingleCells extends Thread implements Processor
 				
 				//Making the current well green
 				well.processing = true;
-				models.Model_Main.getModel().getPlateHoldingPanel().updatePanel();
+					if (models.Model_Main.getModel().getPlateRepository_GUI() != null)
+						models.Model_Main.getModel().getPlateRepository_GUI()
+								.updatePanel();
 				
 				int wellIndex = (well.getPlate().getNumRows()*well.Column)+well.Row;
 				int plateIndex = well.getPlate().getID();
@@ -386,7 +390,7 @@ public class Processor_SingleCells extends Thread implements Processor
 						
 							// Storing Parameters used to process this field
 							String hdfPath = models.Model_Main.getModel()
-									.getProjectDirectory().getAbsolutePath()
+									.getOutputProjectPath()
 									+ "/Data.h5";
 							field.getParameterSet().writeParameters(hdfPath,
 									well.getPlate().getID(),
@@ -395,7 +399,8 @@ public class Processor_SingleCells extends Thread implements Processor
 						
 							// Cleaning up
 						Raster = null;
-						well.getPlate().getGUI().repaint();
+							if (well.getPlate().getGUI() != null)
+								well.getPlate().getGUI().repaint();
 					}
 					else
 						System.out.println("-----**No Cells Found in this well with the given parameter **-----");
@@ -403,7 +408,9 @@ public class Processor_SingleCells extends Thread implements Processor
 					System.gc();
 				}
 				
-					if (gui.MainGUI.getGUI().getLoadCellsImmediatelyCheckBox()
+					if (models.Model_Main.getModel().getGUI() != null
+							&& models.Model_Main.getModel().getGUI()
+									.getLoadCellsImmediatelyCheckBox()
 							.isSelected())
 					well.loadCells(io, true, true);
 				
@@ -468,11 +475,11 @@ public class Processor_SingleCells extends Thread implements Processor
 	
 	public Model_Well getWellForGivenImage(String fileName)
 	{
-		for (int p = 0; p < models.Model_Main.getModel().getPlateHoldingPanel().getModel()
+		for (int p = 0; p < models.Model_Main.getModel().getPlateRepository()
 				.getNumPlates(); p++)
 		{
-			Model_Plate plate = models.Model_Main.getModel().getPlateHoldingPanel()
-					.getModel().getPlates()[p];
+			Model_Plate plate = models.Model_Main.getModel()
+					.getPlateRepository().getPlates()[p];
 			int rows = plate.getNumRows();
 			int cols = plate.getNumColumns();
 			for (int r = 0; r< rows; r++)

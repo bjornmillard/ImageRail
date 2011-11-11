@@ -208,7 +208,9 @@ public class MainStartupDialog extends JFrame
 								if (f.getName().indexOf(".sdc") > 0)
 										{
 											TheStartUpDialog.setVisible(false);
-									TheMainModel.loadProject(f);
+									TheMainModel.loadProject(f
+.getAbsolutePath(),
+											f.getAbsolutePath());
 									MainGUI TheMainGUI = new MainGUI(
 											TheMainModel);
 									TheMainGUI.setVisible(true);

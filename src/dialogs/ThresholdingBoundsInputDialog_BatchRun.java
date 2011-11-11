@@ -54,6 +54,8 @@ import javax.swing.border.BevelBorder;
 import models.Model_Field;
 import models.Model_ParameterSet;
 import models.Model_Well;
+import processors.Processor_WriteParameters;
+import sdcubeio.H5IO_Exception;
 
 public class ThresholdingBoundsInputDialog_BatchRun extends JDialog implements
 		ActionListener, PropertyChangeListener {
@@ -191,32 +193,60 @@ public class ThresholdingBoundsInputDialog_BatchRun extends JDialog implements
 		models.Model_Main.getModel().getGUI().getLoadCellsImmediatelyCheckBox()
 				.setSelected(false);
 
-		//
-		// if (pset != null) {
-		// // nucBoundChannel
-		// int num = channelBox_nuc.getItemCount();
-		// for (int i = 0; i < num; i++) {
-		// String name = (String) channelBox_nuc.getItemAt(i);
-		// if (name.equalsIgnoreCase(pset.getParameter_String("Thresh_Nuc_ChannelName")))
-		// channelBox_nuc.setSelectedIndex(i);
-		// }
-		// // cytoBoundChannel
-		// num = channelBox_cyto.getItemCount();
-		// for (int i = 0; i < num; i++) {
-		// String name = (String) channelBox_cyto.getItemAt(i);
-		// if (name.equalsIgnoreCase(pset.getParameter_String("Thresh_Cyt_ChannelName")))
-		// channelBox_cyto.setSelectedIndex(i);
-		// }
-		//
-		// models.Model_Main.getModel().getLoadCellsImmediatelyCheckBox()
-		// .setSelected(false);
-		// textField[0].setText("" + pset.getParameter_float("Thresh_Nuc_Value"));
-		// textField[1].setText("" + pset.getParameter_float("Thresh_Cyt_Value"));
-		// textField[2].setText("" + pset.getParameter_float("Thresh_Bkgd_Value"));
-		// textField[2].setText("1");
-		//
-		// }
-		//
+		Model_ParameterSet pset = Model_ParameterSet
+				.doWellsHaveSameParameterSet(wells);
+
+		if (pset != null) {
+			if (pset.exists("Thresh_Nuc_ChannelName")) {
+				// nucBoundChannel
+				int num = channelBox_nuc.getItemCount();
+				for (int i = 0; i < num; i++) {
+					String name = (String) channelBox_nuc.getItemAt(i);
+					String par = pset
+							.getParameter_String("Thresh_Nuc_ChannelName");
+					if (par != null && name.equalsIgnoreCase(par))
+						channelBox_nuc.setSelectedIndex(i);
+				}
+			}
+			if (pset.exists("Thresh_Cyt_ChannelName")) {
+				// cytoBoundChannel
+				int num = channelBox_cyto.getItemCount();
+				for (int i = 0; i < num; i++) {
+					String name = (String) channelBox_cyto.getItemAt(i);
+					if (name.equalsIgnoreCase(pset
+							.getParameter_String("Thresh_Cyt_ChannelName")))
+						channelBox_cyto.setSelectedIndex(i);
+				}
+			}
+
+			models.Model_Main.getModel().getGUI()
+					.getLoadCellsImmediatelyCheckBox().setSelected(false);
+
+			if (pset.exists("Thresh_Nuc_Value"))
+				textField[0].setText(""
+						+ pset.getParameter_float("Thresh_Nuc_Value"));
+			if (pset.exists("Thresh_Cyt_Value"))
+				textField[1].setText(""
+						+ pset.getParameter_float("Thresh_Cyt_Value"));
+			if (pset.exists("Thresh_Bkgd_Value"))
+				textField[2].setText(""
+						+ pset.getParameter_float("Thresh_Bkgd_Value"));
+			if (pset.exists("NumThreads"))
+				textField[3]
+.setText("" + pset.getParameter_int("NumThreads"));
+			if (pset.exists("CoordsToSaveToHDF")) {
+				String co = pset.getParameter_String("CoordsToSaveToHDF");
+				if (co != null) {
+					if (co.equalsIgnoreCase("BoundingBox"))
+						r0.setSelected(true);
+					if (co.equalsIgnoreCase("Centroid"))
+						r1.setSelected(true);
+					if (co.equalsIgnoreCase("Outlines"))
+						r2.setSelected(true);
+				}
+			}
+
+		}
 
 		// Create an array of the text and components to be displayed.
 		String[] mess = new String[6];
@@ -328,68 +358,89 @@ public class ThresholdingBoundsInputDialog_BatchRun extends JDialog implements
 					float Thresh_Bkgd_Value = Float.parseFloat(strings[2]);
 					float NumThreads = Float.parseFloat(strings[3]);
 
-					// Storing the Parameters for each Model_Well
+					// Storing the Parameters for each Model_Field
 					int len = TheWells.length;
 					for (int i = 0; i < len; i++) {
 						Model_Well well = TheWells[i];
 						Model_Field[] fields = well.getFields();
-						if (fields != null && fields.length > 0)
-							for (int j = 0; j < fields.length; j++) {
-								Model_ParameterSet pset = fields[i]
-										.getParameterSet();
-								// ProcessType
-								// pset.setProcessType(Model_ParameterSet.SINGLECELL);
-								// Threshold Channel Nucleus
-								pset.setParameter(
-										"Thresh_Nuc_ChannelName",
-										""
-												+ models.Model_Main.getModel()
-														.getTheChannelNames()[NucBoundaryChannel]);
-								// Threshold Channel Cytoplasm
-								pset.setParameter(
-										"Thresh_Cyt_ChannelName",
-										models.Model_Main.getModel()
-												.getTheChannelNames()[CytoBoundaryChannel]);
-								// Nuc bound threshold
-								pset.setParameter("Thresh_Nuc_Value",""+Thresh_Nuc_Value);
-								// Cell bound Threshold
-								pset.setParameter("Thresh_Cyt_Value",""+Thresh_CellBoundary);
-								// Bkgd threshold
-								pset.setParameter("Thresh_Bkgd_Value",""+Thresh_Bkgd_Value);
+						for (int p = 0; p < fields.length; p++) {
 
-								if (CoordsToSave == 0)
-									pset.setParameter("CoordsToSaveToHDF","BoundingBox");
-								else if (CoordsToSave == 1)
-									pset.setParameter("CoordsToSaveToHDF","Centroid");
-								else if (CoordsToSave == 2)
-									pset.setParameter("CoordsToSaveToHDF","Outlines");
-								else if (CoordsToSave == 3)
-									pset.setParameter("CoordsToSaveToHDF","Everything");
+							Model_ParameterSet pset = fields[p]
+									.getParameterSet();
+							pset.setParameter("Algorithm",
+									"DefaultSegmentor_v1");
+
+							pset.setParameter("NumThreads", "" + NumThreads);
+
+							// Threshold Channel Nucleus
+							pset.setParameter(
+									"Thresh_Nuc_ChannelName",
+									""
+											+ models.Model_Main.getModel()
+													.getTheChannelNames()[NucBoundaryChannel]);
+							// Threshold Channel Cytoplasm
+							pset.setParameter(
+									"Thresh_Cyt_ChannelName",
+									models.Model_Main.getModel()
+											.getTheChannelNames()[CytoBoundaryChannel]);
+							// Nuc bound threshold
+							pset.setParameter("Thresh_Nuc_Value", ""
+									+ Thresh_Nuc_Value);
+							// Cell bound Threshold
+							pset.setParameter("Thresh_Cyt_Value", ""
+									+ Thresh_CellBoundary);
+							// Bkgd threshold
+							pset.setParameter("Thresh_Bkgd_Value", ""
+									+ Thresh_Bkgd_Value);
+
+							if (CoordsToSave == 0)
+								pset.setParameter("CoordsToSaveToHDF",
+										"BoundingBox");
+							else if (CoordsToSave == 1)
+								pset.setParameter("CoordsToSaveToHDF",
+										"Centroid");
+							else if (CoordsToSave == 2)
+								pset.setParameter("CoordsToSaveToHDF",
+										"Outlines");
+							else if (CoordsToSave == 3)
+								pset.setParameter("CoordsToSaveToHDF",
+										"Everything");
+
 
 								pset.setParameter("NumThreads",""+(int) NumThreads);
 
-								// pset.setMeanOrIntegrated(Model_ParameterSet.MEAN);
 
-								// Finding the index of this channel name
-								for (int p = 0; p < models.Model_Main
-										.getModel()
-										.getTheChannelNames().length; p++)
-									if (models.Model_Main.getModel()
-											.getTheChannelNames()[p]
-											.equalsIgnoreCase(pset
-													.getParameter_String("Thresh_Nuc_ChannelName")))
-										pset.setParameter("Thresh_Nuc_ChannelIndex",""+p);
-								// Finding the index of this channel name
-								for (int p = 0; p < models.Model_Main
-										.getModel()
-										.getTheChannelNames().length; p++)
-									if (models.Model_Main.getModel()
-											.getTheChannelNames()[p]
-											.equalsIgnoreCase(pset
-													.getParameter_String("Thresh_Cyt_ChannelName")))
-										pset.setParameter("Thresh_Cyt_ChannelIndex",""+p);
+							// Finding the index of this channel name
+							for (int j = 0; j < models.Model_Main.getModel()
+									.getTheChannelNames().length; j++)
+								if (models.Model_Main.getModel()
+										.getTheChannelNames()[j]
+										.equalsIgnoreCase(pset
+												.getParameter_String("Thresh_Nuc_ChannelName")))
+									pset.setParameter(
+											"Thresh_Nuc_ChannelIndex", "" + j);
+							// Finding the index of this channel name
+							for (int j = 0; j < models.Model_Main.getModel()
+									.getTheChannelNames().length; j++)
+								if (models.Model_Main.getModel()
+										.getTheChannelNames()[j]
+										.equalsIgnoreCase(pset
+												.getParameter_String("Thresh_Cyt_ChannelName")))
+									pset.setParameter(
+											"Thresh_Cyt_ChannelIndex", "" + j);
+
+							// Storing Parameters used to process this field
+							String hdfPath = models.Model_Main.getModel()
+									.getOutputProjectPath()
+									+ "/Data.h5";
+							try {
+								pset.writeParameters(hdfPath, well.getPlate()
+										.getID(), well.getWellIndex(),
+										fields[p].getIndexInWell());
+							} catch (H5IO_Exception e1) {
+								e1.printStackTrace();
 							}
-
+						}
 					}
 					if (Thresh_Bkgd_Value > 0)
 						models.Model_Main.getModel()
@@ -407,54 +458,35 @@ public class ThresholdingBoundsInputDialog_BatchRun extends JDialog implements
 					for (int i = 0; i < numW; i++)
 						wellsWithImages[i] = wellsWIm.get(i);
 
-					File dir = models.Model_Main.getModel()
-							.getProjectDirectory();
-					File f = new File(dir.getAbsolutePath() + "/BatchJobs");
-					if (f.exists())
-						deleteDir(f);
+					// File dir = models.Model_Main.getModel()
+					// .getProjectDirectory();
+					// File f = new File(dir.getAbsolutePath() + "/BatchJobs");
+					// if (f.exists())
+					// deleteDir(f);
+					//
+					// f = new File(dir.getAbsolutePath() + "/BatchJobs");
+					// f.mkdir();
+					// File f2 = new File(dir.getAbsolutePath() +
+					// "/BatchResults");
+					// if (f2.exists())
+					// deleteDir(f2);
+					// f2 = new File(dir.getAbsolutePath() + "/BatchResults");
+					// f2.mkdir();
 
-					f = new File(dir.getAbsolutePath() + "/BatchJobs");
-					f.mkdir();
-					File f2 = new File(dir.getAbsolutePath() + "/BatchResults");
-					if (f2.exists())
-						deleteDir(f2);
-					f2 = new File(dir.getAbsolutePath() + "/BatchResults");
-					f2.mkdir();
+					if (models.Model_Main.getModel().isProcessing()) {
+						JOptionPane
+								.showMessageDialog(
+										null,
+										"Please wait till segmentation is complete before starting another process",
+										"Be Patient", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+
 
 					// Single thread run
-					// if (wellsWithImages[0].TheParameterSet.getNumThreads() ==
-					// 1) {
-					// // Processor_SingleCells tasker = new
-					// // Processor_SingleCells(
-					// // wellsWithImages, new DefaultSegmentor_v1());
-					// //
-					// // tasker.start();
-					//
-					// // write parameter file
-					//
-					//
-					// writeParameterFile(wellsWithImages);
-					// }
-					// else // Multi-thread run
-					// {
-					//
-					// numWells = wellsWithImages.length;
-					// int numThreads = wellsWithImages[0].TheParameterSet
-					// .getNumThreads();
-					// int numWellsPerProcess = (int) (numWells / numThreads);
-					// int numOddNumWells = numWells % numThreads;
-					// int counter = 0;
-					// Model_Well[] arr = null;
-					// for (int i = 0; i < numThreads; i++) {
-					// arr = new Model_Well[numWellsPerProcess
-					// + (i < numOddNumWells ? 1 : 0)];
-					// for (int j = 0; j < arr.length; j++) {
-					// arr[j] = wellsWithImages[counter];
-					// counter++;
-					// }
-					// // writeParameterFile(arr);
-					// }
-					// }
+					Processor_WriteParameters tasker = new Processor_WriteParameters(
+							wellsWithImages, null);
+						tasker.start();
 
 
 				} else {

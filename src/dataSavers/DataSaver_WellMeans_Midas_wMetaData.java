@@ -108,7 +108,7 @@ public class DataSaver_WellMeans_Midas_wMetaData implements DataSaver
 				ArrayList<ExpDesign_Description> uniqueT = new ArrayList<ExpDesign_Description>();
 				ArrayList<ExpDesign_Description> uniqueM = new ArrayList<ExpDesign_Description>();
 				int numF = featuresToSave.length;
-				Model_Plate[] thePlates = TheMainModel.getPlateHoldingPanel()
+				Model_Plate[] thePlates = TheMainModel.getPlateRepository_GUI()
 						.getModel().getPlates();
 				int numPlates = thePlates.length;
 				ExpDesign_Model io = models.Model_Main.getModel()

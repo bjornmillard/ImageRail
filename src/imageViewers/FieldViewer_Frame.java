@@ -551,7 +551,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		setVisible(false);
 		
 		Model_PlateRepository p = models.Model_Main.getModel()
-				.getThePlateHoldingPanel();
+				.getPlateRepository();
 
 		if (p.getGUI().isBlocked())
 			p.getGUI().unblock();
@@ -702,7 +702,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 	private void deleteSelectedCells(Model_Well well) {
 		well.setCellsModified(true);
 		well.purgeSelectedCellsAndRecomputeWellMeans();
-		models.Model_Main.getModel().getThePlateHoldingPanel()
+		models.Model_Main.getModel().getPlateRepository()
 				.updateMinMaxValues();
 	}
 

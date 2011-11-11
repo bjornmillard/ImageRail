@@ -61,7 +61,6 @@ public class Model_Main {
 	private ArrayList<Feature> TheFeatures;
 	private Feature TheSelectedFeature;
 	private int TheSelectedFeature_Index;
-
 	private String[] ChannelNames;
 
 	private boolean SubtractBackground;
@@ -69,13 +68,15 @@ public class Model_Main {
 	private double[] MaxValues_ImageDisplay;
 	private double[] MinValues_ImageDisplay;
 	private File ImageDirectory;
-	private File TheDirectory;
+	private File TheProjectParentDirectory;
+	private String TheInputProjectPath;
+	private String TheOutputProjectPath;
 	private int TheColorMap;
 	private FilterManager TheFilterManager;
 	private ArrayList TheFilters;
 	private boolean Processing;
 	private boolean StopProcessing;
-	private File TheProjectDirectory;
+	// private File TheProjectDirectory;
 	private ImageRail_SDCube TheImageRail_H5IO;
 	private boolean areDataSetsModified;
 	private DotFilterQueue TheFilterQueue;
@@ -93,7 +94,7 @@ public class Model_Main {
 	 * @author BLM
 	 * */
 	public File getTheDirectory() {
-		return TheDirectory;
+		return TheProjectParentDirectory;
 	}
 
 	/**
@@ -102,7 +103,7 @@ public class Model_Main {
 	 * @author BLM
 	 * */
 	public void setTheDirectory(File dir) {
-		TheDirectory = dir;
+		TheProjectParentDirectory = dir;
 	}
 
 	/**
@@ -119,8 +120,15 @@ public class Model_Main {
 	 * 
 	 * @author BLM
 	 * */
-	public Model_PlateRepository getThePlateHoldingPanel() {
+	public Model_PlateRepository getPlateRepository() {
 		return ThePlateRepository_Model;
+	}
+
+	/**
+	 * Sets the plate repository model
+	 */
+	public void setPlateRepository(Model_PlateRepository rep) {
+		this.ThePlateRepository_Model = rep;
 	}
 	
 	/**
@@ -128,7 +136,7 @@ public class Model_Main {
 	 * 
 	 * @author BLM
 	 */
-	public Gui_PlateRepository getPlateHoldingPanel() {
+	public Gui_PlateRepository getPlateRepository_GUI() {
 		if (ThePlateRepository_Model == null)
 			return null;
 		return ThePlateRepository_Model.getGUI();
@@ -154,28 +162,37 @@ public class Model_Main {
 	 * 
 	 * @author BLM
 	 */
-	public ImageRail_SDCube initH5IO() {
-		String projPath = getProjectDirectory()
-				.getAbsolutePath();
+	public void initH5IO(String inputPath, String outputPath) {
+
 		TheImageRail_H5IO = null;
 		try {
-			TheImageRail_H5IO = new ImageRail_SDCube(projPath);
+			TheImageRail_H5IO = new ImageRail_SDCube(inputPath, outputPath);
 		} catch (Exception e) {
 			System.out.println("Error creating the ImageRail_SDCube: ");
 			e.printStackTrace();
 		}
 
-		return TheImageRail_H5IO;
 	}
 
+
 	/**
-	 * Returns the current project directory
+	 * Returns the current input project directory
 	 * 
 	 * @author BLM
 	 */
-	public File getProjectDirectory() {
+	public String getInputProjectPath() {
 
-		return TheProjectDirectory;
+		return TheInputProjectPath;
+	}
+
+	/**
+	 * Returns the current output project directory
+	 * 
+	 * @author BLM
+	 */
+	public String getOutputProjectPath() {
+
+		return TheOutputProjectPath;
 	}
 
 	/**
@@ -183,13 +200,13 @@ public class Model_Main {
 	 * 
 	 * @author BLM
 	 */
-	public void setProjectDirectory(File dir) {
+	public void setInputProjectDirectory(File dir) {
 		if (TheMainGUI != null)
 			TheMainGUI.setTitle("Project: " + dir.getAbsolutePath());
-		TheProjectDirectory = dir;
+		TheInputProjectPath = dir.getAbsolutePath();
 
 		TheExpDesign_Model = new ExpDesign_Model(
-				TheProjectDirectory.getAbsolutePath());
+TheInputProjectPath);
 	}
 	
 	
@@ -206,7 +223,7 @@ public class Model_Main {
 		File dir = ImageDir_;
 
 		// Storing the images in the ImageDirectory
-		File Images = new File(getProjectDirectory()
+		File Images = new File(getInputProjectPath()
 				+ File.separator + "Images");
 		if (!Images.exists())
 			Images.mkdir();
@@ -301,9 +318,7 @@ public class Model_Main {
 		}
 
 		// creating a project directory if doesn't exist
-		String projPath = getProjectDirectory()
-		.getAbsolutePath();
-		File f = new File(projPath);
+		File f = new File(getInputProjectPath());
 		if (!f.exists())
 			f.mkdir();
 
@@ -314,7 +329,7 @@ public class Model_Main {
 		{
 			TheMainGUI.updateFeatures();
 			TheMainGUI.updateAllPlots();
-			getPlateHoldingPanel().updatePanel();
+			getPlateRepository_GUI().updatePanel();
 			plate.getGUI().updatePanel();
 			TheMainGUI.validate();
 			TheMainGUI.repaint();
@@ -322,27 +337,56 @@ public class Model_Main {
 
 	}
 	
+	// /**
+	// * Sets the path of the HDF5 file that the Model will read
+	// *
+	// * @author BLM
+	// * @param String
+	// * inputPathToHDF5
+	// * */
+	// public void setInputProjectPath(String inputPath) {
+	// TheInputProjectPath = inputPath;
+	// }
+
+	/**
+	 * Sets the path of the HDF5 file that the Model will write to when data is
+	 * generated
+	 * 
+	 * @author BLM
+	 * @param String
+	 *            outputPathToHDF5
+	 * */
+	public void setOutputProjectPath(String outPath) {
+		TheOutputProjectPath = outPath;
+	}
+
 	/**
 	 * Loads the plate with the TIFF images in the given directory
 	 * 
 	 * @author BLM
 	 */
-	public void loadProject(File ProjectDir) {
+	public void loadProject(String inputProjectPath, String outputProjectPath) {
 
 		long sTime = System.currentTimeMillis();
 		try {
+
+			setInputProjectDirectory(new File(inputProjectPath));
+			setOutputProjectPath(outputProjectPath);
+			File ProjectDir = new File(inputProjectPath);
 			System.out.println("Loading Project: " + ProjectDir.getName());
-			TheDirectory = new File(ProjectDir.getParent());
-			setProjectDirectory(ProjectDir);
+			TheProjectParentDirectory = new File(ProjectDir.getParent());
+
 			//Initialized the HDF5 I/O and creates the sample/well hash index
-			initH5IO();
+			initH5IO(TheInputProjectPath, TheOutputProjectPath);
+
 			TheImageRail_H5IO.initHashtable();
 
 			/*
 			 * INIT MODEL_PLATES AND GUIs
 			 */
 			// Looking for what sort of plates were loaded in this prior project
-			ArrayList<int[]> plateSizes = TheImageRail_H5IO.getPlateSizes();
+			ArrayList<int[]> plateSizes = TheImageRail_H5IO
+					.getPlateSizes();
 			//We will create X plates where X == maxPlateID+1;
 			int max = 0;
 			int pSize = 96;
@@ -375,12 +419,15 @@ public class Model_Main {
 			ThePlateRepository_Model = new Model_PlateRepository(
 					plates);
 
+			TheImageRail_H5IO.writePlateCountAndSizes(plates.length,
+					plates[0].getNumColumns() * plates[0].getNumRows());
+
 			int numplates = plates.length;
 			for (int i = 0; i < numplates; i++) {
 
 				Model_Plate plate = plates[i];
 				
-				File dir = new File(TheProjectDirectory.getAbsolutePath()
+				File dir = new File(TheInputProjectPath
 						+ File.separator + "Images" + File.separator + "plate_"
 						+ i);
 
@@ -486,7 +533,7 @@ public class Model_Main {
 	 * @author Bjorn Millard
 	 * */
 	public void loadFieldROIs() {
-		String h5path = TheProjectDirectory.getAbsolutePath() + File.separator
+		String h5path = TheInputProjectPath + File.separator
 				+ "Data.h5";
 		// Iterating through all fields and checking if they have ROIs to load
 		Enumeration<String> keys = TheImageRail_H5IO.getHashtable().keys();
@@ -500,7 +547,7 @@ public class Model_Main {
 				int fieldIndex = Integer.parseInt(key.substring(key
 						.indexOf("f") + 1, key.length()));
 
-				Model_PlateRepository rep = getThePlateHoldingPanel();
+				Model_PlateRepository rep = getPlateRepository();
 				Model_Well well = rep.getWell(plateIndex, wellIndex);
 
 
@@ -536,14 +583,9 @@ public class Model_Main {
 	 */
 	public void load(File f, Model_Plate plate) {
 		if (f.isDirectory()) {
-			// Loading a project
-			if (f.getName().indexOf(".sdc") > 0) {
-				loadProject(f);
-			} else // Only load images
-			{
 				System.out.println(" 	---> Loading Image Directory");
 				ImageDirectory = f;
-				TheDirectory = new File(f.getParent());
+			TheProjectParentDirectory = new File(f.getParent());
 				
 				try {
 					loadImageDirectory(f, plate, false);
@@ -551,7 +593,6 @@ public class Model_Main {
 					System.out.println("Error loading project directory: ");
 					e.printStackTrace();
 				}
-			}
 		}
 
 	}
@@ -950,7 +991,8 @@ public class Model_Main {
 			File newF = new File(file.getAbsolutePath() + ".sdc");
 			//
 			newF.mkdir();
-			setProjectDirectory(newF);
+			setInputProjectDirectory(newF);
+			setOutputProjectPath(TheInputProjectPath);
 
 			Model_Plate[] plates = new Model_Plate[numPlates];
 			for (int p = 0; p < plates.length; p++) {
@@ -966,8 +1008,7 @@ public class Model_Main {
 						ThePlateRepository_Model));
 
 			// Reinit the ExpDesignModel
-			TheExpDesign_Model = new ExpDesign_Model(
-					TheProjectDirectory.getAbsolutePath());
+			TheExpDesign_Model = new ExpDesign_Model(TheInputProjectPath);
 
 			if(TheMainGUI!=null)
 			{
@@ -978,7 +1019,7 @@ public class Model_Main {
 			}
 			
 			
-			initH5IO();
+			initH5IO(TheInputProjectPath, TheOutputProjectPath);
 			try {
 				TheImageRail_H5IO.createProject();
 			} catch (H5IO_Exception e) {
@@ -991,15 +1032,15 @@ public class Model_Main {
 					plates[0].getNumColumns() * plates[0].getNumRows());
 
 			// Writing plate Names
-			for (int p = 0; p < plates.length; p++)
-				TheImageRail_H5IO.writePlateCountAndSizes(numPlates,
-						plates[0].getNumColumns() * plates[0].getNumRows());
+			// for (int p = 0; p < plates.length; p++)
+			// TheImageRail_H5IO.writePlateCountAndSizes(numPlates,
+			// plates[0].getNumColumns() * plates[0].getNumRows());
 
 			if (TheMainGUI != null) {
 				TheMainGUI.getTheMainPanel().setLeftComponent(
 						TheMainGUI.getTheInputPanel_Container());
 				TheMainGUI.getTheMainPanel().setRightComponent(
-						getPlateHoldingPanel());
+						getPlateRepository_GUI());
 				TheMainGUI.getTheMainPanel().setDividerLocation(
 						TheMainGUI.getTheMainPanel().getDividerLocation());
 				TheMainGUI.getTheMainPanel().validate();
@@ -1023,12 +1064,12 @@ public class Model_Main {
 		return TheFilterQueue;
 	}
 
-	// /**
-	// * Prompts the user to select directory where new project will be saved
-	// *
-	// * @author BLM
-	// */
-	// public void saveNewProject() {
+	/**
+	 * Prompts the user to select directory where new project will be created
+	 * 
+	 * @author BLM
+	 */
+	// public void createNewProject() {
 	// File dir = getTheDirectory();
 	// JFileChooser fc = null;
 	// if (dir != null)
@@ -1039,91 +1080,49 @@ public class Model_Main {
 	// int returnVal = fc.showSaveDialog(null);
 	// if (returnVal == JFileChooser.APPROVE_OPTION) {
 	// File file = fc.getSelectedFile();
-	// TheDirectory = new File(file.getParent());
-	// File newF = new File(file.getAbsolutePath() + ".sdc");
-	// TheProjectDirectory.renameTo(newF);
-	// TheProjectDirectory = newF;
+	// file.renameTo(new File(file.getAbsolutePath() + ".sdc"));
+	// TheProjectParentDirectory = new File(file.getParent());
+	// file.mkdir();
+	// setInputProjectPath(file.getAbsolutePath());
 	//
-	// Model_Plate[] plates = getThePlateHoldingPanel().getPlates();
-	//
-	// ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
-	// plates));
+	// Model_Plate[] plates = new Model_Plate[1];
+	// plates[0] = new Model_Plate(8, 12, 0, true);
+	// plates[0].initGUI();
+	// ThePlateRepository_Model = new Model_PlateRepository(plates);
 	// int numplates = plates.length;
-	// TheInputPanel_Container = new JTabbedPane();
-	// for (int i = 0; i < numplates; i++)
-	// TheInputPanel_Container.addTab("Plate #" + (i + 1),
-	// new MidasInputPanel(plates[i], TheExpDesign_Model));
 	//
-	// // initH5IOAndPlates(plates);
-	// TheMainPanel.setLeftComponent(TheInputPanel_Container);
-	// TheMainPanel.setRightComponent(ThePlatePanel);
-	// TheMainPanel.setDividerLocation(TheMainPanel.getDividerLocation());
-	// TheMainPanel.validate();
-	// TheMainPanel.repaint();
+	// if (TheMainGUI != null)
+	// {
+	// TheMainGUI.setPlateRepositoryGUI(new Gui_PlateRepository(
+	// ThePlateRepository_Model));
+	// TheMainGUI.setTheInputPanel_Container(new JTabbedPane());
+	// for (int i = 0; i < numplates; i++)
+	// TheMainGUI.getTheInputPanel_Container().addTab(
+	// "Plate #" + (i + 1),
+	// new MidasInputPanel(plates[i], TheExpDesign_Model));
+	// }
+	// try {
+	// initH5IO(TheInputProjectPath,
+	// TheOutputProjectPath);
+	// if (TheImageRail_H5IO != null)
+	// TheImageRail_H5IO.createProject();
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	//
+	// if(TheMainGUI!=null)
+	// {
+	// TheMainGUI.getTheMainPanel().setLeftComponent(TheMainGUI.getTheInputPanel_Container());
+	// TheMainGUI.getTheMainPanel().setRightComponent(getPlateRepository_GUI());
+	// TheMainGUI.getTheMainPanel().setDividerLocation(TheMainGUI.getTheMainPanel().getDividerLocation());
+	// TheMainGUI.getTheMainPanel().validate();
+	// TheMainGUI.getTheMainPanel().repaint();
 	// TheMainGUI.repaint();
+	// }
 	//
 	// } else
 	// System.out.println("Open command cancelled by user.");
 	// }
-
-	/**
-	 * Prompts the user to select directory where new project will be created
-	 * 
-	 * @author BLM
-	 */
-	public void createNewProject() {
-		File dir = getTheDirectory();
-		JFileChooser fc = null;
-		if (dir != null)
-			fc = new JFileChooser(dir);
-		else
-			fc = new JFileChooser();
-
-		int returnVal = fc.showSaveDialog(null);
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File file = fc.getSelectedFile();
-			file.renameTo(new File(file.getAbsolutePath() + ".sdc"));
-			TheDirectory = new File(file.getParent());
-			file.mkdir();
-			TheProjectDirectory = file;
-
-			Model_Plate[] plates = new Model_Plate[1];
-			plates[0] = new Model_Plate(8, 12, 0, true);
-			plates[0].initGUI();
-			ThePlateRepository_Model = new Model_PlateRepository(plates);
-			int numplates = plates.length;
-
-			if (TheMainGUI != null)
-			{
-				TheMainGUI.setPlateRepositoryGUI(new Gui_PlateRepository(
-						ThePlateRepository_Model));
-				TheMainGUI.setTheInputPanel_Container(new JTabbedPane());
-				for (int i = 0; i < numplates; i++)
-					TheMainGUI.getTheInputPanel_Container().addTab(
-							"Plate #" + (i + 1),
-							new MidasInputPanel(plates[i], TheExpDesign_Model));
-			}
-			try {
-				initH5IO();
-				if (TheImageRail_H5IO != null)
-					TheImageRail_H5IO.createProject();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			if(TheMainGUI!=null)
-			{
-				TheMainGUI.getTheMainPanel().setLeftComponent(TheMainGUI.getTheInputPanel_Container());
-				TheMainGUI.getTheMainPanel().setRightComponent(getPlateHoldingPanel());
-				TheMainGUI.getTheMainPanel().setDividerLocation(TheMainGUI.getTheMainPanel().getDividerLocation());
-				TheMainGUI.getTheMainPanel().validate();
-				TheMainGUI.getTheMainPanel().repaint();
-				TheMainGUI.repaint();
-			}
-
-		} else
-			System.out.println("Open command cancelled by user.");
-	}
 
 	/**
 	 * Returns the scaling ratios available
@@ -1186,7 +1185,7 @@ public class Model_Main {
 	private void resaveCells() {
 		ImageRail_SDCube io = getH5IO();
 
-		Model_Plate[] plates = getThePlateHoldingPanel().getPlates();
+		Model_Plate[] plates = getPlateRepository().getPlates();
 		int numP = plates.length;
 		System.out.println("*** Saving Changes to Wells:");
 
@@ -1258,6 +1257,8 @@ public class Model_Main {
 		for (int j = 0; j < MaxValues_ImageDisplay.length; j++)
 			MaxValues_ImageDisplay[j] = (double) MAXPIXELVALUE;
 	}
+
+
 
 	/**
 	 * Sets the colormap for the GUI display

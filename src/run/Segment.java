@@ -20,233 +20,58 @@
 
 package run;
 
-import imagerailio.ImageRail_SDCube;
-
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 
-import models.Model_ParameterSet;
-import sdcubeio.H5IO_Exception;
-import segmentedobject.CellCoordinates;
+import models.Model_Main;
+import models.Model_Well;
+import processors.Processor_SingleCells;
 import segmentors.DefaultSegmentor_v1;
-import features.Feature;
-import features.FeatureSorter;
 
 public class Segment {
-	static ArrayList<Feature> features;
 
 	/** For commandline segmentation */
 	public static void main(String[] args) {
 		try {
-			if (args.length == 11) {
+			if (args.length == 2) {
 
 				// Reading commandline parameters
 				// ARG_0 --- Project name that we want to process
 				// ARG_1 ---> Path desired for new HDF5 file for stored data
-				// ARG_2 ---> Plate Index
-				// ARG_3 ---> Well Index
-				// ARG_4 ---> Field Index
-				// ARG_5 ---> Channel to use for nuc segmentation
-				// ARG_6 ---> Channel to use for Cyto segmentation
-				// ARG_7 ---> Nucleus Threshold
-				// ARG_8 ---> Cyto Threshold
-				// ARG_9 ---> Bkgd Threshold
-				// ARG_10 ---> CoordsToSave-> "Centroid", "BoundingBox",
-				// "Outlines", "Everything"
+				// ARG_2 ---> Plate start
+				// ARG_3 ---> Well start
+				// ARG_4 ---> Plate end
+				// ARG_5 ---> Well end
 
 
-
-				// ARG_0 --- Project name that we want to process
-				File in = null;
-				try {
-					in = new File(args[0]);
-					System.out.println("*****Processing Input Directory: "
-							+ in.getName());
-				} catch (Exception e) {
-					System.out
-							.println("*****ERROR:  Problem parsing project path given ****** ");
-					e.printStackTrace();
-					System.exit(0);
-				}
-
-				// INIT PSET for segmentation
-				Model_ParameterSet pset = new Model_ParameterSet();
-				// (0) init a pset
-
-				// ARG_1 ---> Path desired for new HDF5 file for stored data
-				File f_out = new File(args[1]);
-				File newF = new File(f_out.getAbsolutePath() + ".sdc");
-				newF.mkdir();
-				ImageRail_SDCube io = new ImageRail_SDCube(newF
-						.getAbsolutePath());
-				try {
-					io.createProject();
-				} catch (H5IO_Exception e) {
-					e.printStackTrace();
-				}
-				// Attempt To init the hashtable
-				io.initHashtable();
-
-				// ARG_2 ---> Plate Index
-				int plateIndex = Integer.parseInt(args[2]);
-				// ARG_3 ---> Well Index
-				int wellIndex = Integer.parseInt(args[3]);
-				// ARG_4 ---> Field Index
-				int fieldIndex = Integer.parseInt(args[4]);
-				// ARG_5 ---> Channel to use for nuc segmentation
-				int nucChannel_Index = Integer.parseInt(args[5]);
-				pset.setParameter("Thresh_Nuc_ChannelIndex",""+nucChannel_Index);
-				// ARG_6 ---> Channel to use for Cyto segmentation
-				int cytoChannel_Index = Integer.parseInt(args[6]);
-				pset.setParameter("Thresh_Cyt_ChannelIndex",""+cytoChannel_Index);
-				// ARG_7 ---> Nucleus Threshold
-				float NucleusThreshold = Float.parseFloat(args[7]);
-				pset.setParameter("Thresh_Nuc_Value",""+NucleusThreshold);
-				// ARG_8 ---> Cyto Threshold
-				float CytoThreshold = Float.parseFloat(args[8]);
-				pset.setParameter("Thresh_Cyt_Value",""+CytoThreshold);
-				// ARG_9 ---> Bkgd Threshold
-				float BkgdThreshold = Float.parseFloat(args[9]);
-				pset.setParameter("Thresh_Bkgd_Value",""+BkgdThreshold);
-				// ARG_10 ---> CoordsToSave-> "Centroid", "BoundingBox"
-				// ,"Outlines", "Everything"
-				String CoordsToSave = args[10];
-				pset.setParameter("CoordsToSaveToHDF",CoordsToSave);
+				Model_Main TheModel = new Model_Main();
+				// ARG_0 --> Input SDC to process
+				if (args[0] != null)
+					TheModel.loadProject(args[0], args[1]);
 
 
-				// (1) Getting all the channel images for this field
-				File[] allFiles = in.listFiles();
-				// Calling this method to make sure wavelengths sorted
-				ArrayList<File[]> allFields = tools.ImageTools
-						.getAllSetsOfCorresponsdingChanneledImageFiles(allFiles);
-				File[] files = allFields.get(0);
-				int numChannels = files.length;
+				ArrayList<Model_Well> TheWells = TheModel.getPlateRepository()
+						.getAllWells();
 
-				// Init Feature files
-				String[] channelNames = new String[numChannels];
-				for (int i = 0; i < numChannels; i++) {
-					String name = files[i].getName();
-					channelNames[i] = name.substring(name.indexOf("w"), name
-							.indexOf(".tif"));
-					System.out.println(channelNames[i]);
-				}
-				initFeatures(channelNames);
 
-				// (2) Converting the images files to a raster
-				int[][][] raster = tools.ImageTools
-						.getImageRaster_FromFiles_copy(files, channelNames);
-				// (3) Computing the background from each channel
-				float[] backgroundValues = new float[numChannels];
-				if (BkgdThreshold > 0)
-					tools.ImageTools.computeBackgroundValues(raster,
-							backgroundValues, pset);
-				// (4) Getting Cell Coordinates (segmenting the cells)
-				ArrayList<CellCoordinates> cellCoords = new DefaultSegmentor_v1()
-						.segmentCells(raster, pset);
+				// // Only getting wells with Images that we can process
+				int numWells = TheWells.size();
+				ArrayList<Model_Well> wellsWIm = new ArrayList<Model_Well>();
+				for (int i = 0; i < numWells; i++)
+					if (TheWells.get(i).getFields() != null
+							&& TheWells.get(i).getFields().length > 0)
+						wellsWIm.add(TheWells.get(i));
+				int numW = wellsWIm.size();
+				Model_Well[] wellsWithImages = new Model_Well[numW];
+				for (int i = 0; i < numW; i++)
+					wellsWithImages[i] = wellsWIm.get(i);
 
-				// (5) Initializing all the data values calculated via the Cell
-				// coordinates, the Raster, and the loaded Feature objects
-				// EX: Now that we have the pixel coordinates that make up each
-				// cell we need to look at the
-				// image and extract the proper values
-				System.out.println("-->> Performing Feature Computations");
-				float[][] cellFeatureMatrix = computeFeatureValues(cellCoords,
-						raster, backgroundValues);
 
-				System.out.println(cellFeatureMatrix.length + "x"
-						+ cellFeatureMatrix[0].length);
+				Processor_SingleCells tasker = new Processor_SingleCells(
+						wellsWithImages, new DefaultSegmentor_v1());
 
-				if (cellFeatureMatrix != null && cellFeatureMatrix.length > 0) {
+				tasker.start();
 
-					//
-					// Now writing Cell coordinate data to HDF file
-					System.out
-							.println("------------ Caching cell data Matrix and Coordinates to HDF file: ------------");
-					long time = System.currentTimeMillis();
-
-					// -------------- Store cells in HDF5
-					// -------------------------------------------------------
-					try {
-						int[] fieldDimensions = { raster.length,
-								raster[0].length, raster[0][0].length };
-						String well_ID = "p" + plateIndex + "w" + wellIndex
-								+ "_t"
-								+ imagerailio.ImageRail_SDCube.getTimeStamp();
-						io.createField(well_ID, plateIndex, wellIndex,
-								fieldIndex,
- fieldDimensions, null);
-						io.writePlateCountAndSizes(1, 96);
-
-						// Writing data matrix to HDF
-						io.writeFeatures(plateIndex, wellIndex, fieldIndex,
-								cellFeatureMatrix);
-						// Writing the feature names to file
-
-						String[] fNames = new String[features.size()];
-						for (int i = 0; i < features.size(); i++)
-							fNames[i] = new String(features.get(i).toString());
-						io.writeFeatureNames(plateIndex, wellIndex, fieldIndex,
-								fNames);
-
-						String whatToSave = pset
-								.getParameter_String("CoordsToSaveToHDF");
-						if (whatToSave.equalsIgnoreCase("BoundingBox")) {
-							// Only save the cell BoundingBoxes to file
-							ArrayList<CellCoordinates> bbox = segmentedobject.CellCoordinates
-									.getBoundingBoxOfCoordinates(cellCoords);
-							io.writeCellBoundingBoxes(plateIndex, wellIndex,
-									fieldIndex,
-									bbox);
-
-							killCellCoordinates(bbox);
-							killCellCoordinates(cellCoords);
-						} else if (whatToSave.equalsIgnoreCase("Centroid")) {
-							// Only save the cell Centroids to file
-							ArrayList<CellCoordinates> centroids = segmentedobject.CellCoordinates
-									.getCentroidOfCoordinates(cellCoords);
-							io.writeCellCentroids(plateIndex, wellIndex,
-									fieldIndex,
-									centroids);
-
-							killCellCoordinates(centroids);
-							killCellCoordinates(cellCoords);
-						} else if (whatToSave.equalsIgnoreCase("Outlines")) {
-							// Only save the cell outlines to file
-							ArrayList<CellCoordinates> outlines = segmentedobject.CellCoordinates
-									.getSingleCompartmentCoords(cellCoords,
-											"Outline");
-							io.writeWholeCells(plateIndex, wellIndex,
-									fieldIndex,
-									outlines);
-
-							killCellCoordinates(outlines);
-							killCellCoordinates(cellCoords);
-						} else if (whatToSave.equalsIgnoreCase("Everything")) {
-							io.writeWholeCells(plateIndex, wellIndex,
-									fieldIndex,
-									cellCoords);
-							killCellCoordinates(cellCoords);
-						}
-
-						if (Math.random() > 0.7)
-							System.gc();
-					} catch (Exception e) {
-						// Handle this exception!!!
-						e.printStackTrace();
-					}
-					System.out.println("Done writing: "
-							+ (System.currentTimeMillis() - time));
-					time = System.currentTimeMillis();
-
-				} else
-					System.out
-							.println("-----**No Cells Found in this well with the given parameter **-----");
-
-				raster = null;
-				System.gc();
-				}
- else {
+			} else {
 				String st = "\n\n\n\n";
 				st += "***********************************************\n";
 				st += "***********************************************\n";
@@ -269,6 +94,7 @@ public class Segment {
 				System.out.println(st);
 			}
 
+
 		} catch (Exception e) {
 
 			e.printStackTrace();
@@ -276,119 +102,128 @@ public class Segment {
 	}
 
 
-	/** */
-	static void initFeatures(String[] channelNames) {
-
-		ArrayList<Feature> arr = new ArrayList<Feature>();
-		try {
-            // Try to load features from src tree, otherwise try deployed location 
-			File f = new File("./src/features");
-			if (!f.exists())
-				f = new File("./features");
-			File[] fs = f.listFiles();
-
-			int len = fs.length;
-
-			for (int i = 0; i < len; i++) {
-				if (fs[i].getAbsolutePath().indexOf(".java") > 0
-						&& !fs[i].getName().equalsIgnoreCase("Feature.java")
-						&& !fs[i].getName().equalsIgnoreCase(
-						"FeatureSorter.java")) {
-					String path = fs[i].getName();
-					int ind = path.indexOf(".java");
-					path = path.substring(0, ind);
-					// System.out.println("Loading Feature: "+ path);
-					Class c = Class.forName("features." + path);
-					arr.add((Feature) c.newInstance());
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		int len = arr.size();
-		features = new ArrayList<Feature>();
-		// System.out.println("Found "+len +" Features");
-		for (int i = 0; i < len; i++) {
-			Feature f = (arr.get(i));
-			f.Name = f.getClass().toString();
-
-			if (f.isMultiSpectralFeature() && channelNames != null) {
-				for (int w = 0; w < channelNames.length; w++) {
-					try {
-						Feature fn = f.getClass().newInstance();
-						fn.setChannelIndex(w);
-						fn.setChannelName(channelNames[w]);
-						fn.setName(channelNames[w]);
-						features.add(fn);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			} else
-				features.add(f);
-		}
-
-		FeatureSorter sorter = new FeatureSorter();
-		Collections.sort(features, sorter);
-
-	}
-
-
 	/**
-	 * Computes the main data matrix of size NumCells x numFeatures.
-	 * 
-	 * @param ArrayList
-	 *            <Cell_coords> cells
-	 * @param int[][][] raster
-	 * @author BLM
-	 */
-	static float[][] computeFeatureValues(ArrayList<CellCoordinates> cells,
-			int[][][] raster, float[] backgroundValues) {
-
-
-		int numFeatures = features.size();
-
-		if (cells == null || cells.size() == 0)
-			return null;
-
-		int numC = cells.size();
-		float[][] data = new float[numC][numFeatures];
-
-		long[] intTime = new long[numFeatures];
-
-		for (int n = 0; n < numC; n++) {
-			CellCoordinates cell = cells.get(n);
-			for (int f = 0; f < numFeatures; f++) {
-				long time = System.currentTimeMillis();
-				data[n][f] = features.get(f).getValue(cell, raster,
-						backgroundValues);
-				intTime[f] += (System.currentTimeMillis() - time);
-			}
-		}
-
-		return data;
-	}
-
-	/**
-	 * Attempts to free up all the memory that was consumed by the given cells
+	 * Loads the plate with the TIFF images in the given directory
 	 * 
 	 * @author BLM
 	 */
-	static public void killCellCoordinates(ArrayList<CellCoordinates> cells) {
-		int len = cells.size();
-		for (int i = 0; i < len; i++) {
-			CellCoordinates cell = cells.get(i);
-			for (int j = 0; j < cell.getComSize(); j++) {
-				imagerailio.Point[] pts = cell.getComCoordinates(j);
-				for (int z = 0; z < pts.length; z++)
-					pts[z] = null;
-
-				pts = null;
-			}
-			cell = null;
-		}
-		cells = null;
-	}
+	// static public void loadProject(String ProjectPath) {
+	//
+	// long sTime = System.currentTimeMillis();
+	// try {
+	// Model_Main TheMainModel = new Model_Main();
+	// System.out.println("Loading Project: " + ProjectPath);
+	// TheMainModel.setProjectDirectory(new File(ProjectPath));
+	//
+	// //Initialized the HDF5 I/O and creates the sample/well hash index
+	// TheMainModel.initH5IO();
+	// TheMainModel.getImageRailio().initHashtable();
+	//
+	// /*
+	// * INIT MODEL_PLATES AND GUIs
+	// */
+	// // Looking for what sort of plates were loaded in this prior project
+	// ArrayList<int[]> plateSizes = TheMainModel.getImageRailio()
+	// .getPlateSizes();
+	// //We will create X plates where X == maxPlateID+1;
+	// int max = 0;
+	// int pSize = 96;
+	// for (int i = 0; i < plateSizes.size(); i++) {
+	// int[] one = plateSizes.get(i);
+	// int id = one[0];
+	// if(id>max)
+	// max = id;
+	// if(i == 0)
+	// pSize = one[1];
+	// else
+	// if(pSize!=one[1])
+	// System.out.println("Project contains plates of different sizes*** This is currently not supported by ImageRail");
+	// }
+	// max++;
+	// ArrayList<Model_Plate> arr = new ArrayList<Model_Plate>();
+	// for (int i = 0; i < max; i++) {
+	// int numR = (int) Math.ceil(Math.sqrt(pSize / 1.5f));
+	// int numC = pSize / numR;
+	// arr.add(new Model_Plate(numR, numC, i, true));
+	// }
+	//
+	// Model_Plate[] plates = new Model_Plate[arr.size()];
+	// for (int p = 0; p < plates.length; p++)
+	// {
+	// plates[p] = arr.get(p);
+	// plates[p].initGUI();
+	// }
+	// // Creating the new plate holder with new plates
+	// TheMainModel.setPlateRepository(new Model_PlateRepository(plates));
+	//
+	// String[] ChannelNames = null;
+	// int numplates = plates.length;
+	// for (int i = 0; i < numplates; i++) {
+	//
+	// Model_Plate plate = plates[i];
+	//
+	// File dir = new File(TheMainModel.getProjectDirectory()
+	// .getAbsolutePath()
+	// + File.separator + "Images" + File.separator + "plate_"
+	// + i);
+	//
+	// // Looking for images for this plate in the projPath/Images
+	// // directory
+	//
+	// // Getting Number of unique channel names and adding Features
+	// // based off of wavelength - TODO features should be added
+	// // better
+	//
+	// ChannelNames = tools.ImageTools
+	// .getNameOfUniqueChannels(dir
+	// .getParentFile());
+	//
+	//
+	// /*
+	// * Organizing the images and Initializing each Model_Field
+	// */
+	// if (dir != null && dir.exists()) {
+	// for (int r = 0; r < plate.getNumRows(); r++)
+	// for (int c = 0; c < plate.getNumColumns(); c++) {
+	// // Getting all files tagged for this well
+	// File[] allFiles = tools.ImageTools
+	// .getFilesForGivenWell(dir, plate
+	// .getWells()[r][c]);
+	// // Organizing the images into sets of File[] in a an
+	// // arraylist where each element of the arrList is a
+	// // File[] of each wavelength for each field
+	// ArrayList<File[]> allSets = tools.ImageTools
+	// .getAllSetsOfCorresponsdingChanneledImageFiles(allFiles);
+	// int numFields = allSets.size();
+	//
+	// Model_Well well = plate.getWells()[r][c];
+	// well.setTheFields(new Model_Field[numFields]);
+	// for (int j = 0; j < numFields; j++)
+	// plate.getWells()[r][c].getFields()[j] = new Model_Field(
+	// ((File[]) allSets.get(j)), j, well);
+	// }
+	// }
+	//
+	//
+	// }
+	//
+	// TheMainModel.initFeatures(ChannelNames);
+	//
+	// // Trying to load the well mean data from the HDF file if
+	// // exists
+	//
+	// for (int i = 0; i < numplates; i++)
+	// plates[i].loadWellMeanAndStdevData();
+	//
+	// TheMainModel.loadFieldROIs();
+	// TheMainModel.initScalingParameters();
+	//
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	//
+	//
+	// }
+	
 
 }

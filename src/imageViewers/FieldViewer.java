@@ -212,11 +212,11 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			set(TheCurrentImage);
 			TheDisplayedImage = TheCurrentImage;
 
-			int numP = models.Model_Main.getModel().getThePlateHoldingPanel()
+			int numP = models.Model_Main.getModel().getPlateRepository()
 					.getPlates().length;
 			ThePlates = new Model_Plate[numP];
 			for (int p = 0; p < numP; p++) {
-				ThePlates[p] = models.Model_Main.getModel().getThePlateHoldingPanel()
+				ThePlates[p] = models.Model_Main.getModel().getPlateRepository()
 						.getPlates()[p].copy();
 				ThePlates[p].getGUI().allowImageCountDisplay(false);
 				ThePlates[p].getGUI().setSize(200, 400);
@@ -226,7 +226,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				for (int i = 0; i < rows; i++)
 					for (int c = 0; c < cols; c++) {
 						Model_Well w = models.Model_Main.getModel()
-								.getThePlateHoldingPanel().getPlates()[p]
+								.getPlateRepository().getPlates()[p]
 								.getWells()[i][c];
 						Model_Well w2 = ThePlates[p].getWells()[i][c];
 						if (!w.isSelected())

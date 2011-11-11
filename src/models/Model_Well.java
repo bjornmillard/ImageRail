@@ -416,7 +416,7 @@ public class Model_Well
 		int len = TheFields.length;
 		for (int i = 0; i < len; i++)
 			if (TheFields[i].doesDataExist(models.Model_Main.getModel()
-					.getProjectDirectory().getAbsolutePath()
+					.getInputProjectPath()
 					+ "/Data.h5"))
  {
 				count++;
@@ -647,7 +647,7 @@ public class Model_Well
 		Feature_Stdev = data[1];
 		
 		//updating the min/max of plate date
-		models.Model_Main.getModel().getPlateHoldingPanel().getModel().updateMinMaxValues();
+		models.Model_Main.getModel().getPlateRepository_GUI().getModel().updateMinMaxValues();
 		
 	}
 	
@@ -663,7 +663,7 @@ public class Model_Well
 		Feature_Stdev = data[1];
 		
 		//updating the min/max of plate date
-		models.Model_Main.getModel().getPlateHoldingPanel().getModel().updateMinMaxValues();	
+		models.Model_Main.getModel().getPlateRepository().updateMinMaxValues();
 	}
 	
 	/** Sets this wells means and stdevs with the given float arrays
@@ -674,7 +674,7 @@ public class Model_Well
 		Feature_Stdev = stdevs;
 		
 		//updating the min/max of plate date
-		models.Model_Main.getModel().getThePlateHoldingPanel()
+		models.Model_Main.getModel().getPlateRepository()
 				.updateMinMaxValues();
 	}
 	
@@ -828,7 +828,7 @@ public class Model_Well
 
 	public void deleteSelectedCells() {
 		purgeSelectedCellsAndRecomputeWellMeans();
-		models.Model_Main.getModel().getPlateHoldingPanel().getModel().updateMinMaxValues();
+		models.Model_Main.getModel().getPlateRepository_GUI().getModel().updateMinMaxValues();
 		models.Model_Main.getModel().getGUI().updateAllPlots();
 	}
 

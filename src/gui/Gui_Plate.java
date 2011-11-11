@@ -363,7 +363,7 @@ public class Gui_Plate extends JPanel_highlightBox implements ImageCapturePanel 
 	public void updatePanel() {
 		removeAll();
 		add(TheToolBar, ToolBarPosition);
-		if (models.Model_Main.getModel().getPlateHoldingPanel() != null
+		if (models.Model_Main.getModel().getPlateRepository_GUI() != null
 				&& gui.MainGUI.getGUI().getPlateHoldingPanel().showData()) {
 			add(getDataTable(), BorderLayout.CENTER);
 		}

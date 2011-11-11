@@ -305,7 +305,7 @@ public class DotFilterQueue extends JFrame implements Runnable {
 
 		System.out.println("Filtering all HDF files");
 		Model_Main theModel = models.Model_Main.getModel();
-		Model_PlateRepository platePanel = theModel.getThePlateHoldingPanel();
+		Model_PlateRepository platePanel = theModel.getPlateRepository();
 		int numPlates = platePanel.getNumPlates();
 		Model_Plate[] plates = platePanel.getPlates();
 
@@ -421,7 +421,7 @@ public class DotFilterQueue extends JFrame implements Runnable {
 					plate.getGUI().repaint();
 				}
 		}
-		theModel.getThePlateHoldingPanel().updateMinMaxValues();
+		theModel.getPlateRepository().updateMinMaxValues();
 		if (theModel.getGUI() != null)
 			theModel.getGUI().updateDotPlot();
 	}

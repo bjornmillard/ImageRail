@@ -401,10 +401,10 @@ public class Model_Field {
 	 * */
 	public void loadParameterSet() {
 		TheParameterSet = new Model_ParameterSet();
-		String h5path = models.Model_Main.getModel().getProjectDirectory()
-				.getAbsolutePath()
+		String h5path = models.Model_Main.getModel().getInputProjectPath()
 				+ "/Data.h5";
-		ImageRail_SDCube io = models.Model_Main.getModel().getImageRailio();
+		ImageRail_SDCube io = models.Model_Main.getModel()
+.getImageRailio();
 
 		String pathToSample = io.getHashtable().get(
 				io.getIndexKey(getParentWell().getPlate().getID(),

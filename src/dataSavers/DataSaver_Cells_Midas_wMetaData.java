@@ -107,7 +107,7 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 				ArrayList<ExpDesign_Description> uniqueM = new ArrayList<ExpDesign_Description>();
 				int numF = featuresToSave.length;
 				Model_Plate[] thePlates = TheMainModel
-						.getThePlateHoldingPanel().getPlates();
+						.getPlateRepository().getPlates();
 				int numPlates = thePlates.length;
 				ExpDesign_Model io = TheMainModel.getExpDesignConnector();
 

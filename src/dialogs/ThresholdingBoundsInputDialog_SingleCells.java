@@ -69,7 +69,7 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 	private int CoordsToSave;
 
 	public ThresholdingBoundsInputDialog_SingleCells(Model_Well[] wells) {
-		int width = 375;
+		int width = 350;
 		int height = 470;
 
 		setTitle("Input");
@@ -78,9 +78,6 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 		setLocation((int) (d.width / 2f) - width / 2, (int) (d.height / 2f)
 				- height / 2);
 		setModal(true);
-
-		Model_ParameterSet pset = Model_ParameterSet
-				.doWellsHaveSameParameterSet(wells);
 
 		/** Features comboBox */
 		ArrayList<String> list = new ArrayList<String>();
@@ -187,6 +184,9 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 
 		models.Model_Main.getModel().getGUI().getLoadCellsImmediatelyCheckBox()
 				.setSelected(false);
+
+		Model_ParameterSet pset = Model_ParameterSet
+				.doWellsHaveSameParameterSet(wells);
 
 		if (pset != null) {
 			if (pset.exists("Thresh_Nuc_ChannelName")) {

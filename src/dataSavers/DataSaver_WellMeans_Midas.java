@@ -123,7 +123,7 @@ public class DataSaver_WellMeans_Midas implements DataSaver
 					pw.print(((String)headers.get(i))+",");
 				pw.println((String)headers.get(headers.size()-1));
 				
-				Model_Plate[] thePlates = TheMainModel.getPlateHoldingPanel()
+				Model_Plate[] thePlates = TheMainModel.getPlateRepository_GUI()
 						.getModel().getPlates();
 				int numPlates = thePlates.length;
 				for (int rr = 0; rr < numPlates; rr++)

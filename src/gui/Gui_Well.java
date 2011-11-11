@@ -268,7 +268,7 @@ public class Gui_Well {
 
 		// drawing the histograms if desired
 		if (!TheModel.isLoading()
-				&& models.Model_Main.getModel().getPlateHoldingPanel()
+				&& models.Model_Main.getModel().getPlateRepository_GUI()
 						.shouldDisplayHistograms()
 				&& TheModel.containsCellData()
 				&& TheModel.getCell_values() != null) {
@@ -338,7 +338,7 @@ public class Gui_Well {
 		double maxVal = Double.NEGATIVE_INFINITY;
 
 		// Getting the min/max pre-stored values
-		if (!models.Model_Main.getModel().getPlateHoldingPanel().isLogScaled()) {
+		if (!models.Model_Main.getModel().getPlateRepository_GUI().isLogScaled()) {
 			if (TheModel.getPlate().getMinMaxFeatureValues() != null
 					&& TheModel.getPlate().getMinMaxFeatureValues().length > 0
 					&& TheModel.getPlate().getMinMaxFeatureValues()[0].length > 0) {
@@ -363,7 +363,7 @@ public class Gui_Well {
 		// Binning values
 		for (int i = 0; i < numCells; i++) {
 			double val = cells[i][feature_index];
-			if (models.Model_Main.getModel().getPlateHoldingPanel().isLogScaled()) {
+			if (models.Model_Main.getModel().getPlateRepository_GUI().isLogScaled()) {
 				if (val <= 1)
 					val = 1;
 				val = tools.MathOps.log(val);

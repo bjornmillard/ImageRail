@@ -245,12 +245,13 @@ public class PlateInputDialog extends JDialog implements ActionListener,Property
 						Model_Main TheMainModel = models.Model_Main.getModel();
 						if (TheMainModel == null)
 							TheMainModel = new Model_Main();
+						MainGUI TheMainGUI = new MainGUI(TheMainModel);
+
 						boolean worked = TheMainModel.initNewPlates(
 								numP, numRows, numCols);
 						if (worked) {
 							if (ParentFrame != null)
 								ParentFrame.setVisible(false);
-							MainGUI TheMainGUI = new MainGUI(TheMainModel);
 							TheMainGUI
 									.setVisible(true);
 						}

@@ -93,7 +93,7 @@ public class DataSaver_Cells_Midas implements DataSaver
 				pw.println((String)headers.get(headers.size()-1));
 					
 				Model_Plate[] thePlates = models.Model_Main.getModel()
-						.getThePlateHoldingPanel().getPlates();
+						.getPlateRepository().getPlates();
 				int numPlates = thePlates.length;
 				for (int p = 0; p < numPlates; p++)
 				{

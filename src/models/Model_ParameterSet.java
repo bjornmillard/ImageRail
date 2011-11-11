@@ -237,6 +237,7 @@ public boolean getParameter_boolean(String name) {
 				.getHashtable();
 		String pathToSample = (String) hashtable_indexToPath.get(imagerail_io
 				.getIndexKey(plateID, wellID));
+
 		if (pathToSample != null) {
 			String path = pathToSample + "/Children/" + fieldID + "/Meta";
 			// Remove prior dataset
@@ -245,10 +246,10 @@ public boolean getParameter_boolean(String name) {
 			if (h5.existsDataset(path + "/Segmentation_Parameters_Values"))
 				h5.removeDataset(path + "/Segmentation_Parameters_Values");
 
-			h5.openHDF5(hdfPath);
-			h5.writeStringDataset(path + "/" + "Segmentation_Parameters_Names",
+			h5.writeDataset(hdfPath, path + "/"
+					+ "Segmentation_Parameters_Names",
 					pNames);
-			h5.closeHDF5();
+
 
 			h5.writeDataset(hdfPath, path + "/"
 					+ "Segmentation_Parameters_Values", pVals);
@@ -374,7 +375,8 @@ public boolean getParameter_boolean(String name) {
 	 *            pathToParentDirContainingParamNamesAndValues
 	 * */
 	public void load(String H5Path, String pathToParentDir) {
-		ImageRail_SDCube io = models.Model_Main.getModel().getImageRailio();
+		ImageRail_SDCube io = models.Model_Main.getModel()
+.getImageRailio();
 		Hashtable<String, String> hash = io.readParameterSet(H5Path,
 				pathToParentDir);
 		if (hash != null)

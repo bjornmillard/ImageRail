@@ -135,11 +135,11 @@ public class MainGUI extends JFrame {
 
 		// Setting up the GUI for the plate repository
 		setPlateRepositoryGUI(new Gui_PlateRepository(
-				TheMainModel.getThePlateHoldingPanel()));
+				TheMainModel.getPlateRepository()));
 
 		setTheInputPanel_Container(new JTabbedPane());
 
-		Model_Plate[] plates = TheMainModel.getThePlateHoldingPanel()
+		Model_Plate[] plates = TheMainModel.getPlateRepository()
 				.getPlates();
 		int len = plates.length;
 		for (int i = 0; i < len; i++) {
@@ -321,7 +321,8 @@ public class MainGUI extends JFrame {
 					Model_Well well = wells.get(i);
 					int numH = well.getHDFcount();
 					if (numH > 0) {
-						well.loadCells(TheMainModel.getImageRailio(), true,
+						well.loadCells(TheMainModel.getImageRailio(),
+								true,
 								true);
 						Model_Field[] fields = well.getFields();
 						int num = fields.length;
@@ -507,7 +508,7 @@ public class MainGUI extends JFrame {
 				ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Model_Plate[] plates = TheMainModel.getThePlateHoldingPanel().getPlates();
+				Model_Plate[] plates = TheMainModel.getPlateRepository().getPlates();
 				Model_Plate.loadCellData(plates, false, true);
 			}
 		});
@@ -518,7 +519,7 @@ public class MainGUI extends JFrame {
 				ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Model_Plate[] plates = TheMainModel.getThePlateHoldingPanel().getPlates();
+				Model_Plate[] plates = TheMainModel.getPlateRepository().getPlates();
 				Model_Plate.loadCellData(plates, true, true);
 			}
 		});
@@ -542,7 +543,7 @@ public class MainGUI extends JFrame {
 				ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Model_Plate[] plates = TheMainModel.getThePlateHoldingPanel().getPlates();
+				Model_Plate[] plates = TheMainModel.getPlateRepository().getPlates();
 				for (int i = 0; i < plates.length; i++)
 					plates[i].clearCellData();
 				updateAllPlots();
@@ -763,7 +764,7 @@ public class MainGUI extends JFrame {
 	{
 		// Horiz ordering
 		ArrayList<Model_Well> wells = new ArrayList<Model_Well>();
-		Model_Plate[] plates = TheMainModel.getThePlateHoldingPanel().getPlates();
+		Model_Plate[] plates = TheMainModel.getPlateRepository().getPlates();
 		int numPlates = plates.length;
 		for (int p = 0; p < numPlates; p++)
 			wells.addAll(plates[p].getSelectedWells_horizOrder());
@@ -836,7 +837,7 @@ public class MainGUI extends JFrame {
 	 * @author BLM
 	 */
 	public void updateMidasInputPanel() {
-		Model_Plate[] ThePlates = TheMainModel.getThePlateHoldingPanel()
+		Model_Plate[] ThePlates = TheMainModel.getPlateRepository()
 				.getPlates();
 		int numplates = ThePlates.length;
 		for (int i = 0; i < numplates; i++)
@@ -1274,6 +1275,6 @@ public class MainGUI extends JFrame {
 	 * Returns the gui for the plate holder panel
 	 * */
 	public Gui_PlateRepository getPlateHoldingPanel() {
-		return TheMainModel.getPlateHoldingPanel();
+		return TheMainModel.getPlateRepository_GUI();
 	}
 }

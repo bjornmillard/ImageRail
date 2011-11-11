@@ -264,7 +264,8 @@ public class Model_Plate
 						&& models.Model_Main.getModel().getImageRailio() != null) {
 
 					// long sTime = System.currentTimeMillis();
-				sampleID = models.Model_Main.getModel().getImageRailio()
+					sampleID = models.Model_Main.getModel()
+.getImageRailio()
 						.readSampleID_fromHDF5(ID, counter);
 
 					// String path = (String)hdfHash.get("p"+ID+"w"+counter);
@@ -277,7 +278,8 @@ public class Model_Plate
 					// sTime = System.currentTimeMillis();
 					// System.out.println("hdfDone");
 				if(sampleID==null) //Trying to get from XML if not in HDF5
-					sampleID = models.Model_Main.getModel().getImageRailio()
+						sampleID = models.Model_Main.getModel()
+								.getImageRailio()
 							.readSampleID_fromXML(ID, counter);
 					// System.out.println("xmlDone");
 					// xmlTime += (System.currentTimeMillis() - sTime);
@@ -387,7 +389,7 @@ public class Model_Plate
 		
 		if (normalizeAcrossAllPlates)
 		{
-			Model_Plate[] thePlates = models.Model_Main.getModel().getPlateHoldingPanel()
+			Model_Plate[] thePlates = models.Model_Main.getModel().getPlateRepository_GUI()
 					.getModel().getPlates();
 			int numPlates = thePlates.length;
 			for (int p = 0; p < numPlates; p++)
