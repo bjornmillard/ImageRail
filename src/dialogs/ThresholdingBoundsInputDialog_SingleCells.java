@@ -101,11 +101,10 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 		channelBox_cyto = new JComboBox(obX2);
 
 		TheWells = wells;
-		textField = new JTextField[4];
+		textField = new JTextField[3];
 		textField[0] = new JTextField(6); // Nuc bound
 		textField[1] = new JTextField(6); // Cell bound
 		textField[2] = new JTextField(6); // Back bound
-		textField[3] = new JTextField(6); // Multi-thread
 
 		// Setting up the RaidioButtons for pixel saving selections
 		JRadioButton r0 = new JRadioButton("Bounding Box");
@@ -150,27 +149,6 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 		radioPanel.add(r2);
 		// radioPanel.add(r3);
 
-		// models.Model_Main.getModel().setCytoplasmAnnulusCheckBox(
-		// new JCheckBoxMenuItem("Annulus Only"));
-		models.Model_Main.getModel().getGUI().getMultithreadCheckBox()
-				.addActionListener(
-				new ActionListener() {
-					public void actionPerformed(ActionEvent ae) {
-						if (models.Model_Main.getModel()
-.getGUI()
-								.getMultithreadCheckBox()
-								.isSelected()) {
-							textField[3].setText("1");
-							textField[3].setEnabled(true);
-						} else {
-							textField[3].setText("1");
-							textField[3].setEnabled(false);
-						}
-
-						validate();
-						repaint();
-					}
-				});
 
 		//
 		// Loading parameters if common (pset!=null)
@@ -179,8 +157,6 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 		models.Model_Main.getModel().getGUI().getLoadCellsImmediatelyCheckBox()
 				.setSelected(false);
 		textField[2].setText("0");
-		textField[3].setText("1");
-		textField[3].setEnabled(false);
 
 		models.Model_Main.getModel().getGUI().getLoadCellsImmediatelyCheckBox()
 				.setSelected(false);
@@ -240,33 +216,17 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 		}
 
 		// Create an array of the text and components to be displayed.
-		String[] mess = new String[6];
+		String[] mess = new String[5];
 		mess[0] = "Nucleus Thresholding Channel";
 		mess[1] = "Nucleus Boundary Threshold";
 		mess[2] = "Cytoplasm Thresholding Channel";
 		mess[3] = "Cytoplasm Boundary Threshold";
 		mess[4] = "Background Threshold";
-		mess[5] = "Number of Threads:";
 
 		Object[] array = { mess[0], channelBox_nuc, mess[1], textField[0],
 				mess[2], channelBox_cyto, mess[3], textField[1], mess[4],
 				textField[2],
 				new JLabel("   "), radioPanel };
-		// TODO - took out multithreading for time being
-		// , new JLabel("   "),
-		// models.Model_Main.getModel().getMultithreadCheckBox(), mess[5],
-		// textField[3] };
-
-		// models.Model_Main.getModel().getCytoplasmAnnulusCheckBox(), mess[5],
-		// textField[3] };
-		// Object[] array = {mess[0], channelBox_nuc ,mess[1], textField[0],
-		// mess[2], channelBox_cyto , mess[3], textField[1], mess[4],
-		// textField[2],
-		// models.Model_Main.getModel().getLoadCellsImmediatelyCheckBox(),
-		// new JLabel("   "),
-		// new JLabel("   "),
-		// models.Model_Main.getModel().getCytoplasmAnnulusCheckBox(),
-		// mess[5], textField[3]};
 
 		// Create an array specifying the number of dialog buttons
 		// and their text.
@@ -331,20 +291,11 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 			if (btnString1.equals(value)) {
 				String[] strings = null;
 
-				if (models.Model_Main.getModel().getGUI()
-						.getMultithreadCheckBox()
-						.isSelected()) {
-					strings = new String[4];
+				strings = new String[3];
 					strings[0] = textField[0].getText(); // Nuc thresh
 					strings[1] = textField[1].getText(); // Cyt Thresh
 					strings[2] = textField[2].getText(); // Bkgd thresh
-					strings[3] = textField[3].getText(); // Multithread
-				} else {
-					strings = new String[3];
-					strings[0] = textField[0].getText();
-					strings[1] = textField[1].getText();
-					strings[2] = textField[2].getText();
-				}
+
 
 				// make sure the inputed values are numbers only
 				if (tools.MathOps.areNumbers(strings)) {
@@ -354,11 +305,6 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 					float Thresh_Nuc_Value = Float.parseFloat(strings[0]);
 					float Thresh_CellBoundary = Float.parseFloat(strings[1]);
 					float Thresh_Bkgd_Value = Float.parseFloat(strings[2]);
-					float NumThreads = -1;
-					if (models.Model_Main.getModel().getGUI()
-							.getMultithreadCheckBox()
-							.isSelected())
-						NumThreads = Float.parseFloat(strings[3]);
 
 					// Storing the Parameters for each Model_Field
 					int len = TheWells.length;
@@ -402,8 +348,6 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 								pset.setParameter("CoordsToSaveToHDF",
 										"Everything");
 
-							if (NumThreads > 0)
-								pset.setParameter("NumThreads",""+(int) NumThreads);
 
 
 							// Finding the index of this channel name
@@ -462,28 +406,6 @@ public class ThresholdingBoundsInputDialog_SingleCells extends JDialog
 
 						tasker.start();
 					}
-					// else // Multi-thread run
-					// {
-					// numWells = wellsWithImages.length;
-					// int numThreads = wellsWithImages[0].TheParameterSet
-					// .getNumThreads();
-					// int numWellsPerProcess = (int) (numWells / numThreads);
-					// int numOddNumWells = numWells % numThreads;
-					// int counter = 0;
-					// Model_Well[] arr = null; // new Model_Well[
-					// for (int i = 0; i < numThreads; i++) {
-					// arr = new Model_Well[numWellsPerProcess + (i <
-					// numOddNumWells ? 1 : 0)];
-					// for (int j = 0; j < arr.length; j++) {
-					// arr[j] = wellsWithImages[counter];
-					// counter++;
-					// }
-					// Processor_SingleCells tasker = new Processor_SingleCells(
-					// arr, new DefaultSegmentor_v1());
-					// tasker.start();
-					//
-					// }
-					// }
 
 
 				} else {

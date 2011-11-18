@@ -699,14 +699,16 @@ public class Model_Plate
 		System.out.println("Loading means and stdevs for plate: " + getID());
 		ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
 		//Trying to write mean value data to file
-		
+		io.openHDF5(io.INPUT);
+
 		int numRows = TheWells.length;
 		int numCols = TheWells[0].length;
 		int wellIndex =0;
 		for (int  c = 0;  c < numCols;  c++) 
 		for (int r = 0; r < numRows; r++) 
 		{
-			String pathToSample = io.getHashtable().get(io.getIndexKey(getID(), wellIndex));
+				String pathToSample = io.getHashtable_in().get(
+						io.getIndexKey(getID(), wellIndex));
 			if (pathToSample != null) {
 
 				float[] means = io.readWellMeans(getID(), wellIndex);
@@ -725,6 +727,8 @@ public class Model_Plate
 
 		if (ThisGUI != null)
 			ThisGUI.repaint();
+
+		io.closeHDF5();
 	}
 	
 	

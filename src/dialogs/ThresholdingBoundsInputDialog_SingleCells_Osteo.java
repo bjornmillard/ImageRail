@@ -385,7 +385,6 @@ public class ThresholdingBoundsInputDialog_SingleCells_Osteo extends JDialog
 							pset.setParameter("CoordsToSaveToHDF","Outlines");
 						else if (CoordsToSave == 3)
 							pset.setParameter("CoordsToSaveToHDF","Everything");
-							pset.setParameter("NumThreads",""+1);
 
 							pset.setParameter("MergeFactor", "" + MergeFactor);
 

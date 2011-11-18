@@ -27,7 +27,7 @@ import models.Model_Well;
 import processors.Processor_SingleCells;
 import segmentors.DefaultSegmentor_v1;
 
-public class Segment {
+public class Segment4 {
 
 	/** For commandline segmentation */
 	public static void main(String[] args) {
@@ -42,17 +42,13 @@ public class Segment {
 				// ARG_4 ---> Plate end index
 				// ARG_5 ---> Well end index
 
-
 				Model_Main TheModel = new Model_Main();
 				// ARG_0 --> Input SDC to process
 				if (args[0] != null)
 					TheModel.loadProject(args[0], args[1]);
 
-
 				ArrayList<Model_Well> TheWells = TheModel.getPlateRepository()
 						.getAllWells();
-
-				
 
 				// // Only getting wells with Images that we can process
 				int numWells = TheWells.size();
@@ -60,19 +56,18 @@ public class Segment {
 				for (int i = 0; i < numWells; i++)
 					if (TheWells.get(i).getFields() != null
 							&& TheWells.get(i).getFields().length > 0)
-							if (TheWells.get(i).getFields()[0]
-.getParameterSet() != null
+						if (TheWells.get(i).getFields()[0].getParameterSet() != null
 								&& TheWells.get(i).getFields()[0]
 										.getParameterSet().getParameterNames() != null
 								&& TheWells.get(i).getFields()[0]
 										.getParameterSet().getParameterNames().length > 0) // Only
 																							// process
-																// wells with
-																// psets
+						// wells with
+						// psets
 						{
 							if (args.length == 6) // Means we want to limit the
 													// range of cells to process
-					{
+							{
 								int plateStartIndex = Integer.parseInt(args[2]
 										.trim());
 								int plateEndIndex = Integer.parseInt(args[4]
@@ -82,17 +77,16 @@ public class Segment {
 								int wellEndIndex = Integer.parseInt(args[5]
 										.trim());
 
-						Model_Well well = TheWells.get(i);
-						int pIndex = well.getPlate().getID();
-						int wIndex = well.getWellIndex();
-						if (pIndex >= plateStartIndex
-								&& pIndex <= plateEndIndex
-								&& wIndex >= wellStartIndex
-								&& wIndex <= wellEndIndex)
-						wellsWIm.add(TheWells.get(i));
+								Model_Well well = TheWells.get(i);
+								int pIndex = well.getPlate().getID();
+								int wIndex = well.getWellIndex();
+								if (pIndex >= plateStartIndex
+										&& pIndex <= plateEndIndex
+										&& wIndex >= wellStartIndex
+										&& wIndex <= wellEndIndex)
+									wellsWIm.add(TheWells.get(i));
 
-					}
- else if (args.length == 2) // only added input and
+							} else if (args.length == 2) // only added input and
 															// output path so
 															// process all wells
 								wellsWIm.add(TheWells.get(i));
@@ -101,7 +95,6 @@ public class Segment {
 				Model_Well[] wellsWithImages = new Model_Well[numW];
 				for (int i = 0; i < numW; i++)
 					wellsWithImages[i] = wellsWIm.get(i);
-
 
 				Processor_SingleCells tasker = new Processor_SingleCells(
 						wellsWithImages, new DefaultSegmentor_v1());
@@ -127,13 +120,10 @@ public class Segment {
 				System.out.println(st);
 			}
 
-
 		} catch (Exception e) {
 
 			e.printStackTrace();
 		}
 	}
-
-
 
 }

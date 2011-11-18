@@ -234,26 +234,21 @@ public boolean getParameter_boolean(String name) {
 		H5IO h5 = imagerail_io.getH5IO();
 
 		Hashtable<String, String> hashtable_indexToPath = imagerail_io
-				.getHashtable();
+				.getHashtable_out();
 		String pathToSample = (String) hashtable_indexToPath.get(imagerail_io
 				.getIndexKey(plateID, wellID));
 
 		if (pathToSample != null) {
+			h5.openHDF5(hdfPath);
 			String path = pathToSample + "/Children/" + fieldID + "/Meta";
-			// Remove prior dataset
-			if (h5.existsDataset(path + "/Segmentation_Parameters_Names"))
-				h5.removeDataset(path + "/Segmentation_Parameters_Names");
-			if (h5.existsDataset(path + "/Segmentation_Parameters_Values"))
-				h5.removeDataset(path + "/Segmentation_Parameters_Values");
 
 			h5.writeDataset(hdfPath, path + "/"
 					+ "Segmentation_Parameters_Names",
 					pNames);
 
-
 			h5.writeDataset(hdfPath, path + "/"
 					+ "Segmentation_Parameters_Values", pVals);
-
+			h5.closeHDF5();
 		}
 	}
 
@@ -286,27 +281,42 @@ public boolean getParameter_boolean(String name) {
 		String[][] thisPars = p1.getParameters();
 		String[][] thatPars = p2.getParameters();
 
+
 		if (thisPars == null || thatPars == null || thisPars.length != 2
 				|| thatPars.length != 2)
+ {
+			// System.out.println("pars null: " + thisPars + "," + thatPars);
 			return false;
+		}
 		if (thisPars[0].length != thatPars[0].length || thisPars[0].length == 0
 				|| thatPars[0].length == 0)
+ {
+			// System.out.println("pars diff len or 0: " + thisPars[0].length
+			// + "," + thatPars[0].length);
+
 			return false;
+		}
 		int len = thisPars[0].length;
 
 		for (int c = 0; c < len; c++) {
-			String par = thisPars[0][c];
+			String par = thisPars[0][c].trim();
+			String val = thisPars[1][c].trim();
 			// find this par in the other pset
 			boolean foundItAndMatch = false;
 			for (int j = 0; j < len; j++)
-				if (par.equals(thatPars[0][j])
-						&& thisPars[1][c].equals(thatPars[1][j])) {
+				if (par.equalsIgnoreCase(thatPars[0][j].trim())
+						&& val.equalsIgnoreCase(
+								thatPars[1][j].trim())) {
 					foundItAndMatch = true;
 					break;
 				}
 
 			if (!foundItAndMatch)
+ {
+				// System.out.println("couldnt find: " + par + "=" + val);
 				return false;
+			}
+
 		}
 
 		return true;
@@ -377,9 +387,11 @@ public boolean getParameter_boolean(String name) {
 	public void load(String H5Path, String pathToParentDir) {
 		ImageRail_SDCube io = models.Model_Main.getModel()
 .getImageRailio();
+		io.openHDF5(io.INPUT);
 		Hashtable<String, String> hash = io.readParameterSet(H5Path,
 				pathToParentDir);
 		if (hash != null)
 			TheParameters = hash;
+		io.closeHDF5();
 	}
 }

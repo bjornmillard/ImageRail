@@ -845,11 +845,13 @@ public class HistogramPlot extends JPanel implements ImageCapturePanel
 			}
 			double x = XLen/3+XStart;
 			double[] titlePoint = tools.MathOps.transformPoint3D(rotMatrix ,projMatrix , new double[]{x,YStart+200,ZStart});
-			String xLab = TheFeature.toString();
-			if (LogScaleButton.isSelected())
-				xLab = "Log("+xLab+")";
-			g2.drawString(xLab, (int)titlePoint[0], (int)titlePoint[1]);
 			
+			if (TheFeature != null) {
+				String xLab = TheFeature.toString();
+				if (LogScaleButton.isSelected())
+					xLab = "Log(" + xLab + ")";
+				g2.drawString(xLab, (int) titlePoint[0], (int) titlePoint[1]);
+			}
 			
 			
 			double[] axis_Start = tools.MathOps.transformPoint3D(rotMatrix ,projMatrix , new double[]{XStart,YStart,ZStart});

@@ -169,19 +169,6 @@ public class MainGUI extends JFrame {
 		pane.setLayout(new BorderLayout());
 		pane.add(TheMainPanel, BorderLayout.CENTER);
 
-		// Initialize with single 96-well plate
-		// Model_Plate[] plates = new Model_Plate[1];
-		// plates[0] = new Model_Plate(8, 12, 0, true);
-		// plates[0].initGUI();
-		// ThePlatePanel = new Gui_PlateRepository(new Model_PlateRepository(
-		// plates));
-		// int numplates = plates.length;
-		// TheInputPanel_Container = new JTabbedPane();
-		// for (int i = 0; i < numplates; i++)
-		// TheInputPanel_Container.addTab("Plate #" + (i + 1),
-		// new MidasInputPanel(plates[0],
-		// TheMainModel.getExpDesignConnector()));
-
 		TheMainPanel.setLeftComponent(TheInputPanel_Container);
 		TheMainPanel.setRightComponent(ThePlatePanel);
 		TheMainPanel.setDividerLocation(TheMainPanel.getDividerLocation());
@@ -1177,7 +1164,8 @@ public class MainGUI extends JFrame {
 				}
 			}
 		});
-
+		TheMainModel.setTheSelectedFeature(TheFeatures[featuresComboBox
+				.getSelectedIndex()]);
 	}
 
 

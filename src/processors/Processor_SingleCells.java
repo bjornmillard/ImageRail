@@ -85,14 +85,6 @@ public class Processor_SingleCells extends Thread implements Processor
 		
 	}
 	
-	/** If this file is set, then the Processor will immediately write results here after run is complete. USed mainly for the
-	 * clusterRun option
-	 * @author BLM*/
-	public void setResultsFile(File f)
-	{
-		ResultsFile = f;
-	}
-	
 	
 	/** Returns the number of unique plate IDs that the wells of the given array came from, also returns the number of wells in each unique plate
 	 * @returns int[2][numUniquePlateIDs] where [0][] --> plateID and [1][] --> number of Wells
@@ -324,29 +316,38 @@ public class Processor_SingleCells extends Thread implements Processor
 						{
 							int[] fieldDimensions = { Raster.length,
 									Raster[0].length, numChannels };
+
+								io.openHDF5(io.OUTPUT);
 							io.createField(well.getID(), plateIndex, wellIndex,
 									f,
 									fieldDimensions, models.Model_Main.getModel()
 											.getExpDesignConnector());
+								io.closeHDF5();
 
 							//Writing data matrix to HDF
+								io.openHDF5(io.OUTPUT);
 							io.writeFeatures(plateIndex, wellIndex, f,
 									cellFeatureMatrix);
+								io.closeHDF5();
 							//Writing the feature names to file
 							Feature[] features = models.Model_Main.getModel().getFeatures();
 							String[] fNames = new String[features.length];
 							for (int i = 0; i < features.length; i++)
 								fNames[i] = new String(features[i].toString());
+
+								io.openHDF5(io.OUTPUT);
 							io.writeFeatureNames(plateIndex, wellIndex, f, fNames);
-							
+								io.closeHDF5();
+
 							String whatToSave = field.getParameterSet()
 									.getParameter_String("CoordsToSaveToHDF");
 							if (whatToSave.equalsIgnoreCase("BoundingBox"))
 							{
 								//Only save the cell BoundingBoxes to file
 								ArrayList<CellCoordinates> bbox = segmentedobject.CellCoordinates.getBoundingBoxOfCoordinates(cellCoords);
+									io.openHDF5(io.OUTPUT);
 								io.writeCellBoundingBoxes( plateIndex, wellIndex, f, bbox);
-								
+									io.closeHDF5();
 								killCellCoordinates(bbox);
 								killCellCoordinates(cellCoords);
 							}
@@ -354,8 +355,10 @@ public class Processor_SingleCells extends Thread implements Processor
 							{
 								//Only save the cell Centroids to file
 								ArrayList<CellCoordinates> centroids = segmentedobject.CellCoordinates.getCentroidOfCoordinates(cellCoords);
+									io.openHDF5(io.OUTPUT);
 								io.writeCellCentroids(plateIndex, wellIndex, f, centroids);
-								
+									io.closeHDF5();
+
 								killCellCoordinates(centroids);
 								killCellCoordinates(cellCoords);
 							}
@@ -363,14 +366,20 @@ public class Processor_SingleCells extends Thread implements Processor
 							{
 								//Only save the cell outlines to file
 								ArrayList<CellCoordinates> outlines = segmentedobject.CellCoordinates.getSingleCompartmentCoords(cellCoords, "Outline");
+
+									io.openHDF5(io.OUTPUT);
 								io.writeWholeCells( plateIndex, wellIndex, f, outlines);
+									io.closeHDF5();
 								
 								killCellCoordinates(outlines);
 								killCellCoordinates(cellCoords);
 							}
 							else if (whatToSave.equalsIgnoreCase("Everything"))
 							{
+									io.openHDF5(io.OUTPUT);
 								io.writeWholeCells( plateIndex, wellIndex, f, cellCoords);
+									io.closeHDF5();
+
 								killCellCoordinates(cellCoords);
 							}
 							
@@ -392,6 +401,7 @@ public class Processor_SingleCells extends Thread implements Processor
 							String hdfPath = models.Model_Main.getModel()
 									.getOutputProjectPath()
 									+ "/Data.h5";
+
 							field.getParameterSet().writeParameters(hdfPath,
 									well.getPlate().getID(),
 											well.getWellIndex(),
@@ -432,18 +442,26 @@ public class Processor_SingleCells extends Thread implements Processor
 				//Trying to write mean value data to file
 				if(well.Feature_Means!=null && io!=null)
 				{
+						io.openHDF5(io.OUTPUT);
 					io.writeWellMeans(plateIndex, wellIndex,
 									well.Feature_Means);
-					// TODO_X
-					// if(featureNames!=null)
-					// io.writeMeanFeatureNames(plateIndex, featureNames);
+						io.closeHDF5();
+
 				}
 				if(well.Feature_Stdev!=null && io!=null)
+ {
+						io.openHDF5(io.OUTPUT);
 					io.writeWellStdDevs(plateIndex, wellIndex,
 							well.Feature_Stdev);
+						io.closeHDF5();
+					}
 				//Writing HDF5 well sample metadata
 				int totNumWells = well.getPlate().getNumRows() * well.getPlate().getNumColumns();
+
+					io.openHDF5(io.OUTPUT);
 				io.writeParentPlateInfo(plateIndex, wellIndex,totNumWells);
+					io.closeHDF5();
+
 				// io.writeSegmentationParameters(plateIndex, wellIndex,
 				// (int)well.getParameterSet().getParameter_float("Thresh_Nuc_Value"),
 				// (int)well.getParameterSet().getParameter_float("Thresh_Cyt_Value"),

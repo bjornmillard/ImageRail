@@ -32,6 +32,7 @@ import javax.swing.JTabbedPane;
 import midasGUI.MidasInputPanel;
 import sdcubeio.ExpDesign_Model;
 import sdcubeio.H5IO_Exception;
+import sdcubeio.SDCube;
 
 public class Model_Main {
 	/** The Main Model object */
@@ -379,14 +380,15 @@ TheInputProjectPath);
 			//Initialized the HDF5 I/O and creates the sample/well hash index
 			initH5IO(TheInputProjectPath, TheOutputProjectPath);
 
-			TheImageRail_H5IO.initHashtable();
+			TheImageRail_H5IO.initHDF5ioSampleHash();
 
 			/*
 			 * INIT MODEL_PLATES AND GUIs
 			 */
 			// Looking for what sort of plates were loaded in this prior project
 			ArrayList<int[]> plateSizes = TheImageRail_H5IO
-					.getPlateSizes();
+					.getPlateSizes(TheImageRail_H5IO.INPUT);
+
 			//We will create X plates where X == maxPlateID+1;
 			int max = 0;
 			int pSize = 96;
@@ -418,9 +420,6 @@ TheInputProjectPath);
 			// Creating the new plate holder with new plates
 			ThePlateRepository_Model = new Model_PlateRepository(
 					plates);
-
-			TheImageRail_H5IO.writePlateCountAndSizes(plates.length,
-					plates[0].getNumColumns() * plates[0].getNumRows());
 
 			int numplates = plates.length;
 			for (int i = 0; i < numplates; i++) {
@@ -471,6 +470,12 @@ TheInputProjectPath);
 
 
 			}
+			
+			TheImageRail_H5IO.openHDF5(TheImageRail_H5IO.OUTPUT);
+			TheImageRail_H5IO.writePlateCountAndSizes(plates.length,
+					plates[0].getNumColumns() * plates[0].getNumRows(), TheImageRail_H5IO.OUTPUT);
+			TheImageRail_H5IO.closeHDF5();
+			
 
 			initFeatures(ChannelNames);
 
@@ -481,6 +486,7 @@ TheInputProjectPath);
 				plates[i].loadWellMeanAndStdevData();
 
 			loadFieldROIs();
+
 			initScalingParameters();
 
 
@@ -533,10 +539,11 @@ TheInputProjectPath);
 	 * @author Bjorn Millard
 	 * */
 	public void loadFieldROIs() {
+		TheImageRail_H5IO.openHDF5(TheImageRail_H5IO.INPUT);
 		String h5path = TheInputProjectPath + File.separator
 				+ "Data.h5";
 		// Iterating through all fields and checking if they have ROIs to load
-		Enumeration<String> keys = TheImageRail_H5IO.getHashtable().keys();
+		Enumeration<String> keys = TheImageRail_H5IO.getHashtable_in().keys();
 		while (keys.hasMoreElements()) {
 			String key = keys.nextElement();
 			if (key.indexOf("f") >= 0) {
@@ -552,7 +559,7 @@ TheInputProjectPath);
 
 
 
-				String fieldPath = TheImageRail_H5IO.getHashtable().get(key);
+				String fieldPath = TheImageRail_H5IO.getHashtable_in().get(key);
 				ArrayList<Polygon> rois = TheImageRail_H5IO.readROIs(h5path,
 						fieldPath);
 				if (rois != null) {
@@ -564,6 +571,7 @@ TheInputProjectPath);
 			}
 
 		}
+		TheImageRail_H5IO.closeHDF5();
 	}
 
 	/** */
@@ -986,6 +994,7 @@ TheInputProjectPath);
 
 		int returnVal = fc.showSaveDialog(null);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
+
 			File file = fc.getSelectedFile();
 			setTheDirectory(new File(file.getParent()));
 			File newF = new File(file.getAbsolutePath() + ".sdc");
@@ -993,7 +1002,22 @@ TheInputProjectPath);
 			newF.mkdir();
 			setInputProjectDirectory(newF);
 			setOutputProjectPath(TheInputProjectPath);
+			System.out.println("Creating Project: " + newF.getName());
 
+			SDCube sdc = new SDCube();
+			sdc.setPath(TheInputProjectPath);
+			try {
+				sdc.write();
+			} catch (H5IO_Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			//Initialized the HDF5 I/O and creates the sample/well hash index
+//			initH5IO(TheInputProjectPath, TheOutputProjectPath);
+//
+//			TheImageRail_H5IO.initHDF5ioSampleHash();
+
+			
 			Model_Plate[] plates = new Model_Plate[numPlates];
 			for (int p = 0; p < plates.length; p++) {
 				plates[p] = new Model_Plate(numRows, numCols, p, true);
@@ -1027,14 +1051,14 @@ TheInputProjectPath);
 			}
 
 			// Attempt To init the hashtable
-			TheImageRail_H5IO.initHashtable();
-			TheImageRail_H5IO.writePlateCountAndSizes(numPlates,
-					plates[0].getNumColumns() * plates[0].getNumRows());
-
-			// Writing plate Names
-			// for (int p = 0; p < plates.length; p++)
-			// TheImageRail_H5IO.writePlateCountAndSizes(numPlates,
-			// plates[0].getNumColumns() * plates[0].getNumRows());
+			TheImageRail_H5IO.initHDF5ioSampleHash();
+			
+				TheImageRail_H5IO.writePlateCountAndSizes(numPlates,
+						plates[0].getNumColumns() * plates[0].getNumRows(), TheImageRail_H5IO.OUTPUT);
+		
+			
+			
+			
 
 			if (TheMainGUI != null) {
 				TheMainGUI.getTheMainPanel().setLeftComponent(
@@ -1215,6 +1239,7 @@ TheInputProjectPath);
 							e.printStackTrace();
 						}
 
+						io.openHDF5(io.OUTPUT);
 						if (well.Feature_Means != null && io != null) {
 							io.writeWellMeans(plates[i].getPlateIndex(),
 									well.getWellIndex(), well.Feature_Means);
@@ -1222,7 +1247,7 @@ TheInputProjectPath);
 						if (well.Feature_Stdev != null && io != null)
 							io.writeWellStdDevs(plates[i].getPlateIndex(),
 									well.getWellIndex(), well.Feature_Stdev);
-
+						io.closeHDF5();
 						well.setCellsModified(false);
 					}
 

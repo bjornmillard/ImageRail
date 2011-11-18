@@ -29,7 +29,6 @@ import models.Model_Plate;
 import models.Model_Well;
 import sdcubeio.H5IO_Exception;
 import segmentors.DefaultSegmentor_v1;
-import dataSavers.DataSaver_CSV;
 
 public class Processor_WellAverage extends Thread implements Processor
 {
@@ -103,10 +102,12 @@ public class Processor_WellAverage extends Thread implements Processor
 				int[] fieldDimensions = { Raster_Channels.length,
 						Raster_Channels[0].length, Raster_Channels[0][0].length };
 				try {
+					io.openHDF5(io.OUTPUT);
 					io.createField(well.getID(), well.getPlate().getID(), well
 .getWellIndex(), f,
 									fieldDimensions, models.Model_Main
 											.getModel().getExpDesignConnector());
+					io.closeHDF5();
 				} catch (H5IO_Exception e) {
 					System.out
 							.println("** Error creating field in HDF5 file **");
@@ -176,7 +177,7 @@ public class Processor_WellAverage extends Thread implements Processor
 			well.setMeanFluorescentValues(temp_all);
 			well.processing = false;
 			
-			if(!ClusterRun)
+			if(models.Model_Main.getModel().getGUI()!=null)
 			{
 				models.Model_Main.getModel().getPlateRepository_GUI().updatePanel();
 						models.Model_Main.getModel().getGUI().updateAllPlots();
@@ -188,9 +189,10 @@ public class Processor_WellAverage extends Thread implements Processor
 				int wellIndex = (well.getPlate().getNumRows()*well.Column)+well.Row;
 				int plateIndex = well.getPlate().getID();
 
-				
+				io.openHDF5(io.OUTPUT);
 				if(well.Feature_Means!=null && io!=null)
 				{
+					
 					io
 							.writeWellMeans(plateIndex, wellIndex,
 									well.Feature_Means);
@@ -204,7 +206,8 @@ public class Processor_WellAverage extends Thread implements Processor
 				int totNumWells = well.getPlate().getNumRows()
 						* well.getPlate().getNumColumns();
 				io.writeParentPlateInfo(plateIndex, wellIndex, totNumWells);
-				
+				io.closeHDF5();
+
 
 			}
 			catch (Exception e)
@@ -214,11 +217,6 @@ public class Processor_WellAverage extends Thread implements Processor
 			}
 		}
 		
-		if (ResultsFile!=null)
-		{
-			System.out.println("***Finished****");
-			new DataSaver_CSV().save(models.Model_Main.getModel(), ResultsFile);
-		}
 		
 			} catch (Exception e) {
 				// Make sure the HDF5 file is closed to prevent corruption

@@ -362,28 +362,6 @@ public class ThresholdingBoundsInputDialog_Nuclei extends JDialog
 
 						tasker.start();
 					}
-					// else // Multi-thread run
-					// {
-					// numWells = wellsWithImages.length;
-					// int numThreads = wellsWithImages[0].TheParameterSet
-					// .getNumThreads();
-					// int numWellsPerProcess = (int) (numWells / numThreads);
-					// int numOddNumWells = numWells % numThreads;
-					// int counter = 0;
-					// Model_Well[] arr = null; // new Model_Well[
-					// for (int i = 0; i < numThreads; i++) {
-					// arr = new Model_Well[numWellsPerProcess + (i <
-					// numOddNumWells ? 1 : 0)];
-					// for (int j = 0; j < arr.length; j++) {
-					// arr[j] = wellsWithImages[counter];
-					// counter++;
-					// }
-					// Processor_SingleCells tasker = new Processor_SingleCells(
-					// arr, new DefaultSegmentor_v1());
-					// tasker.start();
-					//
-					// }
-					// }
 
 
 				} else {

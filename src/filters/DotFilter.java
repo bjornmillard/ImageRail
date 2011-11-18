@@ -459,10 +459,14 @@ public class DotFilter {
 		try {
 
 			if (coords != null && coords.size() > 0) {
+
 				io.createField(sampleID, plateIndex, wellIndex, fieldIndex,
  io
-						.getFieldDimensions(plateIndex, wellIndex, fieldIndex),
-						models.Model_Main.getModel().getExpDesignConnector());
+.readFieldDimensions(plateIndex, wellIndex,
+ fieldIndex,
+								ImageRail_SDCube.OUTPUT),
+ models.Model_Main.getModel()
+.getExpDesignConnector());
 
 				writeCoordinates(io, coords, plateIndex, wellIndex,
 						fieldIndex);

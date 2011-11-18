@@ -196,9 +196,11 @@ public class Processor_WriteParameters extends Thread implements Processor {
 							int[] fieldDimensions = { -1, -1, numChannels };
 							// int[] fieldDimensions = { Raster.length,
 							// Raster[0].length, numChannels };
+							io.openHDF5(io.OUTPUT);
 							io.createField(well.getID(), plateIndex, wellIndex,
 									f, fieldDimensions, models.Model_Main
 											.getModel().getExpDesignConnector());
+							io.closeHDF5();
 
 						} catch (Exception e) {
 							// Handle this exception!!!
@@ -232,7 +234,9 @@ public class Processor_WriteParameters extends Thread implements Processor {
 					// Writing HDF5 well sample metadata
 					int totNumWells = well.getPlate().getNumRows()
 							* well.getPlate().getNumColumns();
+					io.openHDF5(io.OUTPUT);
 					io.writeParentPlateInfo(plateIndex, wellIndex, totNumWells);
+					io.closeHDF5();
 				}
 
 				System.out.println("*** Finished: "

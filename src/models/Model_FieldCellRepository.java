@@ -26,7 +26,6 @@ package models;
  *
  @author BLM*/
 import features.Feature;
-import gui.MainGUI;
 import imagerailio.ImageRail_SDCube;
 
 import java.util.ArrayList;
@@ -56,6 +55,7 @@ public class Model_FieldCellRepository
 		
 		try
 		{
+			io.openHDF5(io.INPUT);
 			if (loadDataVals)
 				dataValues = io.readFeatures(plateIndex, wellIndex, field
 						.getIndexInWell());
@@ -81,6 +81,7 @@ public class Model_FieldCellRepository
 			if (cells != null)
 				featureNames = io.readFeatureNames(plateIndex, wellIndex, field
 						.getIndexInWell());
+			io.closeHDF5();
 
 		}
 		catch (Exception e)
@@ -256,16 +257,25 @@ public class Model_FieldCellRepository
 				}
 				// Now all cells should have both data and coordinates
 				// Project name
+				io.openHDF5(io.OUTPUT);
 				io.createField(field.getParentWell().getID(), plateIndex,
 						wellIndex, field.getIndexInWell(),
-						io.getFieldDimensions(plateIndex, wellIndex, field
-								.getIndexInWell()), models.Model_Main.getModel()
+ io
+								.readFieldDimensions(plateIndex, wellIndex,
+										field
+.getIndexInWell(),
+										ImageRail_SDCube.OUTPUT),
+						models.Model_Main.getModel()
 								.getExpDesignConnector());
 				writeCoordinates(io);
+				io.closeHDF5();
+
 			}
 
 			//Writing the feature values
 			if (dataValues != null && dataValues.length > 0) {
+				io.openHDF5(io.OUTPUT);
+
 				io.writeFeatures(plateIndex, wellIndex,
  field.getIndexInWell(),
 						dataValues);
@@ -277,6 +287,8 @@ public class Model_FieldCellRepository
 					fNames[i] = features[i].toString();
 				io.writeFeatureNames(plateIndex, wellIndex, field
 						.getIndexInWell(), fNames);
+				io.closeHDF5();
+
 			} else {
 				System.out
 						.println("**Error trying to resave cells:  DataValue Array:  "
