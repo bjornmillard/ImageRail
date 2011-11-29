@@ -26,14 +26,24 @@
 
 package dataSavers;
 
+import imagerailio.ImageRail_SDCube;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import javax.swing.JFileChooser;
 
+import sdcubeio.DataObject;
+import sdcubeio.Data_1D;
+import sdcubeio.Data_2D;
+import sdcubeio.H5IO;
+import sdcubeio.H5IO_Exception;
+
+import models.Model_Field;
 import models.Model_Main;
 import models.Model_Plate;
+import models.Model_Well;
 import features.Feature;
 import gui.MainGUI;
 
@@ -174,16 +184,61 @@ public class DataSaver_CSV implements DataSaver
 					}
 				}
 				
+				
+				Model_Main model = models.Model_Main.getModel();
+				H5IO io = model.getH5IO().getH5IO();
+				String h5path = model.getOutputProjectPath()+File.separator+"Data.h5";
+				
 				//Number of cells --> if segmented
 				pw.println("Number of Cells:");
 				for (int r = 0; r < numR; r++)
 				{
 					for (int c =0; c < numC; c++)
-						if (plate.getWells()[r][c].getCell_values()!=null)
-							pw.print(plate.getWells()[r][c].getCell_values().length+",");
-						else
-							pw.print("0,");
+					{
+						String st = null;
+						float totCells = 0;
+
+						Model_Well well = plate.getWells()[r][c];
+						Model_Field[] fields = well.getFields();
+						if (fields!=null && fields.length>0)
+						{
+							String pathToSample = model.getH5IO().getHashtable_out().get(model.getH5IO().getIndexKey(
+									well.getPlate().getID(),
+									well.getWellIndex()));
+							
+							if(pathToSample!=null)
+							for (int i = 0; i < fields.length; i++) {
+								
+								// Get cell count
+								DataObject dataArray;
+								try {
+									
+									String pathDS = pathToSample + "/Children/" + fields[i].getIndexInWell() + "/Data/feature_values";
+									io.openHDF5(h5path);
+									
+									dataArray = io.readDataset(h5path, pathDS);
+									if(dataArray!=null)
+									{
+										Float[][] fVals = (Float[][]) ((Data_2D) dataArray).getData();
+										if(fVals!=null)
+											totCells+=(int)(fVals.length);									
+									}
+									io.closeHDF5();
+								} catch (H5IO_Exception e) {
+									System.out.println("Error reading Cell Count: ");
+									e.printStackTrace();
+								}
+									
+								
+							}
+							
+
+						}
+					
+						pw.print(totCells+",");
+					}
 					pw.println();
+					
 				}
 				pw.println();
 				pw.println();

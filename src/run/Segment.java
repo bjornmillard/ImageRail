@@ -53,7 +53,7 @@ public class Segment {
 						.getAllWells();
 
 				
-
+				
 				// // Only getting wells with Images that we can process
 				int numWells = TheWells.size();
 				ArrayList<Model_Well> wellsWIm = new ArrayList<Model_Well>();

@@ -44,6 +44,29 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 {
 	public void save(Feature[] featuresToSave, Model_Main TheMainModel)
 	{
+		
+		//Determining which wells to save
+		ArrayList<Model_Well> wells = new ArrayList<Model_Well>();
+		File[] files = null;
+		Model_Plate[] thePlates = TheMainModel.getPlateRepository().getPlates();
+		int numPlates = thePlates.length;
+		for (int p = 0; p < numPlates; p++)
+		{
+			Model_Plate plate = thePlates[p];
+			int numC = plate.getNumColumns();
+			int numR = plate.getNumRows();
+			//printing out each well's value
+			for (int r = 0; r < numR; r++)
+				for (int c =0; c < numC; c++)
+				{
+					Model_Well theWell = plate.getWells()[r][c];
+					int h5Count = theWell.getHDFcount();
+					if (theWell.isSelected() && h5Count>0)
+						wells.add(theWell);
+				}
+		}
+		
+		
 		JFileChooser fc = null;
 		if (TheMainModel.getTheDirectory() != null)
 			fc = new JFileChooser(TheMainModel.getTheDirectory());
@@ -57,7 +80,15 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 		if (returnVal == JFileChooser.APPROVE_OPTION)
 		{
 			outDir = fc.getSelectedFile();
-			outDir = (new File(outDir.getAbsolutePath()+".csv"));
+			outDir.mkdir();
+			
+			int numF = wells.size();
+			files = new File[numF];
+			for (int i = 0; i < numF; i++) {
+				File f = new File(outDir.getAbsolutePath()+File.separator+"p"+wells.get(i).getPlate().getID()+"_"+wells.get(i).name+".csv");
+				files[i] = f;
+			}
+			
 		}
 		else
 			System.out.println("Open command cancelled by user." );
@@ -67,8 +98,6 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 			TheMainModel.setTheDirectory(new File(outDir.getParent()));
 			try
 			{
-				PrintWriter pw = new PrintWriter(outDir);
-
 				//Print headers
 				ArrayList<String> headers = new ArrayList<String>();
 				ArrayList<String> headerValues = new ArrayList<String>();
@@ -106,9 +135,7 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 				ArrayList<ExpDesign_Description> uniqueT = new ArrayList<ExpDesign_Description>();
 				ArrayList<ExpDesign_Description> uniqueM = new ArrayList<ExpDesign_Description>();
 				int numF = featuresToSave.length;
-				Model_Plate[] thePlates = TheMainModel
-						.getPlateRepository().getPlates();
-				int numPlates = thePlates.length;
+			
 				ExpDesign_Model io = TheMainModel.getExpDesignConnector();
 
 				for (int p = 0; p < numPlates; p++)
@@ -179,114 +206,127 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 					headers.add("DV:"
 							+ ((ExpDesign_Description) uniqueM.get(i))
 									.getName());
+
 				
-				//Printing out the headers
-				for(int i =0; i < headers.size()-1; i++)
-					pw.print(((String)headers.get(i))+",");
-				pw.println((String)headers.get(headers.size()-1));
+				//Now printing out a file for each well
+				boolean clearCellData = false;
+				int numWells = wells.size();
+				for(int w = 0; w<numWells; w++)
+				{
+
+					PrintWriter pw = new PrintWriter(files[w]);
+					//Printing out the headers
+					for(int i =0; i < headers.size()-1; i++)
+						pw.print(((String)headers.get(i))+",");
+					pw.println((String)headers.get(headers.size()-1));
+				
 				
 				//
 				// Printing out each cell's value
 				//
-				for (int p = 0; p < numPlates; p++)
-				{
-					plate = thePlates[p];
-					numC = plate.getNumColumns();
-					numR = plate.getNumRows();
-					
-					//printing out each well's value
-					for (int r = 0; r < numR; r++)
-						for (int c =0; c < numC; c++)
-						{
-							Model_Well theWell = plate.getWells()[r][c];
-							if (theWell.isSelected() && theWell.getCell_values()!=null)
-							{
-								int numCells = 	theWell.getCell_values().length;
-								float[][] fVals = theWell.getCell_values();
-
-								 ExpDesign_Description[] treats = io.getTreatments(theWell.getID());
-								 ExpDesign_Description date = io.getDate(theWell.getID());
-								 ExpDesign_Description desc = io.getDescription(theWell.getID(), "Description");
-								 ExpDesign_Description time = io.getTimePoint(theWell.getID());
-			
-								 headerValues = new ArrayList<String>();
-								 headerValues.add(theWell.name);
-								 headerValues.add((theWell.getPlate().getTitle()+""));
-								if (date != null && date.getValue() != null)
-									headerValues.add(date.getValue());
-								else
-									headerValues.add("");
-								if (desc != null && desc.getValue() != null)
-									headerValues.add(desc.getValue());
-								else
-									headerValues.add("");
-								// if (time != null && time.getValue() != null)
-								// headerValues.add(time.getTimeValue());
-																
-								 //for each treatment & measurement here in
-								 //this well... determine which column to put it in
-								 for (int i= 0; i < uniqueT.size(); i++)
-								 {
-								 num = treats.length;
-								 boolean foundIt = false;
-								 for (int n= 0; n < num; n++)
-								 {
-										if (((ExpDesign_Description) uniqueT
-												.get(i)).getName()
-												.equalsIgnoreCase(
-														(treats[n].getName())))
-								 {
-								 headerValues.add(""+treats[n].getValue());
-								 foundIt = true;
-								 break;
-								 }
-								 }
-								 if (!foundIt)
-								 headerValues.add("");
-								 }
-								
-								// Adding measurement times
-								 String st = "";
-								 if (time!=null)
-									st += time.getTimeValue();
-																
-								for (int n = 0; n < numF; n++)
-								 if (time==null)
-										headerValues.add("");
-								 else
-										headerValues.add("" + st);
-
-
-								for (int j =0; j < numCells; j++)
+								Model_Well theWell = wells.get(w);
+								clearCellData = false;
+								int numCells = 0;
+								float[][] fvals = theWell.getCell_values();
+								if(fvals!=null)
+									numCells = fvals.length;
+								//See if cells already loaded, else try to load them
+								if(numCells==0)
 								{
-
-									//printing out the headerValues
-									if (theWell.Feature_Means!=null && theWell.Feature_Stdev!=null)
-									{
-										//printing out the headerValues
-										for(int i =0; i < headerValues.size(); i++)
-											if (((String)headerValues.get(i))!=null)
- {
-												pw.print(((String)headerValues.get(i))+",");
-											}
- else
-												pw.print(",");
-
-										for (int i=0; i< featuresToSave.length; i++)
- {
-											pw.print(" "+fVals[j][featuresToSave[i].getGUIindex()]+",");
-										}
-
-									pw.println();
+									theWell.getCells_forceLoad(false, true);
+									clearCellData = true;
+									fvals = theWell.getCell_values();
+									if(fvals!=null)
+										numCells = fvals.length;
 								}
-							}
-						}
-				}
-
-				}
-
-				pw.flush();
-				pw.close();
+								if(numCells>0 && fvals!=null)
+								{
+										 ExpDesign_Description[] treats = io.getTreatments(theWell.getID());
+										 ExpDesign_Description date = io.getDate(theWell.getID());
+										 ExpDesign_Description desc = io.getDescription(theWell.getID(), "Description");
+										 ExpDesign_Description time = io.getTimePoint(theWell.getID());
+					
+										 headerValues = new ArrayList<String>();
+										 headerValues.add(theWell.name);
+										 headerValues.add((theWell.getPlate().getTitle()+""));
+										if (date != null && date.getValue() != null)
+											headerValues.add(date.getValue());
+										else
+											headerValues.add("");
+										if (desc != null && desc.getValue() != null)
+											headerValues.add(desc.getValue());
+										else
+											headerValues.add("");
+										// if (time != null && time.getValue() != null)
+										// headerValues.add(time.getTimeValue());
+																		
+										 //for each treatment & measurement here in
+										 //this well... determine which column to put it in
+										 for (int i= 0; i < uniqueT.size(); i++)
+										 {
+										 num = treats.length;
+										 boolean foundIt = false;
+										 for (int n= 0; n < num; n++)
+										 {
+												if (((ExpDesign_Description) uniqueT
+														.get(i)).getName()
+														.equalsIgnoreCase(
+																(treats[n].getName())))
+										 {
+										 headerValues.add(""+treats[n].getValue());
+										 foundIt = true;
+										 break;
+										 }
+										 }
+										 if (!foundIt)
+										 headerValues.add("");
+										 }
+										
+										// Adding measurement times
+										 String st = "";
+										 if (time!=null)
+											st += time.getTimeValue();
+																		
+										for (int n = 0; n < numF; n++)
+										 if (time==null)
+												headerValues.add("");
+										 else
+												headerValues.add("" + st);
+		
+		
+										for (int j =0; j < numCells; j++)
+										{
+											//printing out the headerValues
+											if (theWell.Feature_Means!=null && theWell.Feature_Stdev!=null)
+											{
+												//printing out the headerValues
+												for(int i =0; i < headerValues.size(); i++)
+													if (((String)headerValues.get(i))!=null)
+		 {
+														pw.print(((String)headerValues.get(i))+",");
+													}
+		 else
+														pw.print(",");
+		
+												for (int i=0; i< featuresToSave.length; i++)
+		 {
+													pw.print(" "+fvals[j][featuresToSave[i].getGUIindex()]+",");
+												}
+		
+											pw.println();
+										}
+									}
+								
+						
+		
+						
+		
+									pw.flush();
+									pw.close();
+								}
+								if(clearCellData)
+									theWell.clearCellData();
+			}
 			}
 			catch (FileNotFoundException e) {System.out.println("Error Printing File");}
 		}

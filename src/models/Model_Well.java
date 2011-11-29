@@ -201,7 +201,35 @@ public class Model_Well
 		return arr;
 	}
 	
-
+	/** Returns all the cells from all the fields in this well.  If cells are not loaded but there is cell data
+	 * within the HDF5 files, then it loads it from disk and then returns the cells
+	 * @author BLM*/
+	public synchronized ArrayList<Cell> getCells_forceLoad(boolean loadCoords, boolean loadDataVals)
+	{
+		ArrayList<Cell> arr = new ArrayList<Cell>();		
+		if (TheFields == null || TheFields.length <= 0)
+			return null;
+		
+		ImageRail_SDCube io = models.Model_Main.getModel().getH5IO();
+		int numF = TheFields.length;
+		for (int i = 0; i < numF; i++)
+		{
+			if (TheFields[i].getCells() != null) {
+				ArrayList<Cell> cells = TheFields[i].getCells();
+				if (cells!=null)
+					arr.addAll(cells);
+			}
+			else // See if we can load them from HDF5
+			{
+				TheFields[i].loadCells(io, loadCoords, loadDataVals);
+				ArrayList<Cell> cells =  TheFields[i].getCells();
+				if (cells!=null)
+					arr.addAll(cells);
+			}
+		}
+		
+		return arr;
+	}
 	// /** Returns all the cells from all the fields in this well
 	// * @author BLM*/
 	// public ArrayList<CellCoordinates> getCell_coords()

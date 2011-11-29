@@ -213,6 +213,8 @@ public class MainStartupDialog extends JFrame
 											f.getAbsolutePath());
 									MainGUI TheMainGUI = new MainGUI(
 											TheMainModel);
+									if(TheMainGUI!=null)
+										TheMainGUI.setTitle("Project: "+TheMainModel.getInputProjectPath());
 									TheMainGUI.setVisible(true);
 										}
 										else

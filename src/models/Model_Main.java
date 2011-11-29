@@ -489,7 +489,8 @@ TheInputProjectPath);
 
 			initScalingParameters();
 
-
+			if(TheMainGUI!=null)
+				TheMainGUI.setTitle("Project: "+TheInputProjectPath);
 
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -256,6 +256,8 @@ public class PlateInputDialog extends JDialog implements ActionListener,Property
 								ParentFrame.setVisible(false);
 							
 							MainGUI TheMainGUI = new MainGUI(TheMainModel);
+							if(TheMainGUI!=null)
+								TheMainGUI.setTitle("Project: "+TheMainModel.getInputProjectPath());	
 							TheMainGUI
 									.setVisible(true);
 						}

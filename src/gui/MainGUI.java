@@ -590,7 +590,7 @@ public class MainGUI extends JFrame {
 		JMenu cellMenu = new JMenu("Single Cells");
 		ProcessMenu.add(cellMenu);
 
-		item = new JMenuItem("Classic");
+		item = new JMenuItem("Standard (v1.0)");
 		// item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R,ActionEvent.META_MASK));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -611,7 +611,7 @@ public class MainGUI extends JFrame {
 		});
 		cellMenu.add(item);
 
-		item = new JMenuItem("Osteoclasts");
+		item = new JMenuItem("Osteoclasts (v1.0)");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 
@@ -632,7 +632,7 @@ public class MainGUI extends JFrame {
 		});
 		cellMenu.add(item);
 
-		item = new JMenuItem("Nuclei");
+		item = new JMenuItem("Nuclei (v1.0)");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 
@@ -653,7 +653,7 @@ public class MainGUI extends JFrame {
 		cellMenu.add(item);
 
 		ProcessMenu.addSeparator();
-		item = new JMenuItem("Batch Run");
+		item = new JMenuItem("Set Parameters for Batch Run");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 
