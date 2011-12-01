@@ -638,6 +638,10 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 				int numPlots = TheDots.length;
 				double plotBufferX = 0;
 
+				//Get gate name from user
+				String gateName = JOptionPane.showInputDialog(null, "Enter name for new gate : ", "Gate Name Input", 1);
+
+				
 				if (PlotType == OVERLAY) {
 					if (ThePolygonGate != null) {
 						int len = ThePolygonGate.xpoints.length;
@@ -696,7 +700,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								.getUniqueGateID();
 						for (int n = 0; n < num; n++) {
 							Gate_DotPlot g = new Gate_DotPlot(xyPoints_bounds,
-									FeatureX, FeatureY, ID);
+									FeatureX, FeatureY, ID, gateName);
 							Model_Well well = TheWells[n];
 							well.TheGates.add(g);
 							well.GateCounter++;
@@ -753,7 +757,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								.getUniqueGateID();
 						for (int n = 0; n < num; n++) {
 							Gate_DotPlot g = new Gate_DotPlot(xyPoints_bounds,
-									FeatureX, FeatureY, ID);
+									FeatureX, FeatureY, ID, gateName);
+						
 							Model_Well well = TheWells[n];
 							well.TheGates.add(g);
 							well.GateCounter++;
@@ -762,6 +767,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 
 				} else // SideBySide
 				{
+					
 					if (ThePolygonGate != null) // Polygon gate
 					{
 						int len = ThePolygonGate.xpoints.length;
@@ -823,7 +829,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								.getUniqueGateID();
 						for (int n = 0; n < num; n++) {
 							Gate_DotPlot g = new Gate_DotPlot(xyPoints_bounds,
-									FeatureX, FeatureY, ID);
+									FeatureX, FeatureY, ID, gateName);
 							Model_Well well = TheWells[n];
 							well.TheGates.add(g);
 							well.GateCounter++;
@@ -898,7 +904,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								.getUniqueGateID();
 						for (int n = 0; n < num; n++) {
 							Gate_DotPlot g = new Gate_DotPlot(xyPoints_bounds,
-									FeatureX, FeatureY, ID);
+									FeatureX, FeatureY, ID, gateName);
 							Model_Well well = TheWells[n];
 							well.TheGates.add(g);
 							well.GateCounter++;
@@ -921,6 +927,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 			public void actionPerformed(ActionEvent ae) {
 				if (TheDots == null || TheDots.length == 0)
 					return;
+				//Get gate name from user
+				String gateName = JOptionPane.showInputDialog(null, "Enter name for new gate : ", "Gate Name Input", 1);
 
 				Model_PlateRepository platePanel = TheMainGUI
 						.getPlateHoldingPanel().getModel();
@@ -999,7 +1007,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								for (int c = 0; c < numC; c++) {
 									Gate_DotPlot g = new Gate_DotPlot(
 											xyPoints_bounds, FeatureX,
-											FeatureY, ID);
+											FeatureY, ID, gateName);
 									Model_Well well = plate.getWells()[r][c];
 									well.TheGates.add(g);
 									well.GateCounter++;
@@ -1059,7 +1067,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								for (int c = 0; c < numC; c++) {
 									Gate_DotPlot g = new Gate_DotPlot(
 											xyPoints_bounds, FeatureX,
-											FeatureY, ID);
+											FeatureY, ID, gateName);
 									Model_Well well = plate.getWells()[r][c];
 									well.TheGates.add(g);
 									well.GateCounter++;
@@ -1105,7 +1113,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								for (int c = 0; c < numC; c++) {
 									Gate_DotPlot g = new Gate_DotPlot(
 											xyPoints_bounds, FeatureX,
-											FeatureY, ID);
+											FeatureY, ID, gateName);
 									Model_Well well = plate.getWells()[r][c];
 									well.TheGates.add(g);
 									well.GateCounter++;
@@ -1167,7 +1175,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 								for (int c = 0; c < numC; c++) {
 									Gate_DotPlot g = new Gate_DotPlot(
 											xyPoints_bounds, FeatureX,
-											FeatureY, ID);
+											FeatureY, ID, gateName);
 									Model_Well well = plate.getWells()[r][c];
 									well.TheGates.add(g);
 									well.GateCounter++;
@@ -1335,7 +1343,8 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 				int returnVal = fc.showSaveDialog(ThePlot);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					outDir = fc.getSelectedFile();
-					outDir = (new File(outDir.getAbsolutePath() + ".csv"));
+					outDir = (new File(outDir.getAbsolutePath()));
+					outDir.mkdir();
 				} else
 					System.out.println("Open command cancelled by user.");
 
@@ -1378,16 +1387,52 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 						//
 						// Printing
 						//
-						PrintWriter pw = new PrintWriter(outDir);
+						
+						Feature[] features = models.Model_Main.getModel().getFeatures();
+						File[] files = null;
+						int numFiles = 0;
+						if(features!=null && outDir!=null)
+						{
+							files = new File[features.length+2];
+							numFiles = files.length;
+							files[0] = new File(outDir.getAbsolutePath()+ File.separator + "Number_Cells.csv");
+							files[1] = new File(outDir.getAbsolutePath()+ File.separator + "Number_Nuclei.csv");
+							
+							for (int i = 0; i < features.length; i++)
+							{
+								//Checking for "/" in the feature names and removing it since it causes problems in OS file naming
+								String fname = features[i].getName();
+								int ind = fname.indexOf("/");
+								int counter = 0;//safty counter
+								while (ind>=0)
+								{
+									fname = fname.substring(0,ind)+fname.substring(ind+1,fname.length());
+									ind = fname.indexOf("/");
+									counter++;
+									if (counter>100000)
+									{
+										System.out.println("**ERROR removing '/' from feature name: "+features[i].getName());
+										break;
+									}
+								}
+								files[i+2] = new File(outDir.getAbsolutePath()+ File.separator + "GateMeans_"+fname+".csv");
+							}
+						}
+						
+						for (int f = 0; f < numFiles; f++) {
+							
+						
+						PrintWriter pw = new PrintWriter(files[f]);
 						pw.print("Well, Plate, Total_Cells ");
 						int ven = arr.size();
 						for (int j = 0; j < ven; j++) {
 							Gate_DotPlot g = arr.get(j);
-							pw.print(", Gate=" + g.ID);
+							pw.print(", Gate=" + g.getName());
 						}
 						pw.println();
 
-						// for each well:
+						// Printing out Cell counts for each gate in each well:
+					
 						for (int i = 0; i < numPlates; i++) {
 							Model_Plate plate = platePanel.getPlates()[i];
 							int numC = plate.getNumColumns();
@@ -1411,9 +1456,33 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 												Gate_DotPlot g = well.TheGates
 														.get(k);
 												if (g2.ID == g.ID) {
-													float val = g
+													
+													//TODO - get all bound cells here
+													
+													//The first thing we print is number of cells bound by each gate
+													float val = 0;
+													if(f==0)
+														val = g
 															.getTotalNumberOfCellsBound(well
 																	.getCells());
+													if(f==1)
+													{
+														val = g
+															.getBoundCellsFeatures_Integrated(well
+																	.getCells(),"Num_Nuclei");
+														System.out.println("VAL: "+val);
+
+													}
+													//Else we print out the mean values of all the features for each gate
+													// in separate files; one file for each feature
+													else 
+													{
+														val = g
+																.getBoundCellsFeatures_Mean(well
+																		.getCells(),features[i-2].getName());
+													}
+													
+													
 													pw.print(", " + val);
 												}
 											}
@@ -1423,11 +1492,15 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 									}
 								}
 						}
+						
+				
 
-						pw.flush();
-						pw.close();
+							pw.flush();
+							pw.close();
+						}
 					} catch (FileNotFoundException e) {
-						System.out.println("Error Printing File");
+						System.out.println("Error Printing File: ");
+						e.printStackTrace();
 					}
 				}
 

@@ -30,6 +30,7 @@ import features.Feature;
 public class Gate_DotPlot
 {
 	public int ID;
+	public String Name;
 	public double[][] xyPoints;
 	public boolean selected;
 	public Feature featureX;
@@ -37,9 +38,10 @@ public class Gate_DotPlot
 	private int featureX_index;
 	private int featureY_index;
 	
-	public Gate_DotPlot(double[][] xyPoints_, Feature featureX_, Feature featureY_,int id_)
+	public Gate_DotPlot(double[][] xyPoints_, Feature featureX_, Feature featureY_,int id_, String name_)
 	{
 		ID = id_;
+		Name = name_;
 		featureX = featureX_;
 		featureY = featureY_;
 		
@@ -59,7 +61,15 @@ public class Gate_DotPlot
 		selected = false;
 	}
 	
+	public void setName(String name_)
+	{
+		Name = name_;
+	}
 	
+	public String getName()
+	{
+		return Name;
+	}
 	
 	public Color getColor()
 	{
@@ -125,10 +135,11 @@ public class Gate_DotPlot
 		return (float)count/(float)numCells;
 	}
 	
-	public float getTotalNumberOfCellsBound(ArrayList<Cell> cells)
+	
+	public ArrayList<Cell> getCellsBound(ArrayList<Cell> cells)
 	{
 		if(cells==null)
-			return 0;
+			return null;
 		int numC = cells.size();
 		float[][] cellValues = new float[numC][];
 		for (int i = 0; i < numC; i++) {
@@ -137,7 +148,7 @@ public class Gate_DotPlot
 		int multiplier = 10000;
 		int numCells = cellValues.length;
 		if (numCells==0)
-			return 0;
+			return null;
 		
 		int count = 0;
 		double valX = 0;
@@ -149,14 +160,70 @@ public class Gate_DotPlot
 			poly.addPoint((int)(multiplier*xyPoints[0][i]), (int)(multiplier*xyPoints[1][i]));
 		poly.npoints = num;
 		
+		ArrayList<Cell> bound = new ArrayList<Cell>();
 		for (int i = 0; i < numCells; i++)
 		{
 			valX = (int)(multiplier*cellValues[i][featureX_index]);
 			valY = (int)(multiplier*cellValues[i][featureY_index]);
 			if (poly.contains(valX, valY))
-				count++;
+				bound.add(cells.get(i));
 		}
+		return bound;
+	
+	}
+	
+	public float getBoundCellsFeatures_Mean(ArrayList<Cell> cells, String featureName)
+	{
+		ArrayList<Cell> bound = getCellsBound(cells);
+		if(bound==null || bound.size()==0)
+			return 0;
+		float sum = 0;
+		int count = 0;
+		int index = models.Model_Main.getModel().getFeature_Index(featureName);
+
+		int len = bound.size();
+		for (int i = 0; i < len; i++) {
+			Cell cell = bound.get(i);
+			float[] vals = cell.getFeatureValues();
+			if(vals!=null && vals.length>index)
+			{
+				sum+=vals[index];
+				count++;
+			}
+		}
+		if(count==0)
+			return 0;
+	
+		return sum/(float)count;
+	}
+	
+	public float getBoundCellsFeatures_Integrated(ArrayList<Cell> cells, String featureName)
+	{
+		ArrayList<Cell> bound = getCellsBound(cells);
+		if(bound==null || bound.size()==0)
+			return 0;
+		float count = 0;
+		int index = models.Model_Main.getModel().getFeature_Index(featureName);
+
+		int len = bound.size();
+		for (int i = 0; i < len; i++) {
+			Cell cell = bound.get(i);
+			float[] vals = cell.getFeatureValues();
+			if(vals!=null && vals.length>index)
+				count+=vals[index];
+		}
+		
 		return count;
+	}
+	
+	
+	public float getTotalNumberOfCellsBound(ArrayList<Cell> cells)
+	{
+		ArrayList<Cell> bound = getCellsBound(cells);
+		if(bound==null || bound.size()==0)
+			return 0;
+		
+		return bound.size();
 	}
 	
 	
