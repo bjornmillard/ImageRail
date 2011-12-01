@@ -1456,9 +1456,7 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 												Gate_DotPlot g = well.TheGates
 														.get(k);
 												if (g2.ID == g.ID) {
-													
-													//TODO - get all bound cells here
-													
+
 													//The first thing we print is number of cells bound by each gate
 													float val = 0;
 													if(f==0)
@@ -1470,16 +1468,17 @@ public class DotPlot extends JPanel implements ImageCapturePanel {
 														val = g
 															.getBoundCellsFeatures_Integrated(well
 																	.getCells(),"Num_Nuclei");
-														System.out.println("VAL: "+val);
 
 													}
 													//Else we print out the mean values of all the features for each gate
 													// in separate files; one file for each feature
-													else 
+														else if (f > 1)
 													{
 														val = g
 																.getBoundCellsFeatures_Mean(well
-																		.getCells(),features[i-2].getName());
+.getCells(),
+																	features[f - 2]
+																			.getName());
 													}
 													
 													
