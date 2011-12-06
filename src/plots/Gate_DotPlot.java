@@ -135,6 +135,29 @@ public class Gate_DotPlot
 		return (float)count/(float)numCells;
 	}
 	
+	public boolean isBound(Cell cell) {
+		if (cell == null)
+			return false;
+		float[] cellValues = cell.getFeatureValues();
+		int multiplier = 10000;
+		double valX = 0;
+		double valY = 0;
+		Polygon poly = new Polygon();
+		// Creating a polygon... scaled a bit due to possible rounding error for
+		// requ that poly's are integer based
+		int num = xyPoints[0].length;
+		for (int i = 0; i < num; i++)
+			poly.addPoint((int) (multiplier * xyPoints[0][i]),
+					(int) (multiplier * xyPoints[1][i]));
+		poly.npoints = num;
+
+		valX = (int) (multiplier * cellValues[featureX_index]);
+		valY = (int) (multiplier * cellValues[featureY_index]);
+		if (poly.contains(valX, valY))
+			return true;
+
+		return false;
+	}
 	
 	public ArrayList<Cell> getCellsBound(ArrayList<Cell> cells)
 	{

@@ -38,6 +38,7 @@ import models.Model_Plate;
 import models.Model_Well;
 import sdcubeio.ExpDesign_Description;
 import sdcubeio.ExpDesign_Model;
+import segmentedobject.Cell;
 import features.Feature;
 
 public class DataSaver_Cells_Midas_wMetaData implements DataSaver
@@ -293,34 +294,100 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 										 else
 												headerValues.add("" + st);
 		
+						// Seeing if any gates are highlighted, if none then
+						// print all cells
+						// else if at least one is selected then we only export
+						// cells that
+						// are bound by a highlighted gate
+						int gateCounter = 0;
+						ArrayList<Integer> gateIndices = null;
+						if (theWell.TheGates != null
+								&& theWell.TheGates.size() > 0) {
+							gateIndices = new ArrayList<Integer>();
+							int numGates = theWell.TheGates.size();
+							for (int i = 0; i < numGates; i++) {
+
+								if (theWell.TheGates.get(i).selected) {
+									gateCounter++;
+									gateIndices.add(new Integer(i));
+								}
+							}
+						}
+						int[] gateInx = null;
+						if (gateIndices != null && gateIndices.size() > 0) {
+							gateInx = new int[gateCounter];
+							for (int i = 0; i < gateCounter; i++)
+								gateInx[i] = gateIndices.get(i).intValue();
+						}
 		
-										for (int j =0; j < numCells; j++)
-										{
-											//printing out the headerValues
-											if (theWell.Feature_Means!=null && theWell.Feature_Stdev!=null)
-											{
-												//printing out the headerValues
-												for(int i =0; i < headerValues.size(); i++)
-													if (((String)headerValues.get(i))!=null)
-		 {
-														pw.print(((String)headerValues.get(i))+",");
-													}
-		 else
-														pw.print(",");
-		
-												for (int i=0; i< featuresToSave.length; i++)
-		 {
-													pw.print(" "+fvals[j][featuresToSave[i].getGUIindex()]+",");
-												}
-		
+						if (gateInx == null) // export all cells since no
+												// selected gates exist
+							for (int j = 0; j < numCells; j++) {
+								// printing out the headerValues
+								if (theWell.Feature_Means != null
+										&& theWell.Feature_Stdev != null) {
+									// printing out the headerValues
+									for (int i = 0; i < headerValues.size(); i++)
+										if (((String) headerValues.get(i)) != null) {
+											pw.print(((String) headerValues
+													.get(i)) + ",");
+										} else
+											pw.print(",");
+
+									for (int i = 0; i < featuresToSave.length; i++) {
+										pw.print(" "
+												+ fvals[j][featuresToSave[i]
+														.getGUIindex()] + ",");
+									}
+
+									pw.println();
+								}
+							}
+						else // Found a selected gate, so only export cells
+								// bound by selected gates
+						{
+							ArrayList<Cell> cells = theWell.getCells();
+							numCells = cells.size();
+							for (int n = 0; n < numCells; n++) {
+
+								Cell cell = cells.get(n);
+								// seeing if this cell is bound by one of the
+								// selected gates
+								for (int g = 0; g < gateCounter; g++) {
+									if (theWell.TheGates.get(gateInx[g])
+											.isBound(cell)) {
+
+										// printing out the headerValues
+										if (theWell.Feature_Means != null
+												&& theWell.Feature_Stdev != null) {
+											// printing out the headerValues
+											for (int i = 0; i < headerValues
+													.size(); i++)
+												if (((String) headerValues
+														.get(i)) != null) {
+													pw.print(((String) headerValues
+															.get(i)) + ",");
+												} else
+													pw.print(",");
+
+											for (int i = 0; i < featuresToSave.length; i++) {
+												pw.print(" "
+														+ fvals[n][featuresToSave[i]
+																.getGUIindex()]
+														+ ",");
+											}
+
 											pw.println();
 										}
+
+										break; // dont want to print it 2x if
+												// its in multiple gates
 									}
-								
+								}
+
+							}
+						}
 						
-		
-						
-		
 									pw.flush();
 									pw.close();
 								}
@@ -331,6 +398,7 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 			catch (FileNotFoundException e) {System.out.println("Error Printing File");}
 		}
 	}
+
 	
 	public boolean shouldPrint(Feature f, Feature[] featuresToPrint)
 	{
