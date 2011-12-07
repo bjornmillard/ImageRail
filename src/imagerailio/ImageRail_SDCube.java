@@ -1674,7 +1674,7 @@ public class ImageRail_SDCube
 				int plateInx = ((Integer[]) (dat.getData()))[0].intValue();
 				int wellInx = ((Integer[]) (dat.getData()))[1].intValue();
 				String indexKey = "p" + plateInx + "w" + wellInx;
-				String pathToSample = "./Children/" + i;
+				String pathToSample = "./Children/" + gNames[i];
 				hashtable_indexToPath_in.put(indexKey, pathToSample);
 
 				// Indexing each field if it has single cell data in it
@@ -1738,7 +1738,7 @@ public class ImageRail_SDCube
 					int plateInx = ((Integer[]) (dat.getData()))[0].intValue();
 					int wellInx = ((Integer[]) (dat.getData()))[1].intValue();
 				String indexKey = "p"+plateInx+"w"+wellInx;
-				String pathToSample = "./Children/" + i;
+					String pathToSample = "./Children/" + gNames[i];
 				hashtable_indexToPath_out.put(indexKey, pathToSample);
 
 				// Indexing each field if it has single cell data in it
