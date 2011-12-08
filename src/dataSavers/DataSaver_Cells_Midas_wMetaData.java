@@ -32,6 +32,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 import models.Model_Main;
 import models.Model_Plate;
@@ -66,6 +67,69 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 						wells.add(theWell);
 				}
 		}
+		
+		boolean cancel = false;
+		// exportAllorGated == 0 for all and == 1 for gated subpopulations
+		int exportAllorGated = -1;
+		int len = wells.size();
+		for (int w = 0; w < len; w++) {
+			Model_Well theWell = wells.get(w);
+			// Seeing if any gates are highlighted, if none then
+			// print all cells
+			// else if at least one is selected then we only export
+			// cells that
+			// are bound by a highlighted gate
+			int gateCounter = 0;
+			ArrayList<Integer> gateIndices = null;
+			if (theWell.TheGates != null && theWell.TheGates.size() > 0) {
+				gateIndices = new ArrayList<Integer>();
+				int numGates = theWell.TheGates.size();
+				for (int i = 0; i < numGates; i++) {
+
+					if (theWell.TheGates.get(i).selected) {
+						gateCounter++;
+						gateIndices.add(new Integer(i));
+					}
+				}
+			}
+			int[] gateInx = null;
+			if (gateIndices != null && gateIndices.size() > 0) {
+				gateInx = new int[gateCounter];
+				for (int i = 0; i < gateCounter; i++)
+					gateInx[i] = gateIndices.get(i).intValue();
+			}
+			// Alert User that only going to export gated cells;
+			// allow them to override and export all
+			// Custom button text
+			if (gateInx != null) {
+				Object[] options = { "Export gated cells only",
+						"Export all cells", "Cancel" };
+				int n = JOptionPane
+						.showOptionDialog(
+								gui.MainGUI.getGUI(),
+								"Do you want to export only cells bound by selected gates?",
+								"Single-Cell Export",
+								JOptionPane.YES_NO_CANCEL_OPTION,
+								JOptionPane.QUESTION_MESSAGE, null, options,
+								options[2]);
+				System.out.println("answer = " + n);
+				if (n == 0)
+					exportAllorGated = 1;
+				if (n == 1)
+					exportAllorGated = 0;
+				else if (n == 2)
+					cancel = true;
+
+			}
+
+			if (cancel)
+				return;
+			if (exportAllorGated != -1)
+				break;
+
+		}
+		if (exportAllorGated == -1)
+			exportAllorGated = 0;
 		
 		
 		JFileChooser fc = null;
@@ -111,7 +175,7 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 				ArrayList<Feature> arr = TheMainModel.getTheFeatures();
 				int counter = 0;
 				int num = arr.size();
-				int len = featuresToSave.length;
+				len = featuresToSave.length;
 				for (int i = 0; i < num; i++)
 				{
 					Feature f = ((Feature)arr.get(i));
@@ -319,8 +383,14 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 							for (int i = 0; i < gateCounter; i++)
 								gateInx[i] = gateIndices.get(i).intValue();
 						}
-		
-						if (gateInx == null) // export all cells since no
+
+
+
+						if (gateInx == null || exportAllorGated == 0) // export
+																		// all
+																		// cells
+																		// since
+																		// no
 												// selected gates exist
 							for (int j = 0; j < numCells; j++) {
 								// printing out the headerValues
@@ -343,7 +413,8 @@ public class DataSaver_Cells_Midas_wMetaData implements DataSaver
 									pw.println();
 								}
 							}
-						else // Found a selected gate, so only export cells
+						else if (exportAllorGated == 1)// Found a selected gate,
+														// so only export cells
 								// bound by selected gates
 						{
 							ArrayList<Cell> cells = theWell.getCells();
