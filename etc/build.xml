@@ -9,7 +9,7 @@ NOTES
 -->
 <project name="ImageRail" default="makejar" basedir="..">
 	<!-- FIXME need to automate this -->
-	<property name="app.version" value="1.2.3_pre1" />
+	<property name="app.version" value="1.2.3" />
 	<target name="clean" description="Removes the build/ directory for a fresh start.">
 		<delete dir="build" />
 	</target>
