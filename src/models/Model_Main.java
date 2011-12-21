@@ -14,6 +14,7 @@ import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.Polygon;
 import java.io.File;
 import java.io.IOException;
@@ -415,7 +416,8 @@ TheInputProjectPath);
 			for (int p = 0; p < plates.length; p++)
  {
 				plates[p] = arr.get(p);
-				plates[p].initGUI();
+				if (!GraphicsEnvironment.isHeadless())
+					plates[p].initGUI();
 			}
 			// Creating the new plate holder with new plates
 			ThePlateRepository_Model = new Model_PlateRepository(

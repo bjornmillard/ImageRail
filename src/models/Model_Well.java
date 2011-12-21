@@ -24,6 +24,7 @@ import features.Feature;
 import gui.Gui_Well;
 import imagerailio.ImageRail_SDCube;
 
+import java.awt.GraphicsEnvironment;
 import java.util.ArrayList;
 
 import midasGUI.Measurement;
@@ -891,7 +892,8 @@ public class Model_Well
 			for (int i = 0; i < Feature_Stdev.length; i++)
 				Feature_Stdev[i] = 0;
 
-		ThePlate.getGUI().updatePanel();
+		if (!GraphicsEnvironment.isHeadless())
+			ThePlate.getGUI().updatePanel();
 		System.gc();
 
 	}
