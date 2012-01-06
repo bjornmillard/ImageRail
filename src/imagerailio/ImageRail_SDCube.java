@@ -760,19 +760,34 @@ public class ImageRail_SDCube
 			try {
 			String path = pathToSample + "/Data/well_means";
 
-			// write feature names
+			float[] out = null;
+			try{
 				Data_1D<Float> values = (Data_1D<Float>) io.readDataset(
 						hdfPath_in, path);
-			// (hdfPath, pathToFieldDataFolder,
-			// "feature_names", names);
 				if (values == null)
 					return null;
 				Float[] vals = (Float[]) values.getData();
-			int len = vals.length;
-			float[] out = new float[len];
-			for (int i = 0; i < len; i++)
+				int len = vals.length;
+				out = new float[len];
+				for (int i = 0; i < len; i++)
 					out[i] = vals[i].floatValue();
-
+			}
+			catch(Exception e) //TODO --> this can be deleted once everyone converts to new project format
+			{
+				Data_2D<Float> values = (Data_2D<Float>) io.readDataset(
+						hdfPath_in, path);
+				if (values == null)
+					return null;
+				Float[][] vals = (Float[][]) values.getData();
+				int len = vals[0].length;
+				out = new float[len];
+				for (int i = 0; i < len; i++)
+					out[i] = vals[0][i].floatValue();
+			}
+			if(out==null)	
+				System.out.println("***Error reading well means");
+			
+			
 			return out;
 			
 			} catch (H5IO_Exception e) {
@@ -803,23 +818,40 @@ public class ImageRail_SDCube
 				
 			String path = pathToSample + "/Data/well_stdevs";
 
-			// write feature names
+
+			float[] out = null;
+			try{
+				// write feature names
 				Data_1D<Float> values = (Data_1D<Float>) io.readDataset(
 						hdfPath_in,
-					path);// (hdfPath, pathToFieldDataFolder,
-			// "feature_names", names);
+					path);
 				if (values == null)
 					return null;
 				Float[] vals = (Float[]) values.getData();
-			int len = vals.length;
-			float[] out = new float[len];
-			for (int i = 0; i < len; i++)
+				int len = vals.length;
+				out = new float[len];
+				for (int i = 0; i < len; i++)
 					out[i] = vals[i].floatValue();
+			}
+			catch(Exception e) //TODO --> this can be deleted once everyone converts to new project format
+			{
+				Data_2D<Float> values = (Data_2D<Float>) io.readDataset(
+						hdfPath_in, path);
+				if (values == null)
+					return null;
+				Float[][] vals = (Float[][]) values.getData();
+				int len = vals[0].length;
+				out = new float[len];
+				for (int i = 0; i < len; i++)
+					out[i] = vals[0][i].floatValue();
+			}
+			if(out==null)	
+				System.out.println("***Error reading well stdevs");
 
 			return out;
 
 		} catch (H5IO_Exception e) {
-			System.out.println("***Error*** Problems loading well means!!!");
+			System.out.println("***Error*** Problems loading well stdevs!!!");
 			e.printStackTrace();
 		}
 		
@@ -855,10 +887,20 @@ public class ImageRail_SDCube
 		if (pathToSample != null) {
 
 			String path = pathToSample + "/Children/" + fieldIdx;
-			Integer[] ints = ((Data_1D<Integer>) io.readDataset(h5path,
+			int val = -1;
+			try{
+				Integer[] ints = ((Data_1D<Integer>) io.readDataset(h5path,
 					path + "/Meta/Height_Width_Channels")).getData();
+				val = ints[0].intValue();
+			}
+			catch(Exception e)
+			{
+				Integer[][] ints = ((Data_2D<Integer>) io.readDataset(h5path,
+						path + "/Meta/Height_Width_Channels")).getData();
+					val = ints[0][0].intValue();
+			}
 
-			return ints[0].intValue();
+			return val;
 		}
 		return -1;
 	}
@@ -1625,11 +1667,27 @@ public class ImageRail_SDCube
 		ArrayList<int[]> idsAndSize = new ArrayList<int[]>();
 		// Searching all HDF5 samples
 		try {
-			Data_1D dat = (Data_1D) io.readDataset(h5path,
-					"./Meta/PlateCount_PlateSize");
-			int plateCount = ((Integer[]) (dat.getData()))[0].intValue();
-			int plateSize = ((Integer[]) (dat.getData()))[1].intValue();
+			
+			int plateCount = -1;
+			int plateSize = -1;
+			try{
+				
+				Data_1D dat = (Data_1D) io.readDataset(h5path,
+						"./Meta/PlateCount_PlateSize");
+				plateCount = ((Integer[]) (dat.getData()))[0].intValue();
+				plateSize = ((Integer[]) (dat.getData()))[1].intValue();
+			}
+			catch(Exception e) //TODO --> this can be deleted once everyone converts to new project format
+			{
+				Data_2D dat = (Data_2D) io.readDataset(h5path,
+						"./Meta/PlateCount_PlateSize");
+				plateCount = ((Integer[][]) (dat.getData()))[0][0].intValue();
+				plateSize = ((Integer[][]) (dat.getData()))[1][0].intValue();
+			}
+			if(plateCount==-1 || plateSize==-1)	
+				System.out.println("***Error reading PlateSize and PlateCount: "+plateCount+","+plateSize);
 
+				
 			for (int i = 0; i < plateCount; i++) {
 				int[] newPlate = { i, plateSize };
 				idsAndSize.add(newPlate);
@@ -1669,11 +1727,26 @@ public class ImageRail_SDCube
 			System.out.println("___Found " + numSamples
 					+ " Fields in this project___");
 			for (int i = 0; i < numSamples; i++) {
-				Data_1D dat = (Data_1D) io.readDataset(hdfPath_in,
+				int plateInx = -1;
+				int wellInx = -1;
+				try{
+					Data_1D dat = (Data_1D) io.readDataset(hdfPath_in,
 						"./Children/" + gNames[i] + "/Meta/Plate_Well");
-				int plateInx = ((Integer[]) (dat.getData()))[0].intValue();
-				int wellInx = ((Integer[]) (dat.getData()))[1].intValue();
-				String indexKey = "p" + plateInx + "w" + wellInx;
+						 plateInx = ((Integer[]) (dat.getData()))[0].intValue();
+						 wellInx = ((Integer[]) (dat.getData()))[1].intValue();
+				}
+				catch(Exception e) //TODO --> this can be deleted once everyone converts to new project format
+				{
+					Data_2D dat = (Data_2D) io.readDataset(hdfPath_in,
+							"./Children/" + gNames[i] + "/Meta/Plate_Well");
+						 plateInx = ((Integer[][]) (dat.getData()))[0][0].intValue();
+						 wellInx = ((Integer[][]) (dat.getData()))[1][0].intValue();
+				}
+
+				if(wellInx == -1 || plateInx == -1)
+					System.out.println("***ERROR loading plateInx or wellInx = "+plateInx +","+wellInx);
+				
+				String indexKey = "p" + plateInx + "w" + wellInx;				
 				String pathToSample = "./Children/" + gNames[i];
 				hashtable_indexToPath_in.put(indexKey, pathToSample);
 
