@@ -22,6 +22,7 @@ package imageViewers;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -287,8 +288,8 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 //			 JAI.create("filestore", tiledImage, "jairgb.png", "PNG");
 			 }
 		 });
-		 OptionsMenu.add(item);
-		 OptionsMenu.addSeparator();
+//		 OptionsMenu.add(item);
+//		 OptionsMenu.addSeparator();
 
 		JMenu SelectionShapeMenu = new JMenu("Selection Shape...");
 		OptionsMenu.add(SelectionShapeMenu);
@@ -343,7 +344,7 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 		
 		
 		
-		item = new JMenuItem("Set Selection to all Images");
+		item = new JMenuItem("Set Selection to all Image Fields");
 		item.addActionListener(new ActionListener()
 							   {
 					public void actionPerformed(ActionEvent ae)
@@ -389,16 +390,44 @@ public class FieldViewer_Frame extends JFrame implements WindowListener, KeyList
 								}
 							}
 						}
+ else if (Type_Shape == SHAPE_POLYGON)
+	{
+	 	Polygon poly = (Polygon) TheCurrentViewer.getSelectedROI();
+		if (poly==null || poly.npoints<=0) //nothing selected
+		{
+			JOptionPane.showMessageDialog(null,"No selection made. \nPlease highlight a region and try again.",
+										  "",JOptionPane.ERROR_MESSAGE);
+		}
+		else
+		{
+			int len = TheFieldViewers.length;
+			for (int i = 0; i < len; i++)
+			{
+				int nps = poly.npoints;
+				int[] xps = new int[nps];
+				int[] yps = new int[nps];
+				for (int j = 0; j < nps; j++)
+				{
+					xps[j] = poly.xpoints[j];
+					yps[j] = poly.ypoints[j];
+				}
+				
+				TheFieldViewers[i].setSelectedROI( new Polygon(xps, yps, nps));
+				Type_Shape = SHAPE_POLYGON;
+				TheFieldViewers[i].setCreateNewBox(false);
+			}
+		}
+	}
 					}
 				});
 		SelectionMenu.add(item);
-		
+		  
 		
 		OptionsMenu.addSeparator();
 		JMenu FieldMenu = new JMenu("ROI Options...");
 		OptionsMenu.add(FieldMenu);
 		
-		JMenu SaveROIMenu = new JMenu("Save ROI...");
+		JMenu SaveROIMenu = new JMenu("Set ROI...");
 		JMenu DeleteROIMenu = new JMenu("Delete ROI...");
 		JMenu PrintRIOMenu = new JMenu("Export...");
 		FieldMenu.add(SaveROIMenu);

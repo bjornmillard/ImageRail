@@ -113,7 +113,13 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 	private int[] pixel;
 	private int pixelValue;
 	private int areaValue;
-
+	private int HandleGrab;
+	final int NONE = -1;
+	final int LEFT = 0;
+	final int RIGHT = 1;
+	final int TOP = 2;
+	final int BOTTOM = 3;
+	
 	private int ID;
 	private RenderedImage TheCurrentImage;
 	private RenderedImage TheDisplayedImage;
@@ -140,7 +146,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		setBackground(Color.black);
 		pixel = new int[3];
 		float scalingFactor = 1f;
-	
+		HandleGrab = NONE;
 
 		LineProfileValues_X = null;
 		LineProfileValues_Y = null;
@@ -688,6 +694,8 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					color = Color.green;
 
 				drawScaledShape(g2, shape, color);
+				
+				
 			}
 		}
 
@@ -695,7 +703,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		/** Drawing polygon ROIs */
 		if (ThePolygonGate_Points != null) {
 			float scalingFactor = FieldViewer_Frame.getScaling();
-			g2.setColor(Color.green);
+			g2.setColor(Color.white);
 			int len = ThePolygonGate_Points.size();
 			if (len > 0) {
 				Point p = ThePolygonGate_Points.get(0);
@@ -708,14 +716,14 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 							(int) (p.y * scalingFactor));
 				}
 			}
-		} else if (ThePolygonGate != null) {
-			g2.setColor(Color.green);
+		} else if (ThePolygonGate != null && HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_POLYGON) {
+			g2.setColor(Color.white);
 			// if (ThePolygonGate.xpoints.length == 1)
 			// g2.drawLine(ThePolygonGate.xpoints[0],
 			// ThePolygonGate.xpoints[0], ThePolygonGate.ypoints[0],
 			// ThePolygonGate.ypoints[0]);
 			// else {
-			drawScaledShape(g2, ThePolygonGate, Color.green);
+			drawScaledShape(g2, ThePolygonGate, Color.white);
 				g2.setColor(Color.black);
 			// }
 		}
@@ -914,6 +922,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			g2.fill(shapeToDraw);
 			g2.setComposite(orig);
 			g2.draw(shapeToDraw);
+			
 		}
 	}
 
@@ -943,6 +952,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 				Ellipse2D.Float oval = (Ellipse2D.Float) SelectedROI;
 				shapeToDraw = new Ellipse2D.Float(scale * oval.x, scale
 						* oval.y, scale * oval.width, scale * oval.height);
+				
 			} else if (SelectedROI instanceof Rectangle) {
 
 				Rectangle rect = (Rectangle) SelectedROI;
@@ -959,6 +969,7 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 							(int) (scale * poly.ypoints[i]));
 				shapeToDraw = copy;
 			}
+			
 
 			g2.setColor(highlightColor);
 			Composite orig = g2.getComposite();
@@ -967,6 +978,27 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 			g2.fill(shapeToDraw);
 			g2.draw(shapeToDraw);
 			g2.setComposite(orig);
+			
+			//Draw reshaping handles for oval or rectangle
+			if(SelectedROI instanceof Ellipse2D.Float || SelectedROI instanceof Rectangle)
+			{
+				Rectangle bounds = shapeToDraw.getBounds();
+				int width = 5;
+				int xs = bounds.x;
+				int xe = bounds.x+bounds.width;
+				int ys = bounds.y;
+				int ye = bounds.y+bounds.height;
+								
+				g2.setColor(Color.white);
+				//draw left handle
+				g2.fillRect(xs-width/2, (ye+ys)/2-width/2, width, width);
+				//draw right handle
+				g2.fillRect(xe-width/2, (ye+ys)/2-width/2, width, width);
+				//draw top handle
+				g2.fillRect((xe+xs)/2-width/2, ys-width/2, width, width);
+				//draw bottom handle
+				g2.fillRect((xe+xs)/2-width/2, ye-width/2, width, width);	
+			}
 		}
 
 	}
@@ -1144,23 +1176,67 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 		Shape shape = null;
 		float scale = FieldViewer_Frame.getScaling();
 		if (SelectedROI != null)
-			if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_OVAL) {
+		{
+			//Draw reshaping handles for oval or rectangle
+			if(SelectedROI instanceof Ellipse2D.Float || SelectedROI instanceof Rectangle)
+			{
 				Rectangle bounds = getScaledSelectionBounds(scale);
-				Ellipse2D.Float temp = new Ellipse2D.Float();
-				temp.x = bounds.x;
-				temp.y = bounds.y;
-				temp.width = bounds.width;
-				temp.height = bounds.height;
-				shape = temp;
-			} else if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_RECTANGLE) {
-				Rectangle bounds = getScaledSelectionBounds(scale);
-				Rectangle temp = new Rectangle();
-				temp.x = bounds.x;
-				temp.y = bounds.y;
-				temp.width = bounds.width;
-				temp.height = bounds.height;
-				shape = temp;
+				int width = 15;
+				int xs = bounds.x;
+				int xe = bounds.x+bounds.width;
+				int ys = bounds.y;
+				int ye = bounds.y+bounds.height;
+
+				HandleGrab = NONE;
+				
+				//init left handle
+				Rectangle rectLeft = new Rectangle(xs-width/2, (ye+ys)/2-width/2, width, width);
+				//init right handle
+				Rectangle rectRight = new Rectangle(xe-width/2, (ye+ys)/2-width/2, width, width);
+				//init top handle
+				Rectangle rectTop = new Rectangle((xe+xs)/2-width/2, ys-width/2, width, width);
+				//init bottom handle
+				Rectangle rectBottom = new Rectangle((xe+xs)/2-width/2, ye-width/2, width, width);	
+
+				if(rectLeft.contains(p1.getPoint()))
+					HandleGrab = LEFT;
+				else if(rectRight.contains(p1.getPoint()))
+					HandleGrab = RIGHT;
+				else if(rectTop.contains(p1.getPoint()))
+					HandleGrab = TOP;
+				else if(rectBottom.contains(p1.getPoint()))
+					HandleGrab = BOTTOM;
+				
+				
+				//Clean up
+				rectLeft = null;
+				rectRight = null;
+				rectTop = null;
+				rectBottom = null;
+			
+				if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_OVAL) {
+					 bounds = getScaledSelectionBounds(scale);
+					Ellipse2D.Float temp = new Ellipse2D.Float();
+					temp.x = bounds.x;
+					temp.y = bounds.y;
+					x_shape = (int)temp.x;
+					y_shape = (int)temp.y;
+					temp.width = bounds.width;
+					temp.height = bounds.height;
+					shape = temp;
+				} else if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_RECTANGLE) {
+					 bounds = getScaledSelectionBounds(scale);
+					Rectangle temp = new Rectangle();
+					temp.x = bounds.x;
+					temp.y = bounds.y;
+					x_shape = (int)temp.x;
+					y_shape = (int)temp.y;
+					temp.width = bounds.width;
+					temp.height = bounds.height;
+					shape = temp;
+				}
 			}
+		}
 		if (HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_POLYGON
 				|| HolderFrame.getShapeType() == FieldViewer_Frame.SHAPE_LINE) {
 				setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
@@ -1170,23 +1246,26 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					((int) ((float) p1.getPoint().y / (float) scale))));
 			}
 
-
-		if (shape != null && shape.contains(p1.getPoint())) {
-			dX = p1.getX() - x_shape;
-			dY = p1.getY() - y_shape;
-			CreateNewBox = false;
-		} else {
-			startBox_XY = p1.getPoint();
-			startHighlightPoint = p1.getPoint();
-			CreateNewBox = true;
-		}
+	
+			if (HandleGrab!=NONE || (shape != null && shape.contains(p1.getPoint()))) {
+				dX = p1.getX() - x_shape;
+				dY = p1.getY() - y_shape;
+				CreateNewBox = false;
+			}
+			else{
+				startBox_XY = p1.getPoint();
+				startHighlightPoint = p1.getPoint();
+				CreateNewBox = true;
+			}
+		
 		updatePanel();
 	}
 
 	public void mouseReleased(MouseEvent p1) {
 
 		setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
+		HandleGrab = NONE;
+		
 		if (TheParentContainer.getShapeType() == TheParentContainer.SHAPE_POLYGON)
  {
 			if (ThePolygonGate_Points != null) {
@@ -1417,14 +1496,54 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					Rectangle bounds = getScaledSelectionBounds(scalingFactor);
 					if (tempOval == null)
 						tempOval = new Ellipse2D.Float();
-					tempOval.x = bounds.x;
-					tempOval.y = bounds.y;
-					tempOval.width = bounds.width;
-					tempOval.height = bounds.height;
-
-					tempOval.x = p1.getX() - tempOval.width / 2f;
-					tempOval.y = p1.getY() - tempOval.height / 2f;
-
+					
+					
+					if(HandleGrab!=NONE) //Reshape it, dont translate
+					{
+						if(HandleGrab==LEFT)
+						{
+							int dx = bounds.x-p1.getX();
+							tempOval.x = p1.getX();
+							tempOval.y = bounds.y;
+							tempOval.width = bounds.width+dx;
+							tempOval.height = bounds.height;
+						}
+						else if(HandleGrab==RIGHT)
+						{
+							int dx = (bounds.x+bounds.width)-p1.getX();
+							tempOval.x = bounds.x;
+							tempOval.y = bounds.y;
+							tempOval.width = bounds.width-dx;
+							tempOval.height = bounds.height;
+						}
+						else if(HandleGrab==TOP)
+						{
+							int dy = bounds.y-p1.getY();
+							tempOval.x = bounds.x;
+							tempOval.y = p1.getY();
+							tempOval.width = bounds.width;
+							tempOval.height = bounds.height+dy;
+						}
+						else if(HandleGrab==BOTTOM)
+						{
+							int dy = (bounds.y+bounds.height)-p1.getY();
+							tempOval.x = bounds.x;
+							tempOval.y = bounds.y;
+							tempOval.width = bounds.width;
+							tempOval.height = bounds.height-dy;
+						}
+					}
+					else // translate the whole shape
+					{
+						tempOval.x = bounds.x;
+						tempOval.y = bounds.y;
+						tempOval.width = bounds.width;
+						tempOval.height = bounds.height;
+	
+						tempOval.x = p1.getX() - dX ;//- tempOval.width / 2f;
+						tempOval.y = p1.getY() - dY ;//- tempOval.height / 2f;
+					}
+					
 					// seeing if box has highlighted any cells
 					if (TheCellBank != null) {
 						ArrayList<Cell> cells = TheCellBank.getCells();
@@ -1474,14 +1593,51 @@ public class FieldViewer extends DisplayJAI implements MouseListener,
 					if (tempRect == null)
 						tempRect = new Rectangle();
 
-					tempRect.x = bounds.x;
-					tempRect.y = bounds.y;
-					tempRect.width = bounds.width;
-					tempRect.height = bounds.height;
-
-					tempRect.x = (int) (p1.getX() - tempRect.width / 2f);
-					tempRect.y = (int) (p1.getY() - tempRect.height / 2f);
-
+					if(HandleGrab!=NONE) //Reshape it, dont translate
+					{
+						if(HandleGrab==LEFT)
+						{
+							int dx = bounds.x-p1.getX();
+							tempRect.x = p1.getX();
+							tempRect.y = bounds.y;
+							tempRect.width = bounds.width+dx;
+							tempRect.height = bounds.height;
+						}
+						else if(HandleGrab==RIGHT)
+						{
+							int dx = (bounds.x+bounds.width)-p1.getX();
+							tempRect.x = bounds.x;
+							tempRect.y = bounds.y;
+							tempRect.width = bounds.width-dx;
+							tempRect.height = bounds.height;
+						}
+						else if(HandleGrab==TOP)
+						{
+							int dy = bounds.y-p1.getY();
+							tempRect.x = bounds.x;
+							tempRect.y = p1.getY();
+							tempRect.width = bounds.width;
+							tempRect.height = bounds.height+dy;
+						}
+						else if(HandleGrab==BOTTOM)
+						{
+							int dy = (bounds.y+bounds.height)-p1.getY();
+							tempRect.x = bounds.x;
+							tempRect.y = bounds.y;
+							tempRect.width = bounds.width;
+							tempRect.height = bounds.height-dy;
+						}
+					}
+					else
+					{
+						tempRect.x = bounds.x;
+						tempRect.y = bounds.y;
+						tempRect.width = bounds.width;
+						tempRect.height = bounds.height;
+	
+						tempRect.x = (int) (p1.getX() - dX );//- tempRect.width / 2f);
+						tempRect.y = (int) (p1.getY() - dY );//- tempRect.height / 2f);
+					}
 					// seeing if box has highlighted any cells
 					if (TheCellBank != null) {
 						ArrayList<Cell> cells = TheCellBank.getCells();
